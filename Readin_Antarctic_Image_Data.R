@@ -1,0 +1,915 @@
+library(raadtools)
+library(readxl)
+library(raster)
+library(maptools)
+
+#### setup pathways
+# my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
+bio.path <- "C:/Users/jjansen/Desktop/science/data_biological/"
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+# set_data_roots(my_data_dir)
+
+# #### load depth
+r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_bathy500m_shelf_gebco2020_depth.grd"))
+
+#### load diatom data
+load(file="C:/Users/jjansen/Desktop/science/data_biological/Circumpolar_diatom_locations.Rdata")
+
+#### load coastline
+stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+load(paste0(env.dir,"Circumpolar_Coastline.Rdata"))
+
+#### Entire continental shelf
+# par(mar=c(2,2,1,1))
+# #png("diatom_overview.png",width=1250,height=1250)
+# plot(r2, xlim=c(-3000000,3000000), ylim=c(-3000000,3000000),col=terrain.colors(99), main="Sample sites for sediment cores/grabs")
+# plot(coast.proj, add=TRUE)
+# scalebar(500000, type="bar", label=c("0","250","500"), below="km")
+# points(polar.dat.diatom, pch=16, col="blue")
+# legend("topright","Sample-sites",pch=16, col="blue")
+#dev.off()
+
+#### load image data
+## Ross Sea
+dat.0802 <- get(load(paste0(bio.path,"TAN0802_dat.Rdata")))
+total.t.length.v.0802 <- total.t.length.v
+total.t.length.v.0802[c(13,16,17,28,32:34,45,46)] <- t.l[c(13,16,17,28,32:34,45,46)] #used distance to start for these transects, not distance along transect
+dat.1802 <- get(load(paste0(bio.path,"TAN1802_dat.Rdata")))
+t.l.1802 <- t.l
+total.t.length.v.1802 <- total.t.length.v
+dat.1901 <- get(load(paste0(bio.path,"TAN1901_dat.Rdata")))
+t.l.1901 <- t.l
+total.t.length.v.1901 <- total.t.length.v
+dat.NBP1502 <- get(load(file=paste0(bio.path,"NBP1502_dat.Rdata")))
+total.t.length.v.NBP1502 <- total.t.length.v
+t.l.NBP1502 <- t.l
+## West Antarctic
+dat.PS81 <- get(load(file=paste0(bio.path,"PS81_dat_FINAL.Rdata")))
+total.t.length.v.PS81 <- total.t.length.v
+dat.PS81_shallow <- get(load(file=paste0(bio.path,"PS81_dat_shallow.Rdata")))
+total.t.length.v.PS81_shallow <- total.t.length.v
+dat.PS96 <- get(load(file=paste0(bio.path,"PS96_dat_FINAL.Rdata")))
+total.t.length.v.PS96 <- total.t.length.v
+dat.PS118 <- get(load(file=paste0(bio.path,"PS118_dat.Rdata")))
+total.t.length.v.PS118 <- total.t.length.v
+## CRS
+dat.WAP <- get(load(file=paste0(bio.path,"CRS_dat.Rdata")))
+total.t.length.v.WAP <- total.t.length.v
+## East Antarctic
+dat.NBP1402 <- get(load(file=paste0(bio.path,"NBP1402_dat.Rdata")))
+total.t.length.v.NBP1402 <- total.t.length.v
+rm(dat,t.l,total.t.length.v)
+## old Weddell Sea surveys
+dat.PS06 <- get(load(file=paste0(bio.path,"PS06_dat.Rdata")))
+dat.PS14 <- get(load(file=paste0(bio.path,"PS14_dat.Rdata")))
+total.t.length.v.PS14 <- total.t.length.v
+dat.PS18 <- get(load(file=paste0(bio.path,"PS18_dat.Rdata")))
+total.t.length.v.PS18 <- total.t.length.v
+dat.PS61 <- get(load(file=paste0(bio.path,"PS61_dat.Rdata")))
+total.t.length.v.PS61 <- total.t.length.v
+## Mertz
+dat.AA2011 <- get(load(file=paste0(bio.path,"AA2011_dat.Rdata")))
+## SUCS
+dat.JR262 <- get(load(file=paste0(bio.path,"JR262_dat.Rdata")))
+dat.JR15005 <- get(load(file=paste0(bio.path,"JR15005_dat.Rdata")))
+total.t.length.v.JR15005 <- total.t.length.v
+dat.JR17001 <- get(load(file=paste0(bio.path,"JR17001_dat.Rdata")))
+total.t.length.v.JR17001 <- total.t.length.v
+dat.JR17003 <- get(load(file=paste0(bio.path,"JR17003_dat.Rdata")))
+total.t.length.v.JR17003 <- total.t.length.v
+## LMG1311
+dat.LMG1311 <- get(load(file=paste0(bio.path,"LMG1311_dat.Rdata")))
+total.t.length.v.LMG1311 <- total.t.length.v
+
+##### PS81: something went wrong with the "image_select"-values when redoing the subsetting and replacing shitty images. Only happened to images from image.select>=50
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T12_51_09_5010.jpg"] <- 50
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T14_21_26_5190.jpg"] <- 53
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T13_58_10_5143.jpg"] <- 56
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T12_34_31_4977.jpg"] <- 62
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T13_09_49_5047.jpg"] <- 64
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T13_18_23_5064.jpg"] <- 65
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T12_28_30_4964.jpg"] <- 66
+
+##### TAN1901: something went really wrong with saving the image subsetting.
+#####   - Couldn't figure out why the difference between list of annotated images and stored TAN1901_dat.Rdata
+#####   - Only one version of TAN1901_dat.Rdata exists and the reproducing the annotated subset using the R-code is not possible
+#####   - Seems to be often off by 1 or 2 images, bu most transect are not affected
+
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_039.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_227.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_036.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_229.jpg"] <- 5
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_054.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_196.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_140.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_245.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_264.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_084.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_206.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_159.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_066.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_197.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_141.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_242.jpg"] <- 5
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_265.jpg"] <- 9
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_086.jpg"] <- 10
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_208.jpg"] <- 11
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_098_228.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_098_226.jpg"] <- 5
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_090.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_056.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_116.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_221.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_088.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_057.jpg"] <- 6
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_115.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_222.jpg"] <- 9
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_093.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_122.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_092.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_121.jpg"] <- 7
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_068.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_182.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_139.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_212.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_067.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_185.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_140.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_213.jpg"] <- 5
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_051.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_189.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_134.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_224.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_104.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_162.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_241.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_053.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_185.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_133.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_223.jpg"] <- 5
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_103.jpg"] <- 6
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_160.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_243.jpg"] <- 9
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_257.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_020.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_157.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_100.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_129.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_237.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_174.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_114.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_082.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_254.jpg"] <- 1
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_017.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_155.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_096.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_128.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_238.jpg"] <- 9
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_171.jpg"] <- 11
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_113.jpg"] <- 12
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_083.jpg"] <- 14
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_107.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_222.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_033.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_151.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_108.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_223.jpg"] <- 9
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_031.jpg"] <- 10
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_150.jpg"] <- 11
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_245.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_018.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_148.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_063.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_244.jpg"] <- 1
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_025.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_151.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_065.jpg"] <- 6
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_207.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_127.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_170.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_053.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_206.jpg"] <- 1
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_128.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_168.jpg"] <- 5
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_054.jpg"] <- 6
+
+##### add standardised filenames to data
+## PS06,14,18,61,81,96:
+dat <- dat.PS06
+dat.PS06$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS14
+dat.PS14$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS18
+dat.PS18$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS61
+dat.PS61$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS81
+dat.PS81$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS81_shallow
+dat.PS81_shallow$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS96
+dat.PS96$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename,".jpg")
+## PS118:
+dat <- dat.PS118
+dat.PS118$Filename.standardised <- paste0("PS118_",dat$transectID.forfile,"_",sprintf("%04d",dat$image.select),"__",dat$Filename,".jpg")
+## TAN0802 & 1901:
+dat <- dat.0802
+dat.0802$Filename.standardised <- paste0(substr(dat$FileName,1,12),sprintf("%04d",dat$image.select),"__",dat$FileName)
+dat <- dat.1901
+dat.1901$Filename.standardised <- paste0(substr(dat$FileName,1,12),sprintf("%04d",dat$image.select),"__",dat$FileName)
+## TAN1802:
+dat <- dat.1802
+dat.1802$Filename.standardised <- paste0("TAN1802_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$FileName)
+## NBP1402
+dat <- dat.NBP1402
+dat.NBP1402$Filename.standardised <- paste0("NBP1402_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$FileName)
+## NBP1402
+dat <- dat.NBP1502
+dat.NBP1502$Filename.standardised <- paste0("NBP1502_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$FileName)
+## CRS:
+dat <- dat.WAP
+dat.WAP$Filename.standardised <- paste0("CRS_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+## AA2011
+dat <- dat.AA2011
+dat.AA2011$Filename.standardised <- paste0("AA2011_",dat$transectID_folder,"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+## SUCS
+dat <- dat.JR262
+dat.JR262$Filename.standardised <- paste0("JR262_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+dat <- dat.JR15005
+dat.JR15005$Filename.standardised <- paste0("JR15005_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+dat <- dat.JR17001
+dat.JR17001$Filename.standardised <- paste0("JR17001_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+dat <- dat.JR17003
+dat.JR17003$Filename.standardised <- paste0("JR17003_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+## LMG1311
+dat <- dat.LMG1311
+dat.LMG1311$Filename.standardised <- paste0("LMG1311_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+
+rm(dat)
+
+#### reproject biological data
+##
+spatial.dat <- data.frame(cbind(dat.0802$GPS_lon, dat.0802$GPS_lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.0802 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.1802$GPS_lon, dat.1802$GPS_lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.1802 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.1901$GPS_lon, dat.1901$GPS_lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.1901 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS81$Longitude, dat.PS81$Latitude))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS81 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS81_shallow$Longitude, dat.PS81_shallow$Latitude))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS81_shallow <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS96$Longitude, dat.PS96$Latitude))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS96 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS118$Longitude, dat.PS118$Latitude))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS118 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.WAP$lon, dat.WAP$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.WAP <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.NBP1402$GPS_lon, dat.NBP1402$GPS_lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.NBP1402 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.NBP1502$GPS_lon, dat.NBP1502$GPS_lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.NBP1502 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS06$lon, dat.PS06$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS06 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS14$lon, dat.PS14$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS14 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS18$lon, dat.PS18$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS18 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.PS61$Lon, dat.PS61$Lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.PS61 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.AA2011$lon, dat.AA2011$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.AA2011 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.JR262$lon, dat.JR262$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.JR262 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.JR15005$lon, dat.JR15005$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.JR15005 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.JR17001$lon, dat.JR17001$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.JR17001 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.JR17003$lon, dat.JR17003$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.JR17003 <- spTransform(spatial.dat, CRS(stereo))
+##
+spatial.dat <- data.frame(cbind(dat.LMG1311$lon, dat.LMG1311$lat))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.LMG1311 <- spTransform(spatial.dat, CRS(stereo))
+
+####
+# ## need start and end positions for PS14 and PS18
+# spatial.dat <- data.frame(cbind(dat.PS14$Longitude_Start, dat.PS14$Latitude_Start))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS14.start <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- data.frame(cbind(dat.PS14$Longitude_End, dat.PS14$Latitude_End))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS14.end <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- data.frame(cbind(dat.PS18$Longitude_Start, dat.PS18$Latitude_Start))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# spatial.dat <- spatial.dat[-which(is.na(rowSums(spatial.dat))),]
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS18.start <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- data.frame(cbind(dat.PS18$Longitude_End, dat.PS18$Latitude_End))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# spatial.dat <- spatial.dat[-which(is.na(rowSums(spatial.dat))),]
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS18.end <- spTransform(spatial.dat, CRS(stereo))
+
+## start-points and ID for all transects:
+dat.start.list <- list()
+dat.start.list$WAP <- dat.WAP[!duplicated(dat.WAP$transectID),]
+dat.start.list$PS06 <- dat.PS06[!duplicated(dat.PS06$transectID),]
+dat.start.list$PS14 <- dat.PS14[!duplicated(dat.PS14$transectID),]
+dat.start.list$PS18 <- dat.PS18[!duplicated(dat.PS18$transectID),]
+dat.start.list$PS61 <- dat.PS61[!duplicated(dat.PS61$transectID),]
+dat.start.list$PS81 <- dat.PS81[!duplicated(dat.PS81$transectID),]
+dat.start.list$PS81_shallow <- dat.PS81_shallow[!duplicated(dat.PS81_shallow$transectID),]
+dat.start.list$PS96 <- dat.PS96[!duplicated(dat.PS96$transectID),]
+dat.start.list$PS118 <- dat.PS118[!duplicated(dat.PS118$transectID),]
+dat.start.list$TAN0802 <- dat.0802[!duplicated(dat.0802$transectID),]
+dat.start.list$TAN1802 <- dat.1802[!duplicated(dat.1802$transectID),]
+dat.start.list$TAN1901 <- dat.1901[!duplicated(dat.1901$transectID),]
+dat.start.list$NBP1402 <- dat.NBP1402[!duplicated(dat.NBP1402$transectID),]
+dat.start.list$NBP1502 <- dat.NBP1502[!duplicated(dat.NBP1502$transectID),]
+dat.start.list$AA2011 <- dat.AA2011[!duplicated(dat.AA2011$transectID),]
+dat.start.list$JR262 <- dat.JR262[!duplicated(dat.JR262$transectID),]
+dat.start.list$JR15005 <- dat.JR15005[!duplicated(dat.JR15005$transectID),]
+dat.start.list$JR17001 <- dat.JR17001[!duplicated(dat.JR17001$transectID),]
+dat.start.list$JR17003 <- dat.JR17003[!duplicated(dat.JR17003$transectID),]
+dat.start.list$LMG1311 <- dat.LMG1311[!duplicated(dat.LMG1311$transectID),]
+
+polar.dat.start.list <- list()
+polar.dat.start.list$WAP <- polar.dat.WAP[!duplicated(dat.WAP$transectID),]
+polar.dat.start.list$PS06 <- polar.dat.PS06[!duplicated(dat.PS06$transectID),]
+polar.dat.start.list$PS14 <- polar.dat.PS14[!duplicated(dat.PS14$transectID),]
+polar.dat.start.list$PS18 <- polar.dat.PS18[!duplicated(dat.PS18$transectID),]
+polar.dat.start.list$PS61 <- polar.dat.PS61[!duplicated(dat.PS61$transectID),]
+polar.dat.start.list$PS81 <- polar.dat.PS81[!duplicated(dat.PS81$transectID),]
+polar.dat.start.list$PS81_shallow <- polar.dat.PS81_shallow[!duplicated(dat.PS81_shallow$transectID),]
+polar.dat.start.list$PS96 <- polar.dat.PS96[!duplicated(dat.PS96$transectID),]
+polar.dat.start.list$PS118 <- polar.dat.PS118[!duplicated(dat.PS118$transectID),]
+polar.dat.start.list$TAN0802 <- polar.dat.0802[!duplicated(dat.0802$transectID),]
+polar.dat.start.list$TAN1802 <- polar.dat.1802[!duplicated(dat.1802$transectID),]
+polar.dat.start.list$TAN1901 <- polar.dat.1901[!duplicated(dat.1901$transectID),]
+polar.dat.start.list$NBP1402 <- polar.dat.NBP1402[!duplicated(dat.NBP1402$transectID),]
+polar.dat.start.list$NBP1502 <- polar.dat.NBP1502[!duplicated(dat.NBP1502$transectID),]
+polar.dat.start.list$AA2011 <- polar.dat.AA2011[!duplicated(dat.AA2011$transectID),]
+polar.dat.start.list$JR262 <- polar.dat.JR262[!duplicated(dat.JR262$transectID),]
+polar.dat.start.list$JR15005 <- polar.dat.JR15005[!duplicated(dat.JR15005$transectID),]
+polar.dat.start.list$JR17001 <- polar.dat.JR17001[!duplicated(dat.JR17001$transectID),]
+polar.dat.start.list$JR17003 <- polar.dat.JR17003[!duplicated(dat.JR17003$transectID),]
+polar.dat.start.list$LMG1311 <- polar.dat.LMG1311[!duplicated(dat.LMG1311$transectID),]
+
+dat.list <- list()
+dat.list$WAP <- dat.WAP
+dat.list$PS06 <- dat.PS06
+dat.list$PS14 <- dat.PS14
+dat.list$PS18 <- dat.PS18
+dat.list$PS61 <- dat.PS61
+dat.list$PS81 <- dat.PS81
+dat.list$PS81_shallow <- dat.PS81_shallow
+dat.list$PS96 <- dat.PS96
+dat.list$PS118 <- dat.PS118
+dat.list$TAN0802 <- dat.0802
+dat.list$TAN1802 <- dat.1802
+dat.list$TAN1901 <- dat.1901
+dat.list$NBP1402 <- dat.NBP1402
+dat.list$NBP1502 <- dat.NBP1502
+dat.list$AA2011 <- dat.AA2011
+dat.list$JR262 <- dat.JR262
+dat.list$JR15005 <- dat.JR15005
+dat.list$JR17001 <- dat.JR17001
+dat.list$JR17003 <- dat.JR17003
+dat.list$LMG1311 <- dat.LMG1311
+
+total.t.length.list <- list()
+total.t.length.list$WAP <- total.t.length.v.WAP
+total.t.length.list$PS06 <- NA
+total.t.length.list$PS14 <- total.t.length.v.PS14
+total.t.length.list$PS18 <- total.t.length.v.PS18
+total.t.length.list$PS61 <- total.t.length.v.PS61
+total.t.length.list$PS81 <- total.t.length.v.PS81
+total.t.length.list$PS81_shallow <- total.t.length.v.PS81_shallow
+total.t.length.list$PS96 <- total.t.length.v.PS96
+total.t.length.list$PS118 <- total.t.length.v.PS118
+total.t.length.list$TAN0802 <- total.t.length.v.0802
+total.t.length.list$TAN1802 <- total.t.length.v.1802
+total.t.length.list$TAN1901 <- total.t.length.v.1901
+total.t.length.list$NBP1402 <- total.t.length.v.NBP1402
+total.t.length.list$NBP1502 <- total.t.length.v.NBP1502
+total.t.length.list$AA2011 <- NA
+total.t.length.list$JR262 <- NA
+total.t.length.list$JR15005 <- total.t.length.v.JR15005
+total.t.length.list$JR17001 <- total.t.length.v.JR17001
+total.t.length.list$JR17003 <- total.t.length.v.JR17003
+total.t.length.list$LMG1311 <- total.t.length.v.LMG1311
+
+########## annotated subset only
+## following transects were disregarded:
+## CRS 1103 & CRS 1325              # not yet removed
+## PS06 288, 301-303, 307,309-311   # already removed
+## PS81 159                         # not yet removed
+## PS118 38                         # already removed
+## TAN0802 181-310                  # not yet removed
+## TAN1802 160-213                  # not yet removed
+## TAN1901 209                      # not yet removed
+## NBP1402 just a single image that is misplaced # not yet removed
+## AA2011 CTD53,CTD55,CTD57-58,CTD61-64,CTD85,TD90,CTD93,CTD98,CTD107,CTD115,CTD138 # already removed
+polar.dat.list.clean <- list(polar.dat.WAP[-which(dat.list$WAP$transectID%in%c(1103,1325))],
+                       polar.dat.PS06,
+                       polar.dat.PS14,
+                       polar.dat.PS18,
+                       polar.dat.PS61,
+                       polar.dat.PS81[-which(dat.list$PS81$transectID=="PS81_159")],
+                       polar.dat.PS81_shallow,
+                       polar.dat.PS96,
+                       polar.dat.PS118,
+                       polar.dat.0802[-which(as.numeric(as.character(dat.list$TAN0802$transectID))>=181)],
+                       polar.dat.1802[-which(as.numeric(as.character(dat.list$TAN1802$transectID))>=160)],
+                       polar.dat.1901[-which(dat.list$TAN1901$transectID=="209")],
+                       polar.dat.NBP1402,#[-2],
+                       polar.dat.NBP1502,
+                       polar.dat.AA2011,
+                       polar.dat.JR262,
+                       polar.dat.JR15005,
+                       polar.dat.JR17001,
+                       polar.dat.JR17003,
+                       polar.dat.LMG1311)
+names(polar.dat.list.clean) <- names(dat.list)
+dat.list.clean <- list()
+dat.list.clean$WAP <- dat.WAP[-which(dat.list$WAP$transectID%in%c(1103,1325)),]
+dat.list.clean$WAP$transectID <- factor(dat.list.clean$WAP$transectID)
+dat.list.clean$PS06 <- dat.PS06
+dat.list.clean$PS14 <- dat.PS14
+dat.list.clean$PS18 <- dat.PS18
+dat.list.clean$PS61 <- dat.PS61
+dat.list.clean$PS81 <- dat.PS81[-which(dat.list$PS81$transectID=="PS81_159"),]
+dat.list.clean$PS81$transectID <- factor(dat.list.clean$PS81$transectID)
+dat.list.clean$PS81_shallow <- dat.PS81_shallow
+dat.list.clean$PS96 <- dat.PS96
+dat.list.clean$PS118 <- dat.PS118
+dat.list.clean$TAN0802 <- dat.0802[-which(as.numeric(as.character(dat.list$TAN0802$transectID))>=181),]
+dat.list.clean$TAN0802$transectID <- factor(dat.list.clean$TAN0802$transectID)
+dat.list.clean$TAN1802 <- dat.1802[-which(as.numeric(as.character(dat.list$TAN1802$transectID))>=160),]
+dat.list.clean$TAN1802$transectID <- factor(dat.list.clean$TAN1802$transectID)
+dat.list.clean$TAN1901 <- dat.1901[-which(dat.list$TAN1901$transectID=="209"),]
+dat.list.clean$TAN1901$transectID <- factor(dat.list.clean$TAN1901$transectID)
+dat.list.clean$NBP1402 <- dat.NBP1402#[-2,]
+dat.list.clean$NBP1502 <- dat.NBP1502
+dat.list.clean$AA2011 <- dat.AA2011
+dat.list.clean$JR262 <- dat.JR262
+dat.list.clean$JR15005 <- dat.JR15005
+dat.list.clean$JR17001 <- dat.JR17001
+dat.list.clean$JR17003 <- dat.JR17003
+dat.list.clean$LMG1311 <- dat.LMG1311
+
+total.t.length.list.clean <- total.t.length.list
+total.t.length.list.clean$WAP <- total.t.length.list$WAP[-c(4,32)]
+total.t.length.list.clean$PS81 <- total.t.length.list$PS81[-3]
+total.t.length.list.clean$TAN0802 <- total.t.length.list$TAN0802[-c(18:53)]
+total.t.length.list.clean$TAN1802 <- total.t.length.list$TAN1802[-c(16:31)]
+total.t.length.list.clean$TAN1901 <- total.t.length.list$TAN1901[-34]
+
+##### create selector lookup for each dataframe
+col.select.list <- list(c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
+                        c("Lon","Lat","Filename.standardised","transectID","Filename","image.select"),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select"))
+#####                        
+col.select2 <- c("lon","lat","Filename.standardised","transectID","Filename","image.select")
+polar.dat.subset.list <- list()
+dat.subset.list <- list()
+for(i in 1:length(dat.list.clean)){
+  col.select <- col.select.list[[i]]
+  message(names(dat.list.clean)[i])
+  t.images <- ceiling(total.t.length.list.clean[[i]]/100)
+  if(names(dat.list.clean)[i]=="PS06"){t.images <- c(5,4)}
+  if(names(dat.list.clean)[i]=="PS14"){t.images[t.images==0] <- 5}
+  if(names(dat.list.clean)[i]=="PS18"){t.images[t.images==0] <- 5}
+  if(names(dat.list.clean)[i]=="NBP1402"){t.images[7] <- 7}
+  if(names(dat.list.clean)[i]=="AA2011"){t.images <- rep(1,71)}
+  if(names(dat.list.clean)[i]=="PS118"){t.images <- t.images.straight}
+  if(names(dat.list.clean)[i]=="JR262"){t.images <- c(5,5,2,5)}
+  if(names(dat.list.clean)[i]=="JR17003"){t.images[1] <- 2}
+  if(names(dat.list.clean)[i]=="LMG1311"){t.images[1] <- 17}
+  dat <- dat.list.clean[[i]]
+  dat$transectID <- factor(dat$transectID)
+  print(levels(dat$transectID))
+  pol.subset.dat <- polar.dat.AA2011[-c(1:435)]
+  subset.dat <- dat.AA2011[-c(1:435),col.select2]
+  t.levels <- levels(dat$transectID)
+  if(names(dat.list.clean)[i]=="PS81"){
+    dat$t.ID_temp <- factor(dat$t.ID_temp)
+    t.levels <- levels(dat$t.ID_temp)}  
+  for(k in 1:length(t.levels)){
+    message(t.levels[k])
+    if(names(dat.list.clean)[i]=="PS81"){
+      subset.v <- which(dat$t.ID_temp==t.levels[k])
+    }else subset.v <- which(dat$transectID==t.levels[k])
+    ## select the correct number of images for each transect
+    sel <- order(dat$image.select[subset.v])[1:t.images[k]]
+    if(names(dat.list.clean)[i]=="WAP" & t.images[i]>length(dat$image.select[subset.v])){
+      sel <- order(dat$image.select[subset.v])
+    }
+    ## create vector of selected images
+    if(i==1){dat.sel <<-  subset.v[sel]
+    }else dat.sel <-  c(dat.sel,subset.v[sel])
+    print(polar.dat.list.clean[[i]][subset.v[sel]])
+    pol.subset.dat <- spRbind(pol.subset.dat,polar.dat.list.clean[[i]][subset.v[sel]])
+    subset.dat <- rbind(subset.dat,dat.list.clean[[i]][subset.v[sel],col.select])
+  }
+  polar.dat.subset.list[[i]] <- pol.subset.dat
+  dat.subset.list[[i]] <- subset.dat
+  names(dat.subset.list[[i]]) <- col.select2
+}
+names(polar.dat.subset.list) <- names(dat.subset.list) <- names(dat.list)
+
+save(polar.dat.0802,
+     polar.dat.1802,
+     polar.dat.1901,
+     polar.dat.WAP,
+     polar.dat.NBP1402,
+     polar.dat.NBP1502,
+     polar.dat.PS06,
+     polar.dat.PS14,
+     polar.dat.PS18,
+     polar.dat.PS61,
+     polar.dat.PS81,
+     polar.dat.PS81_shallow,
+     polar.dat.PS96,
+     polar.dat.PS118,
+     polar.dat.AA2011,
+     polar.dat.JR262,
+     polar.dat.JR15005,
+     polar.dat.JR17001,
+     polar.dat.JR17003,
+     polar.dat.LMG1311,
+     polar.dat.list.clean,
+     polar.dat.start.list,
+     polar.dat.subset.list,
+     dat.list,
+     dat.list.clean,
+     dat.subset.list,
+     dat.start.list,
+     total.t.length.list,
+     total.t.length.list.clean,
+     stereo,
+     file="C:/Users/jjansen/Desktop/science/data_biological/Circumpolar_downwardstills_locations.Rdata")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####
+#### Overviews
+####
+
+cols <- terrain.colors(99)
+
+#### Entire continental shelf
+par(mar=c(2,2,1,1))
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-3000000,3000000), ylim=c(-3000000,3000000))
+plot(coast.proj, add=TRUE)
+scalebar(500000, type="bar", label=c("0","250","500"), below="km")
+points(polar.dat.WAP, pch=16, col="red")
+points(polar.dat.0802, pch=16, col="black")
+points(polar.dat.1802, pch=16, col="black")
+points(polar.dat.1901, pch=16, col="black")
+points(polar.dat.PS81, pch=16, col="black")
+points(polar.dat.PS96, pch=16, col="black")
+points(polar.dat.NBP1402, pch=16, col="black")
+points(polar.dat.PS06, pch=16, col="tan2")
+points(polar.dat.PS14, pch=16, col="maroon")
+points(polar.dat.PS18, pch=16, col="blue")
+points(polar.dat.PS61, pch=16, col="skyblue")
+#dev.off()
+
+
+#### ROSS SEA
+pch <- 3
+text.plot <- function(transects,dat,polar.dat,col="black"){
+  for(i in 1:length(transects)){
+    pts <- polar.dat[dat$transectID==transects[i]]
+    text(pts[1],labels=transects[i], adj=1.5, cex=0.7,col=col)
+  }}
+## overview
+plot(r2, xlim=c(-600000,600000), ylim=c(-2600000,-1250000),col=cols)
+scalebar(200000, type="bar", label=c("0","100","200"), below="km")
+points(polar.dat.0802,pch=pch)
+points(polar.dat.1802,pch=pch,col="blue")
+points(polar.dat.1901,pch=pch,col="purple")
+legend("topright",pch=pch, col=c("black","blue","purple"), legend=c("TAN0802","TAN1802","TAN1901"))
+## shelf/slope only
+plot(r2, xlim=c(-420000,490000), ylim=c(-2130000,-1320000),col=cols)
+scalebar(200000, type="bar", label=c("0","100","200"), below="km")
+points(polar.dat.0802,pch=pch)
+points(polar.dat.1802,pch=pch,col="blue")
+points(polar.dat.1901,pch=pch,col="purple")
+legend("left",pch=pch, col=c("black","blue","purple"), legend=c("TAN0802","TAN1802","TAN1901"))
+text.plot(levels(dat.0802$transectID),dat.0802,polar.dat.0802)
+text.plot(levels(dat.1802$transectID),dat.1802,polar.dat.1802,col="blue")
+text.plot(levels(dat.1901$transectID),dat.1901,polar.dat.1901,col="purple")
+## seamounts only
+plot(r2, xlim=c(-250000,430000), ylim=c(-2620000,-2200000))
+scalebar(200000, type="bar", label=c("0","100","200"), below="km")
+points(polar.dat.0802,pch=pch)
+points(polar.dat.1802,pch=pch,col="blue")
+points(polar.dat.1901,pch=pch,col="purple")
+legend("topright",pch=pch, col=c("black","blue","purple"), legend=c("TAN0802","TAN1802","TAN1901"))
+text.plot(levels(dat.0802$transectID),dat.0802,polar.dat.0802)
+text.plot(levels(dat.1802$transectID),dat.1802,polar.dat.1802,col="blue")
+text.plot(levels(dat.1901$transectID),dat.1901,polar.dat.1901,col="purple")
+## these transect need to be analysed
+idx.0802 <- which(polar.dat.0802@coords[,2]>-2200000)
+idx.1802 <- which(polar.dat.1802@coords[,2]>-2200000)
+idx.1901 <- which(polar.dat.1901@coords[,2]>-2200000)
+analyse.in.0802 <- as.character(unique(dat.0802$transectID[idx.0802]))
+analyse.in.1802 <- as.character(unique(dat.1802$transectID[idx.1802]))
+analyse.in.1901 <- as.character(unique(dat.1901$transectID[idx.1901]))
+length(c(analyse.in.0802,analyse.in.1802,analyse.in.1901))
+## disregard these transect for now:
+not.analyse.in.0802 <- as.character(unique(dat.0802$transectID[which(polar.dat.0802@coords[,2]<=-2200000)]))
+not.analyse.in.1802 <- as.character(unique(dat.1802$transectID[which(polar.dat.1802@coords[,2]<=-2200000)]))
+not.analyse.in.1901 <- as.character(unique(dat.1901$transectID[which(polar.dat.1901@coords[,2]<=-2200000)]))
+length(c(not.analyse.in.0802,not.analyse.in.1802,not.analyse.in.1901))
+## depth distribution of relevant transects
+depth.0802 <- extract(r,polar.dat.0802[idx.0802,])
+depth.1802 <- extract(r,polar.dat.1802[idx.1802,])
+depth.1901 <- extract(r,polar.dat.1901[idx.1901,])
+plot(c(depth.0802,depth.1802,depth.1901))
+
+#### Weddell and WAP overview
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-2750000,500000), ylim=c(500000,3000000))
+scalebar(500000, type="bar", label=c("0","250","500"), below="km")
+points(polar.dat.WAP, pch=16, col="red")
+points(polar.dat.PS81, pch=16, col="gold4")
+points(polar.dat.PS96, pch=16, col="black")
+points(polar.dat.PS06, pch=16, col="tan2")
+points(polar.dat.PS14, pch=16, col="maroon")
+points(polar.dat.PS18, pch=16, col="blue")
+points(polar.dat.PS61, pch=16, col="skyblue")
+#dev.off()
+
+#### West WAP
+plot(r2, xlim=c(-2800000,-2200000), ylim=c(850000,1850000))
+plot(coast.proj, add=TRUE)
+scalebar(100000, type="bar", label=c("0","100","200"), below="km")
+points(polar.dat.WAP, pch=16, col="red")
+points(polar.dat.PS81, pch=16, col="gold4")
+points(polar.dat.PS61, pch=16, col="skyblue")
+
+#### Weddell overview
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-1200000,550000), ylim=c(800000,2400000))
+plot(coast.proj, add=TRUE)
+scalebar(500000, xy=click(),type="bar", label=c("0","250","500"), below="km")
+points(polar.dat.PS96, pch=16, col="black")
+points(polar.dat.PS06, pch=16, col="tan2")
+points(polar.dat.PS14, pch=16, col="maroon")
+points(polar.dat.PS18, pch=16, col="blue")
+#dev.off()
+
+#### PS14 overview
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-1000000,-350000), ylim=c(1400000,2100000), main="PS14 overview",col=terrain.colors(99))
+plot(coast.proj, add=TRUE)
+scalebar(100000, xy=click(),type="bar", label=c("0","50","100"), below="km")
+points(polar.dat.PS14, pch=16, col="maroon")
+#dev.off()
+
+#### Weddell overview #1
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-1000000,-650000), ylim=c(1250000,1550000))
+plot(coast.proj, add=TRUE)
+scalebar(100000, type="bar", label=c("0","50","100"), below="km")
+points(polar.dat.PS96, pch=16, col="black")
+points(polar.dat.PS06, pch=16, col="tan2")
+points(polar.dat.PS14, pch=16, col="maroon")
+points(polar.dat.PS18, pch=16, col="blue")
+#dev.off()
+
+#### Weddell overview #1.2
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-840000,-700000), ylim=c(1400000,1530000))
+plot(coast.proj, add=TRUE)
+scalebar(50000, type="bar", label=c("0","25","50"), below="km")
+points(polar.dat.PS96, pch=16, col="black")
+points(polar.dat.PS06, pch=16, col="tan2")
+points(polar.dat.PS14.start, pch=16, col="hotpink")
+points(polar.dat.PS14.end, pch=16, col="hotpink")
+points(polar.dat.PS14, pch=16, col="maroon")
+points(polar.dat.PS18.start, pch=16, col="deepskyblue")
+points(polar.dat.PS18.end, pch=16, col="deepskyblue")
+points(polar.dat.PS18, pch=16, col="blue")
+#dev.off()
+text(polar.dat.PS14, labels=dat.PS14$TransectID, adj=-1, cex=0.5)
+
+#### Weddell overview #1.3
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-840000,-810000), ylim=c(1450000,1470000))
+plot(coast.proj, add=TRUE)
+scalebar(5000, type="bar", label=c("0","2.5","5"), below="km")
+points(polar.dat.PS14.start, pch=16, col="hotpink")
+points(polar.dat.PS14.end, pch=16, col="hotpink")
+points(polar.dat.PS14, pch=16, col="maroon")
+#dev.off()
+text(polar.dat.PS14, labels=dat.PS14$TransectID, adj=-1, cex=0.5)
+
+#### Weddell overview #2
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-750000,-630000), ylim=c(1600000,1730000))
+plot(coast.proj, add=TRUE)
+scalebar(50000, type="bar", label=c("0","25","50"), below="km")
+points(polar.dat.PS96, pch=16, col="black")
+points(polar.dat.PS06, pch=16, col="tan2")
+points(polar.dat.PS14.start, pch=16, col="hotpink")
+points(polar.dat.PS14.end, pch=16, col="hotpink")
+points(polar.dat.PS14, pch=16, col="maroon")
+#dev.off()
+text(polar.dat.PS14, labels=dat.PS14$TransectID, adj=-1, cex=0.5)
+
+#### Weddell overview #3
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-480000,-405000), ylim=c(1955000,2035000),col=cols)
+plot(coast.proj, add=TRUE)
+scalebar(20000, type="bar", label=c("0","10","20"), below="km")
+points(polar.dat.PS14.start, pch=16, col="hotpink")
+points(polar.dat.PS14.end, pch=16, col="hotpink")
+points(polar.dat.PS14, pch=16, col="maroon")
+#dev.off()
+text(polar.dat.PS14, labels=dat.PS14$TransectID, adj=c(0.5,-0.5), cex=0.7)
+
+#### Weddell overview #4
+#png("overview.png",width=750,height=750)
+plot(r2, xlim=c(-280000,-100000), ylim=c(2100000,2200000))
+plot(coast.proj, add=TRUE)
+scalebar(50000, type="bar", label=c("0","25","50"), below="km")
+points(polar.dat.PS18.start, pch=16, col="deepskyblue")
+points(polar.dat.PS18.end, pch=16, col="deepskyblue")
+points(polar.dat.PS18, pch=16, col="blue")
+#dev.off()
+
+#### Weddell overview #5
+par(mfrow=c(2,1))
+plot(r2, xlim=c(75000,300000), ylim=c(2140000,2220000))
+plot(coast.proj, add=TRUE)
+scalebar(50000, type="bar", label=c("0","25","50"), below="km")
+points(polar.dat.PS18.start, pch=16, col="deepskyblue")
+points(polar.dat.PS18.end, pch=16, col="deepskyblue")
+points(polar.dat.PS18, pch=16, col="blue")
+plot(r2, xlim=c(300000,470000), ylim=c(2140000,2220000))
+plot(coast.proj, add=TRUE)
+scalebar(50000, type="bar", label=c("0","25","50"), below="km")
+points(polar.dat.PS18.start, pch=16, col="deepskyblue")
+points(polar.dat.PS18.end, pch=16, col="deepskyblue")
+points(polar.dat.PS18, pch=16, col="blue")
+
+
+
+
+

@@ -1,0 +1,638 @@
+---
+title: "Circumpolar Environmental Data - ROMS and Net Primary Production"
+author: "Jan Jansen"
+date: "16/07/2021"
+output: html_document
+---
+
+```{r, warning=FALSE, message=FALSE}
+library(ncdf4) # package for netcdf manipulation
+library(raster) # package for raster manipulation
+library(rgdal) # package for geospatial analysis
+library(ggplot2) # package for plotting
+```
+
+__Setup NPP-export file for use in ROMS__  
+Either download NPP files manually ([link](http://sites.science.oregonstate.edu/ocean.productivity/cafe.model.php)) or from AAD using the data wrangler.  
+Script here with manually downloaded files.
+
+
+__DON'T JUST RUN THIS SCRIPT, EACH FILE TAKES 6-12h TO COMPLETE !!!__  
+  
+  
+### Specify the directory where to find the data
+
+- specify your local directory or point to the owncloud directories (THIS DOESN'T WORK YET)
+- Download the data from the link below and change "env.dir" in the code snippet below to match your local machine.
+Owncloud repository folder is "EnvironmentalData". All data can be found here:
+[link](https://owncloud.imas-data-service.cloud.edu.au/index.php/apps/files/?dir=/EnvironmentalData&fileid=186349)
+
+```{r, tidy=TRUE}
+## Jan's local machine:
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+
+## remote repository (DOESN'T WORK YET):
+# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+```
+
+### Setting up the environment
+
+```{r}
+##### setting up directories
+env.raw <- paste0(env.dir,"raw/")
+env.derived <- paste0(env.dir,"derived/")
+AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
+
+##### specifying values
+file.bathy <- "Circumpolar_EnvData_bathy"
+file.npp <- "Circumpolar_EnvData_NPP_Cafe"
+```
+
+```{r}
+#### load ROMS netcdf files (original download from GADI using Filezilla)
+## 10k models:
+grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
+
+#### load data from file with initial conditions
+#SST <- ncvar_get(ini10k_nc, varid="SST")
+
+#### 
+lon_rho <- ncvar_get(grd10k_nc, varid="lon_rho")
+lat_rho <- ncvar_get(grd10k_nc, varid="lat_rho")
+# lon_psi <- ncvar_get(grd10k_nc, varid="lon_psi")
+# lat_psi <- ncvar_get(grd10k_nc, varid="lat_psi")
+# lon_u <- ncvar_get(grd10k_nc, varid="lon_u")
+# lat_u <- ncvar_get(grd10k_nc, varid="lat_u")
+# lon_v <- ncvar_get(grd10k_nc, varid="lon_v")
+# lat_v <- ncvar_get(grd10k_nc, varid="lat_v")
+# h <- ncvar_get(grd10k_nc, varid="h")
+
+# range(lon_rho)
+# range(lat_rho)
+```
+
+
+## two functions:
+
+```{r}
+##### prepare data
+prepare_data <- function(year){
+  full.extent <- c(-180, 180, -90, 90)
+  full.proj <- "+proj=longlat"
+  
+  ## SO extent and individual boxes to calculate npp-chla relationship
+  lat_box.f <- c(-90,-50)
+  lon_box.f <- c(-180,180)
+  lat_box <- c(-90,-70,-60,-50)
+  lon_box <- c(-180,-90,0,90,180)
+  
+  #### load NPP-export files (CAFE):
+  n.hdf.raw <- list.files(paste0(env.raw,"NPP_CAFE_monthly/"),pattern=".hdf", full.names=TRUE)
+  n.hdf <- n.hdf.raw[grep(year,n.hdf.raw)]
+  r <- raster(n.hdf[[1]])
+  r[r<0] <- NA_real_
+  projection(r) <- full.proj
+  extent(r) <- full.extent 
+  s <- stack(r)
+  for(i in 2:length(n.hdf)){
+    r.i <- raster(n.hdf[i])
+    r.i[r.i<0] <- NA_real_
+    projection(r.i) <- full.proj
+    extent(r.i) <- full.extent
+    s[[i]] <- r.i
+  }
+  #plot(s,xlim=c(130,150),ylim=c(-68,-62))
+  npp.s <- s
+  rm(s,r,r.i)
+  
+  #### load chla data
+  f.hdf.raw <- list.files(paste0(env.raw,"NPP_CAFE_monthly_input/"),pattern=".hdf", full.names=TRUE)
+  f.hdf.chl <- f.hdf.raw[grep("chl",f.hdf.raw)]
+  f.hdf <- f.hdf.chl[grep(year,f.hdf.chl)]
+  r <- raster(f.hdf[1])
+  r[r<0] <- NA_real_
+  projection(r) <- full.proj
+  extent(r) <- full.extent
+  s <<- stack(r)
+  for(i in 2:length(f.hdf)){
+    r.i <- raster(f.hdf[i])
+    r.i[r.i<0] <- NA_real_
+    projection(r.i) <- full.proj
+    extent(r.i) <- full.extent
+    s[[i]] <- r.i
+  }
+  chl.s <- s
+  rm(s,r,r.i)
+  
+  #### crop raster to SO-extent
+  npp.filled <<- npp.s.crop <<- crop(npp.s,extent(lon_box.f[1:2],lat_box.f))
+  chl.crop <<- crop(chl.s,extent(lon_box.f[1:2],lat_box.f))#,snap="in")
+  
+  ########## which cells have no NPP-value but a chl-a value
+  #### NPP and chla values from raster by lonlat-box
+  chl.vals.boxes.l <- list()
+  npp.vals.boxes.l <- list()
+  
+  chl.vals.boxes.l[[1]] <- crop(chl.s,extent(lon_box[1:2],lat_box[3:4]),snap="in")
+  chl.vals.boxes.l[[2]] <- crop(chl.s,extent(lon_box[2:3],lat_box[3:4]),snap="in")
+  chl.vals.boxes.l[[3]] <- crop(chl.s,extent(lon_box[3:4],lat_box[3:4]),snap="in")
+  chl.vals.boxes.l[[4]] <- crop(chl.s,extent(lon_box[4:5],lat_box[3:4]),snap="in")
+  
+  chl.vals.boxes.l[[5]] <- crop(chl.s,extent(lon_box[1:2],lat_box[2:3]),snap="in")
+  chl.vals.boxes.l[[6]] <- crop(chl.s,extent(lon_box[2:3],lat_box[2:3]),snap="in")
+  chl.vals.boxes.l[[7]] <- crop(chl.s,extent(lon_box[3:4],lat_box[2:3]),snap="in")
+  chl.vals.boxes.l[[8]] <- crop(chl.s,extent(lon_box[4:5],lat_box[2:3]),snap="in")
+  
+  chl.vals.boxes.l[[9]] <- crop(chl.s,extent(lon_box[1:2],lat_box[1:2]),snap="in")
+  chl.vals.boxes.l[[10]] <- crop(chl.s,extent(lon_box[2:3],lat_box[1:2]),snap="in")
+  chl.vals.boxes.l[[11]] <- crop(chl.s,extent(lon_box[3:4],lat_box[1:2]),snap="in")
+  chl.vals.boxes.l[[12]] <- crop(chl.s,extent(lon_box[4:5],lat_box[1:2]),snap="in")
+  
+  npp.vals.boxes.l[[1]] <- crop(npp.s,extent(lon_box[1:2],lat_box[3:4]),snap="in")
+  npp.vals.boxes.l[[2]] <- crop(npp.s,extent(lon_box[2:3],lat_box[3:4]),snap="in")
+  npp.vals.boxes.l[[3]] <- crop(npp.s,extent(lon_box[3:4],lat_box[3:4]),snap="in")
+  npp.vals.boxes.l[[4]] <- crop(npp.s,extent(lon_box[4:5],lat_box[3:4]),snap="in")
+  
+  npp.vals.boxes.l[[5]] <- crop(npp.s,extent(lon_box[1:2],lat_box[2:3]),snap="in")
+  npp.vals.boxes.l[[6]] <- crop(npp.s,extent(lon_box[2:3],lat_box[2:3]),snap="in")
+  npp.vals.boxes.l[[7]] <- crop(npp.s,extent(lon_box[3:4],lat_box[2:3]),snap="in")
+  npp.vals.boxes.l[[8]] <- crop(npp.s,extent(lon_box[4:5],lat_box[2:3]),snap="in")
+  
+  npp.vals.boxes.l[[9]] <- crop(npp.s,extent(lon_box[1:2],lat_box[1:2]),snap="in")
+  npp.vals.boxes.l[[10]] <- crop(npp.s,extent(lon_box[2:3],lat_box[1:2]),snap="in")
+  npp.vals.boxes.l[[11]] <- crop(npp.s,extent(lon_box[3:4],lat_box[1:2]),snap="in")
+  npp.vals.boxes.l[[12]] <- crop(npp.s,extent(lon_box[4:5],lat_box[1:2]),snap="in")
+  
+  chl.vals.boxes <<- chl.vals.boxes.l
+  npp.vals.boxes <<- npp.vals.boxes.l
+}
+
+##### loop over monthly files
+monthly_loop <- function(){
+  for(j in 1:nlayers(chl.crop)){
+    #Sys.time(
+      message(paste0("file ",j," of ",nlayers(chl.crop)))
+      chl.data <- chl.crop@data@values[,j]
+      npp.data <- npp.s.crop@data@values[,j]
+      npp.nas <- which(is.na(npp.data))
+      chl.nas <- which(is.na(chl.data))
+      sel <- which(npp.nas%!in%chl.nas)
+      
+      ## find which geographical section a missing value comes from
+      lonlats <- data.frame(xyFromCell(npp.filled[[j]],npp.nas[sel]))
+      if(nrow(lonlats)==0){
+        message("no data found to replace, skipping to next iteration")
+        next
+      }
+      lonlats$LonBox <- NA_character_
+      lonlats$LatBox <- NA_character_
+      lonlats$LatBox[lonlats[,2]>-60] <- "Lat50"
+      lonlats$LatBox[lonlats[,2]>-70&lonlats[,2]<=-60] <- "Lat60"
+      lonlats$LatBox[lonlats[,2]<=-70] <- "Lat70"
+      lonlats$LonBox[lonlats[,1]<=-90] <- "Lon1"
+      lonlats$LonBox[lonlats[,1]<=0 & lonlats[,1]>-90] <- "Lon2"
+      lonlats$LonBox[lonlats[,1]<=90 & lonlats[,1]>0] <- "Lon3"
+      lonlats$LonBox[lonlats[,1]>90] <- "Lon4"
+      # lonlats$LonBox <- as.factor(lonlats$LonBox)
+      # lonlats$LatBox <- as.factor(lonlats$LatBox)
+      lonlats$Box <- factor(apply(lonlats[,3:4],1,paste,collapse="_"))
+      box.sel <- list()
+      box.sel[[1]] <- which(lonlats$Box=="Lon1_Lat50")
+      box.sel[[2]] <- which(lonlats$Box=="Lon2_Lat50")
+      box.sel[[3]] <- which(lonlats$Box=="Lon3_Lat50")
+      box.sel[[4]] <- which(lonlats$Box=="Lon4_Lat50")
+      box.sel[[5]] <- which(lonlats$Box=="Lon1_Lat60")
+      box.sel[[6]] <- which(lonlats$Box=="Lon2_Lat60")
+      box.sel[[7]] <- which(lonlats$Box=="Lon3_Lat60")
+      box.sel[[8]] <- which(lonlats$Box=="Lon4_Lat60")
+      box.sel[[9]] <- which(lonlats$Box=="Lon1_Lat70")
+      box.sel[[10]] <- which(lonlats$Box=="Lon2_Lat70")
+      box.sel[[11]] <- which(lonlats$Box=="Lon3_Lat70")
+      box.sel[[12]] <- which(lonlats$Box=="Lon4_Lat70")
+      
+      ## fill npp value from npp-chla-relation in each area (loop over the 12 areas)
+      for(k in 1:12){
+        print(paste0("box ",k," of 12"))
+        ## choose latlon-box
+        sel.b <- npp.nas[sel[box.sel[[k]]]]
+        ## chla-value in that box
+        #chl.data[sel.b]
+        ## chla- & NPP-values in that box
+        chl.v.b <- chl.vals.boxes[[k]]@data@values[,j]
+        npp.v.b <- npp.vals.boxes[[k]]@data@values[,j]
+        ## the box at 0-90 lon and south of 70 lat has almost no values,: combine with the 60-70 lat box
+        if(k==11){
+          chl.v.b <- c(chl.vals.boxes[[7]]@data@values[,j],chl.vals.boxes[[11]]@data@values[,j])
+          npp.v.b <- c(npp.vals.boxes[[7]]@data@values[,j],npp.vals.boxes[[11]]@data@values[,j])
+        }
+        ## loop through each value in that box and find a mean npp value
+        for(i in 1:length(sel.b)){
+          ## selector to find chl-a values similar to the value that needs replacing (in that latlon-box)
+          sel.v.b <- which(chl.v.b<=chl.data[sel.b][i]+0.01 & chl.v.b>=chl.data[sel.b][i]-0.01)
+          ## calculate replacement value from mean of these similar values
+          npp.replace <- mean(npp.v.b[sel.v.b], na.rm=TRUE)
+          ## if it didn't pick up a value, increase search radius -> change threshold if value is NA
+          if(is.na(npp.replace)){
+            sel.v.b <- which(chl.v.b<=chl.data[sel.b][i]+0.02 & chl.v.b>=chl.data[sel.b][i]-0.02)
+            npp.replace <- mean(npp.v.b[sel.v.b], na.rm=TRUE)
+            if(is.na(npp.replace)){
+              sel.v.b <- which(chl.v.b<=chl.data[sel.b][i]+0.05 & chl.v.b>=chl.data[sel.b][i]-0.05)
+              npp.replace <- mean(npp.v.b[sel.v.b], na.rm=TRUE)
+              if(is.na(npp.replace)){      
+                print("NA detected")
+                message(length(sel.v.b))
+                print(k)
+                print(i)
+              } }
+          }else {npp.filled[[j]][sel.b[i]] <<- npp.replace}
+        } }
+#    )
+  }}
+```
+
+## Extract NPP values from HDF-files and store as raster files
+
+2002-2020
+
+```{r, eval=FALSE}
+# year <- "2002"
+# year <- "2003"
+# year <- "2004"
+# year <- "2005"
+# year <- "2006"
+# year <- "2007"
+# year <- "2008"
+# year <- "2009"
+# year <- "2010"
+# year <- "2011"
+# year <- "2012"
+# year <- "2013"
+# year <- "2014"
+# year <- "2015"
+# year <- "2016"
+# year <- "2017"
+# year <- "2018"
+# year <- "2019"
+
+# year <- "2020"
+
+prepare_data(year)
+monthly_loop()
+
+save(npp.filled,file=paste0(env.derived,file.npp,"_filled_",year,".Rdata"))
+save(npp.s.crop,file=paste0(env.derived,file.npp,"_original_",year,".Rdata"))
+```
+
+## Extract NPP values from raster files and place them into the netcdf file for use in ROMS
+
+```{r, eval=FALSE}
+coords <- cbind(c(lon_rho),c(lat_rho))
+
+#### load data:
+# year <- "2002" ## year 2002 only has data for October-December: Need to tweak the code below in that case
+# year <- "2003"
+# year <- "2004"
+# year <- "2005"
+# year <- "2006"
+# year <- "2007"
+# year <- "2008"
+# year <- "2009"
+# year <- "2010"
+# year <- "2011"
+# year <- "2012"
+# year <- "2013"
+# year <- "2014"
+# year <- "2015"
+# year <- "2016"
+# year <- "2017"
+# year <- "2018"
+# year <- "2019"
+# year <- "2020"
+
+load(file=paste0(env.derived,file.npp,"_filled_",year,".Rdata"))
+
+# npp10 <- extract(npp.filled$cafe.2002274, coords)
+# npp11 <- extract(npp.filled$cafe.2002305, coords)
+# npp12 <- extract(npp.filled$cafe.2002335, coords)
+
+npp1 <- extract(npp.filled[[1]], coords)
+npp2 <- extract(npp.filled[[2]], coords)
+npp3 <- extract(npp.filled[[3]], coords)
+npp10 <- extract(npp.filled[[6]], coords)
+npp11 <- extract(npp.filled[[7]], coords)
+npp12 <- extract(npp.filled[[8]], coords)
+
+#### run script:
+file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
+          paste0(env.derived,"waom10extend_nudge_",year,".nc"))
+ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_",year,".nc"), write=TRUE)
+
+npp_winter <- npp1
+npp_winter[npp_winter>0] <-0
+
+npp.v <- c(npp1,npp2,npp3,
+           npp_winter,npp_winter,npp_winter,npp_winter,npp_winter,npp_winter,
+           npp10,npp11,npp12)
+npp.v[is.na(npp.v)] <- 0
+## change values from mg/m2/day to kg/m2/day (1 kg is 1 million mg)
+npp.v <- npp.v/1000000
+## now change values from kg/m2/day to kg/m2/s (1 day is 86400s)
+npp.v <- npp.v/86400
+
+## define variable dimensions
+xdim2 <- ini10k_nc$dim$xi_rho
+ydim2 <- ini10k_nc$dim$eta_rho
+tdim2 <- ini10k_nc$dim$sst_time
+#tdim2 <- ncdim_def( 'Month', 'count', seq(1,3,by=1)) ## only January to March so far
+
+## define variable
+#var_q <- ncvar_def('NPP','mg/m2/day',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction")
+var_1 <- ncvar_def('sand_01_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_2 <- ncvar_def('sand_02_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_3 <- ncvar_def('sand_03_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_4 <- ncvar_def('sand_04_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_5 <- ncvar_def('sand_05_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_6 <- ncvar_def('sand_06_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_7 <- ncvar_def('sand_07_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_8 <- ncvar_def('sand_08_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+
+## add variable to netcdf and then add values to that variable
+ncid_old <- ncvar_add(ini10k_nc,var_1)
+ncvar_put(ncid_old, "sand_01_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_2)
+ncvar_put(ncid_old, "sand_02_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_3)
+ncvar_put(ncid_old, "sand_03_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_4)
+ncvar_put(ncid_old, "sand_04_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_5)
+ncvar_put(ncid_old, "sand_05_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_6)
+ncvar_put(ncid_old, "sand_06_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_7)
+ncvar_put(ncid_old, "sand_07_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_8)
+ncvar_put(ncid_old, "sand_08_sflux", npp.v)
+
+## check output
+print(ncid_old)
+## close file
+nc_close(ncid_old)
+
+## check results
+ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_",year,".nc"))
+npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
+npp[10,17,3]
+matrix((npp3/1000000)/86400, ncol=560)[10,17]
+```
+
+## generate a climatology NetCDF-file, starting in July and ending in June
+
+```{r, eval=FALSE}
+years <- as.character(2002:2019)
+
+## load all npp files for the years
+load(file=paste0(env.derived,file.npp,"_filled_2002.Rdata"))
+a <- list()
+a[[1]] <- npp.filled
+names(a) <- "NPP.2002"
+for(i in 2:length(years)){
+  j <- years[i]
+  load(file=paste0(env.dir,"Circumpolar_NPP_Cafe_filled_",j,".Rdata"))
+  a[[i]] <- npp.filled
+  names(a)[i] <- paste0("NPP.",years[i])
+}
+
+## dataframe of npp-values by years, for each month where there is light/data (1,2,3,10,11,12)
+npp1.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)-1))
+names(npp1.df) <- years[-1]
+for(i in 2:length(years)){
+  npp1.df[,i-1] <- extract(a[[i]][[1]], coords)
+}
+npp2.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)-1))
+names(npp2.df) <- years[-1]
+for(i in 2:length(years)){
+  npp2.df[,i-1] <- extract(a[[i]][[2]], coords)
+}
+npp3.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)-1))
+names(npp3.df) <- years[-1]
+for(i in 2:length(years)){
+  npp3.df[,i-1] <- extract(a[[i]][[3]], coords)
+}
+npp10.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
+names(npp10.df) <- years
+npp10.df[,1] <- extract(a[[1]][[1]], coords)
+for(i in 2:length(years)){
+  npp10.df[,i] <- extract(a[[i]][[6]], coords)
+}
+npp11.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
+names(npp11.df) <- years
+npp11.df[,1] <- extract(a[[1]][[2]], coords)
+for(i in 2:length(years)){
+  npp11.df[,i] <- extract(a[[i]][[7]], coords)
+}
+npp12.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
+names(npp12.df) <- years
+npp12.df[,1] <- extract(a[[1]][[3]], coords)
+for(i in 2:length(years)){
+  npp12.df[,i] <- extract(a[[i]][[8]], coords)
+}
+
+## average monthly npp across all years
+npp1 <- rowMeans(npp1.df, na.rm=TRUE)
+npp2 <- rowMeans(npp2.df, na.rm=TRUE)
+npp3 <- rowMeans(npp3.df, na.rm=TRUE)
+npp10 <-rowMeans(npp10.df, na.rm=TRUE)
+npp11 <-rowMeans(npp11.df, na.rm=TRUE)
+npp12 <-rowMeans(npp12.df, na.rm=TRUE)
+
+#### create NetCDF file
+file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
+          paste0(env.derived,"waom10extend_nudge_climatology20022019.nc"))
+ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019.nc"), write=TRUE)
+
+npp_winter <- npp1
+npp_winter[npp_winter>0] <-0
+# npp.v <- c(npp_winter,npp_winter,npp_winter,npp10,npp11,npp12,npp1,npp2,npp3,npp_winter,npp_winter,npp_winter)
+npp.v <- c(npp1,npp2,npp3,npp_winter,npp_winter,npp_winter,npp_winter,npp_winter,npp_winter,npp10,npp11,npp12)
+npp.v[is.na(npp.v)] <- 0
+## change values from mg/m2/day to kg/m2/day (1 kg is 1 million mg)
+npp.v <- npp.v/1000000
+## now change values from kg/m2/day to kg/m2/s (1 day is 86400s)
+npp.v <- npp.v/86400
+
+## define variable dimensions
+xdim2 <- ini10k_nc$dim$xi_rho
+ydim2 <- ini10k_nc$dim$eta_rho
+tdim2 <- ini10k_nc$dim$sst_time
+#tdim2$vals <- ini10k_nc$dim$sst_time$vals[c(7:12,1:6)]
+
+## define variable
+#var_q <- ncvar_def('NPP','mg/m2/day',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction")
+var_1 <- ncvar_def('sand_01_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_2 <- ncvar_def('sand_02_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_3 <- ncvar_def('sand_03_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_4 <- ncvar_def('sand_04_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_5 <- ncvar_def('sand_05_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_6 <- ncvar_def('sand_06_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_7 <- ncvar_def('sand_07_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_8 <- ncvar_def('sand_08_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+
+## add variable to netcdf and then add values to that variable
+ncid_old <- ncvar_add(ini10k_nc,var_1)
+ncvar_put(ncid_old, "sand_01_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_2)
+ncvar_put(ncid_old, "sand_02_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_3)
+ncvar_put(ncid_old, "sand_03_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_4)
+ncvar_put(ncid_old, "sand_04_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_5)
+ncvar_put(ncid_old, "sand_05_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_6)
+ncvar_put(ncid_old, "sand_06_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_7)
+ncvar_put(ncid_old, "sand_07_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_8)
+ncvar_put(ncid_old, "sand_08_sflux", npp.v)
+
+## check output
+print(ncid_old)
+## close file
+nc_close(ncid_old)
+
+## check results
+ini10k_nc <- nc_open(paste0(env.dir,"Circumpolar_ROMS/waom10extend_nudge_climatology20022019.nc"))
+npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
+npp[10,17,6]
+matrix((npp12/1000000)/86400, ncol=560)[10,17]
+```
+
+## Bash-code needed to copy files onto GADI for the ROMS
+
+```{r, eval=FALSE}
+## copy the file fo Gadi using Filezilla, into folder "/g/data/gi0/jj1924"
+## then use bash to remove the offset and factor that are somehow in the file
+module load nco
+# ncatted -O -a add_offset,sand_01_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_02_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_03_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_04_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_05_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_06_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_07_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a add_offset,sand_08_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_01_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_02_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_03_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_04_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_05_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_06_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_07_sflux,d,, waom10extend_nudge_2007.nc
+# ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_2007.nc
+# ## then make the file readable:
+# chmod 755 waom10extend_nudge_2007.nc
+
+ncatted -O -a add_offset,sand_01_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_02_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_03_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_04_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_05_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_06_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_07_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a add_offset,sand_08_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_01_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_02_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_03_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_04_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_05_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_06_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_07_sflux,d,, waom10extend_nudge_2008.nc
+ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_2008.nc
+## then make the file readable:
+chmod 755 waom10extend_nudge_2008.nc
+
+ncatted -O -a add_offset,sand_01_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_02_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_03_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_04_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_05_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_06_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_07_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_08_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_01_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_02_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_03_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_04_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_05_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_06_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_07_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_climatology20022019.nc
+## then make the file readable:
+chmod 755 waom10extend_nudge_climatology20022019.nc
+```
+
+## generate file to release floats
+
+A table of active cells/coordinates for each monthly file
+
+```{r, eval=FALSE}
+######
+coords <- data.frame(cbind(c(lon_rho),c(lat_rho)))
+names(coords) <- c("lon","lat")
+floats_list <- list()
+years <- as.character(2002:2018)
+
+## 
+load(file=paste0(env.derived,file.npp,"_filled_2002.Rdata"))
+a <- extract(npp.filled, coords)
+c <- sum(npp.filled, na.rm=TRUE)
+floats_list[[1]] <- cbind(coords, a[,2:4])
+for(i in 2:length(years)){
+  j <- years[i]
+  load(file=paste0(env.derived,file.npp,"_filled_",j,".Rdata"))
+  print(npp.filled)
+  a <- extract(npp.filled, coords)
+  floats_list[[i]] <- cbind(coords, a[,c(1:3,6:8)])
+  d <- sum(npp.filled, na.rm=TRUE)
+  c <- sum(c,d,na.rm=TRUE)
+}
+e <- extract(c,coords)
+length(which(e>0))
+
+## transform to monthly lat-lon points without NAs
+m_floats_list <- list()
+for(i in 1:length(floats_list)){
+  m_floats_list[[i]] <- list()
+  for(j in 1:(ncol(floats_list[[i]])-2)){
+    m_floats_list[[i]][[j]] <- floats_list[[i]][which(floats_list[[i]][,j+2]>0),1:2]
+}}
+
+## produce .txt-file with monthly release-points
+# for(i in 1:length(floats_list)){
+#   for(j in 1:length(m_floats_list[[i]])){
+#     write.table(m_floats_list[[i]][[j]], file=paste0(env.dir,"Circumpolar_NPP_Cafe_FloatsRelease_",substr(names(floats_list[[i]])[j+2],6,12),".txt"),row.names=FALSE)
+#   }}
+
+## single table for ROMS:
+sel <- which(e>0)
+m <- data.frame(matrix(NA,nrow=length(sel),ncol=12))
+names(m) <- c("G","C","T","N","Ft0","Fx0","Fy0","Fz0","Fdt","Fdx","Fdy","Fdz")
+m[,1:4] <- 1
+m[,c(5,8:12)] <- "0.d0"
+m[,6:7] <- coords[sel,]
+write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease.txt"),row.names=FALSE, quote=FALSE)
+
+# ## first look which cells are ever ice-free
+# load(file=paste0(env.dir,"Circumpolar_NPP_Cafe_filled_2002.Rdata"))
+# npp.filled[npp.filled>0] <- 1
+# a <- sum(npp.filled, na.rm=TRUE)
+# for(i in c("2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018")){
+#   load(file=paste0(env.dir,"Circumpolar_NPP_Cafe_filled_",i,".Rdata"))
+#   npp.filled[npp.filled>0] <- 1
+#   b <- sum(npp.filled, na.rm=TRUE)
+#   a <- sum(a,b,na.rm=TRUE)
+# }
+# plot(a)
+```
+

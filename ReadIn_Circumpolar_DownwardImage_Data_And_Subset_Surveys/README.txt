@@ -1,3 +1,5 @@
+Scripts in here still have the original file-paths from Jan's local machine. Edits needed to change that but low priority at the moment (July 2021).
+
 Each file contains code that aims to:
 - assign coordinates (lon/lat) to each image
 - identify which images are bad/blurry

@@ -16,24 +16,35 @@ library(RColorBrewer)
 library(graticule)
 ```
 
-```{r}
-env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/derived/"
-bio.dir <- "C:/Users/jjansen/Desktop/science/data_biological/"
-proj.dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/"
-ARC_Data.dir <- paste0(proj.dir,"ARC_Data/")
+### Setting up the environment
 
-source(paste0(proj.dir,"Useful_Functions_Tools/SOmap_functions_JJ.R"))
+```{r}
+## Jan's local machine:
+sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+bio.dir <-      paste0(sci.dir,"data_biological/")
+
+## remote repository (DOESN'T WORK YET):
+# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+
+## common paths (after "sci.dir")
+tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+```
+
+```{r}
+source(paste0(tools.dir,"SOmap_functions_JJ.R"))
 ```
 
 ```{r}
 ##### load still and diatom sample locations and bathymetry:
 load(paste0(ARC_Data.dir,"Circumpolar_DownwardImages_locations.Rdata"))
 load(paste0(ARC_Data.dir,"Circumpolar_Diatom_locations.Rdata"))
-r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
+r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 
 ##### load coastline
 stereo <- as.character(r2@crs)
-load(paste0(env.dir,"Circumpolar_Coastline.Rdata"))
+load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 ```
 
 ```{r, echo=FALSE}
@@ -53,8 +64,8 @@ blues <- rev(blues9)
 ## choose depending on the bathymetry file used (whether deeper than -3000 is NA or not)
 better.ramp2 <- grDevices::colorRampPalette(blues)
 cols <- better.ramp2(99)
-breaks <- seq(-2500,0,length.out=100)
-leg.args <- seq(-2500,0, by=500)
+breaks <- seq(-3000,0,length.out=100)
+leg.args <- seq(-3000,0, by=500)
 
 #full.ramp <- grDevices::colorRampPalette(c("black","grey15","grey25",blues))
 #cols <- full.ramp(132)
@@ -92,30 +103,30 @@ text.plot <- function(transects,dat,polar.dat,col="black", adj=1.5, cex=0.7){
 ### Surveys, metadata and image subset
 
 *	GER data: PS06, PS14, PS18, PS61, PS81, PS96, PS118 (Ant. Peninsula to Lazarev Sea)
-*	various US cruises
-+ WAP (Craig Smith)
-+ LMG1311 (Weat Ant. Peninsula)
-+ NBP1402 (Sabrina Shelf, East Antarctica)
-+ NBP1502 (Ross Sea)
+*	US data:
+    + WAP (Craig Smith)
+    + LMG1311 (Weat Ant. Peninsula)
+    + NBP1402 (Sabrina Shelf, East Antarctica)
+    + NBP1502 (Ross Sea)
 * UK data: JR262, JR15005, JR17001, JR17003 (Tip of Ant. Pensinsula & South Orkneys)
 * NZ data: TAN0802, TAN1802, TAN1901 (Ross Sea)
 * AUS data: AA2011 (Mertz region)
 * ITA data: never received due to COVID19-restrictions preventing access
 
-Each survey has their own script (to read in raw data and create an image subset) named:
+Each survey has their own script (to read in raw data and create an image subset) named:  
 * "Readin_Circumpolar_DownwardImages_...R"
 
-Summary file containing all survey data:
-* "Readin_Antarctic_DownwardImage_Data.R"
+Summary file containing all survey data:  
+* "Readin_Circumpolar_DownwardImage_Data.Rmd"
 
-Overview script containing plots for each individual transect + locations of the image subset:
+Overview script containing plots for each individual transect + locations of the image subset:  
 * "DP190101858_Circumpolar_Data_Overview_Transects.Rmd"
 
 Image annotation on CoralNet (every image of the subset) and Biigle (the first 50% of the subset images)
 
-Image-Annotation Quality Control and Final Library:
+Image-Annotation Quality Control and Final Library:  
 * "AnnotationLibrary_counts.R"
-* "AnnotationQualityControl_CoralNet_SurveyBySurvey.R"
+* "AnnotationQualityControl_CoralNet_SurveyBySurvey.R"  
 
 
 ```{r}
@@ -127,9 +138,7 @@ message(paste0(a," different sampling transects"))
 ```
 
 
-#### Full overview
-"Circumpolar_mapping_script.R"
-"Readin_Antarctic_StillImages_SurveyOverview.R"
+#### Overview of sampling locations
 
 ```{r, warning=FALSE, echo=FALSE, fig.height=10, fig.width=10}
 leg.steps <- c(1,2,2.75,3)
@@ -153,22 +162,6 @@ scalebar(1000000, type="bar", label=c("0","500","1000"), below="km")
 #### Ross Sea - overview
 ```{r, warning=FALSE, echo=FALSE, fig.height=10, fig.width=9}
 ## add points for NBP1502:
-
-# NBP1502 <- read.table(paste0(bio.dir,"Stills/NBP1502/NBP1502_locations.txt"),header=TRUE,sep="\t")
-# names(NBP1502) <- c("transectID","start_end","lat","lon")
-# NBP1502$lat = measurements::conv_unit(NBP1502$lat, from = 'deg_dec_min', to = 'dec_deg')
-# NBP1502$lon = measurements::conv_unit(NBP1502$lon, from = 'deg_dec_min', to = 'dec_deg')
-# NBP1502$transectID <- as.factor(NBP1502$transectID)
-# NBP1502$start_end <- as.factor(NBP1502$start_end)
-# NBP1502$lat <- as.numeric(NBP1502$lat)
-# NBP1502$lon <- as.numeric(NBP1502$lon)
-# 
-# spatial.dat <- data.frame(cbind(NBP1502$lon, NBP1502$lat))
-# names(spatial.dat) <- c("Longitude","Latitude")
-# coordinates(spatial.dat) <- c("Longitude","Latitude")
-# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
-# polar.dat.NBP1502 <- spTransform(spatial.dat, CRS(stereo))
-
 
 ### for adding graticules:
 # ## specify plotting variables:
@@ -211,7 +204,7 @@ legend("left", pch=pch, pt.cex=cex, col=ross_sea_cols, legend=c("TAN0802","TAN18
 text.plot(levels(dat.list$TAN0802$transectID),dat.start.list$TAN0802,polar.dat.start.list$TAN0802, col=ross_sea_cols[1])
 text.plot(levels(dat.list$TAN1802$transectID),dat.start.list$TAN1802,polar.dat.start.list$TAN1802,col=ross_sea_cols[2], adj=-0.7)
 text.plot(levels(dat.list$TAN1901$transectID),dat.start.list$TAN1901,polar.dat.start.list$TAN1901,col=ross_sea_cols[3])
-text(polar.dat.NBP1502,labels=NBP1502$transectID, adj=1.5, cex=0.7,col=wap_cols[4])
+text(polar.dat.NBP1502,labels=dat.list$NBP1502$transectID, adj=1.5, cex=0.7,col=wap_cols[4])
 plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,labels=leg.args))
 ```
 
@@ -229,7 +222,7 @@ legend("left", pch=pch, pt.cex=cex, col=ross_sea_cols, legend=c("TAN0802","TAN18
 text.plot(levels(dat.list$TAN0802$transectID),dat.start.list$TAN0802,polar.dat.start.list$TAN0802, col=ross_sea_cols[1])
 text.plot(levels(dat.list$TAN1802$transectID),dat.start.list$TAN1802,polar.dat.start.list$TAN1802,col=ross_sea_cols[2], adj=-0.7)
 text.plot(levels(dat.list$TAN1901$transectID),dat.start.list$TAN1901,polar.dat.start.list$TAN1901,col=ross_sea_cols[3])
-text(polar.dat.NBP1502,labels=NBP1502$transectID, adj=1.5, cex=0.7,col=wap_cols[4])
+text(polar.dat.NBP1502,labels=dat.list$NBP1502$transectID, adj=1.5, cex=0.7,col=wap_cols[4])
 plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,labels=leg.args))
 ```
 
@@ -395,6 +388,8 @@ text.plot(levels(dat.list$PS96$transectID),dat.list$PS96,polar.dat.PS96,col=wap_
 ```
 
 ## Diatom Data
+
+#### Overview of sampling locations
 
 ```{r, fig.width=10, fig.height=10, warning=FALSE}
 #### Diatom survey sites on bathymetry (excluding CEAMARC sites, and splitting AP from the rest for plotting)

@@ -27,7 +27,7 @@ __DON'T JUST RUN THIS SCRIPT, EACH FILE TAKES 6-12h TO COMPLETE !!!__
 Owncloud repository folder is "EnvironmentalData". All data can be found here:
 [link](https://owncloud.imas-data-service.cloud.edu.au/index.php/apps/files/?dir=/EnvironmentalData&fileid=186349)
 
-```{r, tidy=TRUE}
+```{r}
 ## Jan's local machine:
 env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
 

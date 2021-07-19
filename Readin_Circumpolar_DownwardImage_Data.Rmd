@@ -6,7 +6,7 @@ output: html_document
 ---
 
 This script is to create the summary data:  
-__"Circumpolar_DownwardImages_locations.Rdata"__  
+__"Circumpolar_DownwardImages_metadata.Rdata"__  
 
 This file contains the following objects:  
 
@@ -28,7 +28,7 @@ This file contains the following objects:
 *  individual surveys:
     + __polar.dat.XXX__  
 
-*  polar sterographic projection used: __stereo__
+*  polar stereographic projection used: __stereo__
 
 
 ```{r, warning=FALSE, message=FALSE}
@@ -51,7 +51,7 @@ env.derived <-  paste0(sci.dir,"data_environmental/derived/")
 ## common paths (after "sci.dir")
 tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
 ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
-bio.dir <-      paste0(ARC_Data.dir,"ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/")
+image.dir <-      paste0(ARC_Data.dir,"ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/")
 
 ## polar stereographic projection:
 stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
@@ -63,7 +63,7 @@ stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS8
 r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 
 # #### load diatom data
-# load(file=paste0(bio.dir,"Circumpolar_Diatom_locations.Rdata"))
+# load(file=paste0(image.dir,"Circumpolar_Diatom_locations.Rdata"))
 
 #### load coastline
 load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
@@ -84,54 +84,54 @@ load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 
 #### load image data
 ## Ross Sea
-dat.0802 <- get(load(paste0(bio.dir,"TAN0802_dat.Rdata")))
+dat.0802 <- get(load(paste0(image.dir,"TAN0802_dat.Rdata")))
 total.t.length.v.0802 <- total.t.length.v
 total.t.length.v.0802[c(13,16,17,28,32:34,45,46)] <- t.l[c(13,16,17,28,32:34,45,46)] #used distance to start for these transects, not distance along transect
-dat.1802 <- get(load(paste0(bio.dir,"TAN1802_dat.Rdata")))
+dat.1802 <- get(load(paste0(image.dir,"TAN1802_dat.Rdata")))
 t.l.1802 <- t.l
 total.t.length.v.1802 <- total.t.length.v
-dat.1901 <- get(load(paste0(bio.dir,"TAN1901_dat.Rdata")))
+dat.1901 <- get(load(paste0(image.dir,"TAN1901_dat.Rdata")))
 t.l.1901 <- t.l
 total.t.length.v.1901 <- total.t.length.v
-dat.NBP1502 <- get(load(file=paste0(bio.dir,"NBP1502_dat.Rdata")))
+dat.NBP1502 <- get(load(file=paste0(image.dir,"NBP1502_dat.Rdata")))
 total.t.length.v.NBP1502 <- total.t.length.v
 t.l.NBP1502 <- t.l
 ## West Antarctic
-dat.PS81 <- get(load(file=paste0(bio.dir,"PS81_dat_FINAL.Rdata")))
+dat.PS81 <- get(load(file=paste0(image.dir,"PS81_dat_FINAL.Rdata")))
 total.t.length.v.PS81 <- total.t.length.v
-dat.PS81_shallow <- get(load(file=paste0(bio.dir,"PS81_dat_shallow.Rdata")))
+dat.PS81_shallow <- get(load(file=paste0(image.dir,"PS81_dat_shallow.Rdata")))
 total.t.length.v.PS81_shallow <- total.t.length.v
-dat.PS96 <- get(load(file=paste0(bio.dir,"PS96_dat_FINAL.Rdata")))
+dat.PS96 <- get(load(file=paste0(image.dir,"PS96_dat_FINAL.Rdata")))
 total.t.length.v.PS96 <- total.t.length.v
-dat.PS118 <- get(load(file=paste0(bio.dir,"PS118_dat.Rdata")))
+dat.PS118 <- get(load(file=paste0(image.dir,"PS118_dat.Rdata")))
 total.t.length.v.PS118 <- total.t.length.v
 ## CRS
-dat.WAP <- get(load(file=paste0(bio.dir,"CRS_dat.Rdata")))
+dat.WAP <- get(load(file=paste0(image.dir,"CRS_dat.Rdata")))
 total.t.length.v.WAP <- total.t.length.v
 ## East Antarctic
-dat.NBP1402 <- get(load(file=paste0(bio.dir,"NBP1402_dat.Rdata")))
+dat.NBP1402 <- get(load(file=paste0(image.dir,"NBP1402_dat.Rdata")))
 total.t.length.v.NBP1402 <- total.t.length.v
 rm(dat,t.l,total.t.length.v)
 ## old Weddell Sea surveys
-dat.PS06 <- get(load(file=paste0(bio.dir,"PS06_dat.Rdata")))
-dat.PS14 <- get(load(file=paste0(bio.dir,"PS14_dat.Rdata")))
+dat.PS06 <- get(load(file=paste0(image.dir,"PS06_dat.Rdata")))
+dat.PS14 <- get(load(file=paste0(image.dir,"PS14_dat.Rdata")))
 total.t.length.v.PS14 <- total.t.length.v
-dat.PS18 <- get(load(file=paste0(bio.dir,"PS18_dat.Rdata")))
+dat.PS18 <- get(load(file=paste0(image.dir,"PS18_dat.Rdata")))
 total.t.length.v.PS18 <- total.t.length.v
-dat.PS61 <- get(load(file=paste0(bio.dir,"PS61_dat.Rdata")))
+dat.PS61 <- get(load(file=paste0(image.dir,"PS61_dat.Rdata")))
 total.t.length.v.PS61 <- total.t.length.v
 ## Mertz
-dat.AA2011 <- get(load(file=paste0(bio.dir,"AA2011_dat.Rdata")))
+dat.AA2011 <- get(load(file=paste0(image.dir,"AA2011_dat.Rdata")))
 ## SUCS
-dat.JR262 <- get(load(file=paste0(bio.dir,"JR262_dat.Rdata")))
-dat.JR15005 <- get(load(file=paste0(bio.dir,"JR15005_dat.Rdata")))
+dat.JR262 <- get(load(file=paste0(image.dir,"JR262_dat.Rdata")))
+dat.JR15005 <- get(load(file=paste0(image.dir,"JR15005_dat.Rdata")))
 total.t.length.v.JR15005 <- total.t.length.v
-dat.JR17001 <- get(load(file=paste0(bio.dir,"JR17001_dat.Rdata")))
+dat.JR17001 <- get(load(file=paste0(image.dir,"JR17001_dat.Rdata")))
 total.t.length.v.JR17001 <- total.t.length.v
-dat.JR17003 <- get(load(file=paste0(bio.dir,"JR17003_dat.Rdata")))
+dat.JR17003 <- get(load(file=paste0(image.dir,"JR17003_dat.Rdata")))
 total.t.length.v.JR17003 <- total.t.length.v
 ## LMG1311
-dat.LMG1311 <- get(load(file=paste0(bio.dir,"LMG1311_dat.Rdata")))
+dat.LMG1311 <- get(load(file=paste0(image.dir,"LMG1311_dat.Rdata")))
 total.t.length.v.LMG1311 <- total.t.length.v
 
 ##### PS81: something went wrong with the "image_select"-values when redoing the subsetting and replacing shitty images. Only happened to images from image.select>=50
@@ -730,5 +730,5 @@ save(polar.dat.0802,
      total.t.length.list,
      total.t.length.list.clean,
      stereo,
-     file=paste0(ARC_Data.dir,"Circumpolar_DownwardImages_locations.Rdata"))
+     file=paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
 ```

@@ -356,7 +356,7 @@ pre code {
 
 
 <p>This script is to create the summary data:<br />
-<strong>“Circumpolar_DownwardImages_locations.Rdata”</strong></p>
+<strong>“Circumpolar_DownwardImages_metadata.Rdata”</strong></p>
 <p>This file contains the following objects:</p>
 <ul>
 <li>starting positions for each transect in each survey:
@@ -381,7 +381,7 @@ pre code {
 <ul>
 <li><strong>polar.dat.XXX</strong></li>
 </ul></li>
-<li>polar sterographic projection used: <strong>stereo</strong></li>
+<li>polar stereographic projection used: <strong>stereo</strong></li>
 </ul>
 <pre class="r"><code>library(raadtools)</code></pre>
 <pre><code>## global option &#39;raadfiles.data.roots&#39; set:
@@ -401,7 +401,7 @@ env.derived &lt;-  paste0(sci.dir,&quot;data_environmental/derived/&quot;)
 ## common paths (after &quot;sci.dir&quot;)
 tools.dir &lt;-    paste0(sci.dir,&quot;SouthernOceanBiodiversityMapping/Useful_Functions_Tools/&quot;)
 ARC_Data.dir &lt;- paste0(sci.dir,&quot;SouthernOceanBiodiversityMapping/ARC_Data/&quot;)
-bio.dir &lt;-      paste0(ARC_Data.dir,&quot;ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/&quot;)
+image.dir &lt;-      paste0(ARC_Data.dir,&quot;ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/&quot;)
 
 ## polar stereographic projection:
 stereo &lt;- &quot;+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs&quot;
@@ -410,7 +410,7 @@ stereo &lt;- &quot;+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +da
 r2 &lt;- raster(paste0(env.derived,&quot;Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd&quot;))
 
 # #### load diatom data
-# load(file=paste0(bio.dir,&quot;Circumpolar_Diatom_locations.Rdata&quot;))
+# load(file=paste0(image.dir,&quot;Circumpolar_Diatom_locations.Rdata&quot;))
 
 #### load coastline
 load(paste0(env.derived,&quot;Circumpolar_Coastline.Rdata&quot;))</code></pre>
@@ -429,54 +429,54 @@ load(paste0(env.derived,&quot;Circumpolar_Coastline.Rdata&quot;))</code></pre>
 
 #### load image data
 ## Ross Sea
-dat.0802 &lt;- get(load(paste0(bio.dir,&quot;TAN0802_dat.Rdata&quot;)))
+dat.0802 &lt;- get(load(paste0(image.dir,&quot;TAN0802_dat.Rdata&quot;)))
 total.t.length.v.0802 &lt;- total.t.length.v
 total.t.length.v.0802[c(13,16,17,28,32:34,45,46)] &lt;- t.l[c(13,16,17,28,32:34,45,46)] #used distance to start for these transects, not distance along transect
-dat.1802 &lt;- get(load(paste0(bio.dir,&quot;TAN1802_dat.Rdata&quot;)))
+dat.1802 &lt;- get(load(paste0(image.dir,&quot;TAN1802_dat.Rdata&quot;)))
 t.l.1802 &lt;- t.l
 total.t.length.v.1802 &lt;- total.t.length.v
-dat.1901 &lt;- get(load(paste0(bio.dir,&quot;TAN1901_dat.Rdata&quot;)))
+dat.1901 &lt;- get(load(paste0(image.dir,&quot;TAN1901_dat.Rdata&quot;)))
 t.l.1901 &lt;- t.l
 total.t.length.v.1901 &lt;- total.t.length.v
-dat.NBP1502 &lt;- get(load(file=paste0(bio.dir,&quot;NBP1502_dat.Rdata&quot;)))
+dat.NBP1502 &lt;- get(load(file=paste0(image.dir,&quot;NBP1502_dat.Rdata&quot;)))
 total.t.length.v.NBP1502 &lt;- total.t.length.v
 t.l.NBP1502 &lt;- t.l
 ## West Antarctic
-dat.PS81 &lt;- get(load(file=paste0(bio.dir,&quot;PS81_dat_FINAL.Rdata&quot;)))
+dat.PS81 &lt;- get(load(file=paste0(image.dir,&quot;PS81_dat_FINAL.Rdata&quot;)))
 total.t.length.v.PS81 &lt;- total.t.length.v
-dat.PS81_shallow &lt;- get(load(file=paste0(bio.dir,&quot;PS81_dat_shallow.Rdata&quot;)))
+dat.PS81_shallow &lt;- get(load(file=paste0(image.dir,&quot;PS81_dat_shallow.Rdata&quot;)))
 total.t.length.v.PS81_shallow &lt;- total.t.length.v
-dat.PS96 &lt;- get(load(file=paste0(bio.dir,&quot;PS96_dat_FINAL.Rdata&quot;)))
+dat.PS96 &lt;- get(load(file=paste0(image.dir,&quot;PS96_dat_FINAL.Rdata&quot;)))
 total.t.length.v.PS96 &lt;- total.t.length.v
-dat.PS118 &lt;- get(load(file=paste0(bio.dir,&quot;PS118_dat.Rdata&quot;)))
+dat.PS118 &lt;- get(load(file=paste0(image.dir,&quot;PS118_dat.Rdata&quot;)))
 total.t.length.v.PS118 &lt;- total.t.length.v
 ## CRS
-dat.WAP &lt;- get(load(file=paste0(bio.dir,&quot;CRS_dat.Rdata&quot;)))
+dat.WAP &lt;- get(load(file=paste0(image.dir,&quot;CRS_dat.Rdata&quot;)))
 total.t.length.v.WAP &lt;- total.t.length.v
 ## East Antarctic
-dat.NBP1402 &lt;- get(load(file=paste0(bio.dir,&quot;NBP1402_dat.Rdata&quot;)))
+dat.NBP1402 &lt;- get(load(file=paste0(image.dir,&quot;NBP1402_dat.Rdata&quot;)))
 total.t.length.v.NBP1402 &lt;- total.t.length.v
 rm(dat,t.l,total.t.length.v)
 ## old Weddell Sea surveys
-dat.PS06 &lt;- get(load(file=paste0(bio.dir,&quot;PS06_dat.Rdata&quot;)))
-dat.PS14 &lt;- get(load(file=paste0(bio.dir,&quot;PS14_dat.Rdata&quot;)))
+dat.PS06 &lt;- get(load(file=paste0(image.dir,&quot;PS06_dat.Rdata&quot;)))
+dat.PS14 &lt;- get(load(file=paste0(image.dir,&quot;PS14_dat.Rdata&quot;)))
 total.t.length.v.PS14 &lt;- total.t.length.v
-dat.PS18 &lt;- get(load(file=paste0(bio.dir,&quot;PS18_dat.Rdata&quot;)))
+dat.PS18 &lt;- get(load(file=paste0(image.dir,&quot;PS18_dat.Rdata&quot;)))
 total.t.length.v.PS18 &lt;- total.t.length.v
-dat.PS61 &lt;- get(load(file=paste0(bio.dir,&quot;PS61_dat.Rdata&quot;)))
+dat.PS61 &lt;- get(load(file=paste0(image.dir,&quot;PS61_dat.Rdata&quot;)))
 total.t.length.v.PS61 &lt;- total.t.length.v
 ## Mertz
-dat.AA2011 &lt;- get(load(file=paste0(bio.dir,&quot;AA2011_dat.Rdata&quot;)))
+dat.AA2011 &lt;- get(load(file=paste0(image.dir,&quot;AA2011_dat.Rdata&quot;)))
 ## SUCS
-dat.JR262 &lt;- get(load(file=paste0(bio.dir,&quot;JR262_dat.Rdata&quot;)))
-dat.JR15005 &lt;- get(load(file=paste0(bio.dir,&quot;JR15005_dat.Rdata&quot;)))
+dat.JR262 &lt;- get(load(file=paste0(image.dir,&quot;JR262_dat.Rdata&quot;)))
+dat.JR15005 &lt;- get(load(file=paste0(image.dir,&quot;JR15005_dat.Rdata&quot;)))
 total.t.length.v.JR15005 &lt;- total.t.length.v
-dat.JR17001 &lt;- get(load(file=paste0(bio.dir,&quot;JR17001_dat.Rdata&quot;)))
+dat.JR17001 &lt;- get(load(file=paste0(image.dir,&quot;JR17001_dat.Rdata&quot;)))
 total.t.length.v.JR17001 &lt;- total.t.length.v
-dat.JR17003 &lt;- get(load(file=paste0(bio.dir,&quot;JR17003_dat.Rdata&quot;)))
+dat.JR17003 &lt;- get(load(file=paste0(image.dir,&quot;JR17003_dat.Rdata&quot;)))
 total.t.length.v.JR17003 &lt;- total.t.length.v
 ## LMG1311
-dat.LMG1311 &lt;- get(load(file=paste0(bio.dir,&quot;LMG1311_dat.Rdata&quot;)))
+dat.LMG1311 &lt;- get(load(file=paste0(image.dir,&quot;LMG1311_dat.Rdata&quot;)))
 total.t.length.v.LMG1311 &lt;- total.t.length.v
 
 ##### PS81: something went wrong with the &quot;image_select&quot;-values when redoing the subsetting and replacing shitty images. Only happened to images from image.select&gt;=50
@@ -1067,7 +1067,7 @@ names(polar.dat.subset.list) &lt;- names(dat.subset.list) &lt;- names(dat.list)<
      total.t.length.list,
      total.t.length.list.clean,
      stereo,
-     file=paste0(ARC_Data.dir,&quot;Circumpolar_DownwardImages_locations.Rdata&quot;))</code></pre>
+     file=paste0(ARC_Data.dir,&quot;Circumpolar_DownwardImages_metadata.Rdata&quot;))</code></pre>
 </div>
 
 

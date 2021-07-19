@@ -1,0 +1,80 @@
+---
+title: "DeadIn Circumpolar Diatom Data"
+author: "Jan Jansen"
+date: "19/07/2021"
+output: html_document
+---
+
+
+This script is to create the summary data:  
+__"Circumpolar_Diatom_metadata.Rdata"__  
+
+This file contains the following objects:  
+
+*  Diatom metdata: __diatom.dat__
+*  projected diatom sampling locations: __polar.dat.diatom__
+
+```{r, warning=FALSE, message=FALSE}
+library(readxl)
+library(raster)
+```
+
+```{r, warning=FALSE, message=FALSE}
+## Jan's local machine:
+sci.dir <- "C:/Users/jjansen/Desktop/science/"
+
+## remote repository (DOESN'T WORK YET):
+# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+
+## common paths (after "sci.dir")
+ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+diatom.dir <-      paste0(ARC_Data.dir,"ReadIn_Circumpolar_Diatom_Data/")
+
+## polar stereographic projection:
+stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+```
+
+### read in excel sheets
+
+```{r, message=FALSE}
+diatom.list <- list()
+for(i in 1:6){
+  diatom.list[[i]] <- read_excel(paste0(diatom.dir,"Surface Sediment Diatom Abundance Database April 22 2020.xls"), sheet=i)
+  names(diatom.list[[i]]) <- gsub(" ","_",names(diatom.list[[i]]))
+  names(diatom.list[[i]])[7] <- "Absolute_diatom_abundance_in_million_valves_per_gram_dry_sediment"
+  names(diatom.list[[i]])[11] <- "Comments"
+  diatom.list[[i]]$Other <- as.character(diatom.list[[i]]$Other)
+  diatom.list[[i]]$Date_collected <- as.character(diatom.list[[i]]$Date_collected)
+}
+diatom.raw <- rbind(diatom.list[[1]],
+                    diatom.list[[2]],
+                    diatom.list[[3]],
+                    diatom.list[[4]],
+                    diatom.list[[5]],
+                    diatom.list[[6]])
+
+## rows 22 and 246 are empty
+diatom.dat <- diatom.raw[-c(22,246),]
+
+## create SampleID column
+diatom.dat$SampleID <- paste0(gsub(" ","-",diatom.dat$Cruise),"__",gsub(" ","0",sprintf("%03s",diatom.dat$Station)))
+```
+
+### project data to polar stereographic
+
+```{r}
+spatial.dat <- data.frame(cbind(diatom.dat$Longitude, diatom.dat$Latitude))
+names(spatial.dat) <- c("Longitude","Latitude")
+coordinates(spatial.dat) <- c("Longitude","Latitude")
+proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+polar.dat.diatom <- spTransform(spatial.dat, CRS(stereo))
+```
+
+### save data
+
+```{r}
+save(diatom.dat, polar.dat.diatom, file=paste0(ARC_Data.dir,"Circumpolar_Diatom_metadata.Rdata"))
+```
+
+
+

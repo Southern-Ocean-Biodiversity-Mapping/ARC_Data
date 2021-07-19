@@ -38,12 +38,18 @@ source(paste0(tools.dir,"SOmap_functions_JJ.R"))
 
 ```{r}
 ##### load still and diatom sample locations and bathymetry:
-load(paste0(ARC_Data.dir,"Circumpolar_DownwardImages_locations.Rdata"))
-load(paste0(ARC_Data.dir,"Circumpolar_Diatom_locations.Rdata"))
+
+## from "Readin_Circumpolar_DownwardImage_Data.Rmd"
+load(paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
+
+## from ???
+load(paste0(ARC_Data.dir,"Circumpolar_Diatom_metadata.Rdata"))
+
+## from "ReadIn_Circumpolar_Environmental_Data.Rmd"
 r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 
 ##### load coastline
-stereo <- as.character(r2@crs)
+#stereo <- as.character(r2@crs)
 load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 ```
 
@@ -96,6 +102,7 @@ text.plot <- function(transects,dat,polar.dat,col="black", adj=1.5, cex=0.7){
     pts <- polar.dat[dat$transectID==transects[i]]
     text(pts[1],labels=transects[i], adj=adj, cex=cex,col=col)
   }}
+leg.steps <- c(1,2,2.75,3)
 ```
 
 ## Image Data
@@ -141,7 +148,6 @@ message(paste0(a," different sampling transects"))
 #### Overview of sampling locations
 
 ```{r, warning=FALSE, echo=FALSE, fig.height=10, fig.width=10}
-leg.steps <- c(1,2,2.75,3)
 #### Image survey sites on bathymetry
 #pdf(file="Circumpolar_overview_images.pdf", width=10, height=10)
 par(oma=c(0,0,0,0))
@@ -393,11 +399,11 @@ text.plot(levels(dat.list$PS96$transectID),dat.list$PS96,polar.dat.PS96,col=wap_
 
 ```{r, fig.width=10, fig.height=10, warning=FALSE}
 #### Diatom survey sites on bathymetry (excluding CEAMARC sites, and splitting AP from the rest for plotting)
-ceamarc <- which(diatoms.locs$Cruise=="CEAMARC")
-AP_cruises <- which(diatoms.locs$Longitude<0&diatoms.locs$Longitude>-90)
-diatom.ceamarc <- diatoms.locs[ceamarc,]
-diatom.AP <- diatoms.locs[AP_cruises,]
-diatom.rest <- diatoms.locs[-c(AP_cruises,ceamarc),]
+ceamarc <- which(diatom.dat$Cruise=="CEAMARC")
+AP_cruises <- which(diatom.dat$Longitude<0&diatom.dat$Longitude>-90)
+diatom.ceamarc <- diatom.dat[ceamarc,]
+diatom.AP <- diatom.dat[AP_cruises,]
+diatom.rest <- diatom.dat[-c(AP_cruises,ceamarc),]
 
 diatom.AP$Cruise <- factor(diatom.AP$Cruise)
 diatom.rest$Cruise <- factor(diatom.rest$Cruise)
@@ -412,15 +418,17 @@ par(oma=c(0,0,0,0))
 JJ_SOmap(ramp.col = better.ramp2, border=FALSE, graticules = TRUE, label = "depth\n(m)", leg.steps=leg.steps)
 JJ_SOleg(col=AP.cols, ticks = length(AP.cols), border_width = 0, label="Survey IDs\nAntarctic Peninsula", position = "topleft",tlabs=levels(diatom.AP$Cruise), leg.steps=leg.steps)
 JJ_SOleg(col=rest.cols.lab, ticks = length(rest.cols), border_width = 0, label="Survey IDs\nother regions", position = "bottomright",tlabs=t.labs.rest, leg.steps=leg.steps)
-for(i in 1:13){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.AP$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=AP.cols[i])
+for(i in 1:length(levels(diatom.AP$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.AP$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=AP.cols[i])
 }
-for(i in 1:8){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
+for(i in 1:length(levels(diatom.rest$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
 }
 scalebar(1000000, type="bar", label=c("0","500","1000"), below="km")
 #dev.off()
 ```
+
+
 
 ### Region specific overviews {.tabset}
 
@@ -429,8 +437,8 @@ scalebar(1000000, type="bar", label=c("0","500","1000"), below="km")
 plot(r2, xlim=c(-800000,480000), ylim=c(-2000000,-1200000),col=cols, main="Ross Sea", axes=FALSE, breaks=breaks, legend=FALSE)
 plot(coast.proj, add=TRUE)
 scalebar(200000, type="bar", label=c("0","100","200"), below="km", col="white")
-for(i in 1:8){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
+for(i in 1:length(levels(diatom.rest$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
 }
 legend("left", pch=pch, pt.cex=cex, col=rest.cols[-c(3,5)], legend=levels(diatom.rest$Cruise)[-c(3,5)])
 
@@ -443,8 +451,8 @@ plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,lab
 plot(r2, xlim=c(-2100000,-1100000), ylim=c(-1350000,-300000),col=cols, main="Amundsen Sea", axes=FALSE, breaks=breaks, legend=FALSE)
 plot(coast.proj, add=TRUE)
 scalebar(200000, type="bar", label=c("0","100","200"), below="km", col="white")
-for(i in 1:8){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
+for(i in 1:length(levels(diatom.rest$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
 }
 legend("topright", pch=pch, pt.cex=cex, col=rest.cols[4], legend=levels(diatom.rest$Cruise)[4])
 plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,labels=leg.args))
@@ -456,8 +464,8 @@ plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,lab
 plot(r2, xlim=c(1350000,1750000), ylim=c(-2200000,-1900000),col=cols, main="East Antarctica - CEAMARC", axes=FALSE, breaks=breaks, legend=FALSE)
 plot(coast.proj, add=TRUE)
 scalebar(100000, xy=c(1600000,-2150000), type="bar", label=c("0","50","100"), below="km", col="white")
-for(i in 1:8){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
+for(i in 1:length(levels(diatom.rest$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
 }
 legend("topleft", pch=pch, pt.cex=cex, col=rest.cols[3], legend=levels(diatom.rest$Cruise)[3])
 
@@ -470,8 +478,8 @@ plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,lab
 plot(r2, xlim=c(2000000,2400000), ylim=c(-1400000,-1100000),col=cols, main="East Antarctica - Totten area", axes=FALSE, breaks=breaks, legend=FALSE)
 plot(coast.proj, add=TRUE)
 scalebar(100000, type="bar", label=c("0","50","100"), below="km")
-for(i in 1:8){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
+for(i in 1:length(levels(diatom.rest$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
 }
 legend("topleft", pch=pch, pt.cex=cex, col=rest.cols[5], legend=levels(diatom.rest$Cruise)[5])
 
@@ -484,8 +492,8 @@ plot(r2,legend.only=TRUE,col=cols, breaks=breaks, axis.args=list(at=leg.args,lab
 plot(r2, xlim=c(2000000,2800000), ylim=c(-300000,1500000),col=cols, main="East Antarctica - Amery area", axes=FALSE, breaks=breaks, legend=FALSE)
 plot(coast.proj, add=TRUE)
 scalebar(200000, type="bar", label=c("0","100","200"), below="km")
-for(i in 1:8){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
+for(i in 1:length(levels(diatom.rest$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.rest$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=rest.cols[i])
 }
 legend("topright", pch=pch, pt.cex=cex, col=rest.cols[3], legend=levels(diatom.rest$Cruise)[3])
 
@@ -498,8 +506,8 @@ plot(r2, xlim=c(-2750000,-2000000), ylim=c(700000,1850000),col=cols, main="Antar
 plot(coast.proj, add=TRUE)
 scalebar(200000, type="bar", label=c("0","100","200"), below="km")
 
-for(i in 1:13){
-  plot(polar.dat.diatom[diatoms.locs$Cruise==levels(diatom.AP$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=AP.cols[i])
+for(i in 1:length(levels(diatom.AP$Cruise))){
+  plot(polar.dat.diatom[diatom.dat$Cruise==levels(diatom.AP$Cruise)[i]], add=TRUE, pch=pch, cex=cex, col=AP.cols[i])
 }
 
 legend("topright",pch=pch, pt.cex=cex, col=AP.cols, legend=levels(diatom.AP$Cruise))

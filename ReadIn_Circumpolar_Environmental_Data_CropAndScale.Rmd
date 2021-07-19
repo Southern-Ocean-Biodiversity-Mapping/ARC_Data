@@ -44,17 +44,17 @@ string.res <- "500m_"
 ## Load data
 
 ```{r, eval=FALSE}
-
+## to do
 ```
 
 ## Scale data
 
 ```{r, eval=FALSE}
-
+## to do
 ```
 
 ## Save data
 
 ```{r, eval=FALSE}
-
+## to do
 ```

@@ -4,6 +4,7 @@ Main Script is:
 ReadIn_Circumpolar_Environmental_Data.Rmd
 
 All raw and derived environmental files are in two folders on Owncloud within the folder "EnvironmentalData".  
+https://owncloud.imas-data-service.cloud.edu.au/index.php/s/ORxSWb6xbJRWfNI  
 Easiest way is to download the folders to your local machine and edit the file-path at the top of the script if you want to generate any new files.  
 
 Naming convention for the files:

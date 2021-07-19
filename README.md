@@ -8,9 +8,9 @@ https://owncloud.imas-data-service.cloud.edu.au/index.php/s/ORxSWb6xbJRWfNI
 Currently, the easiest way is to download the folders to your local machine and edit the file-path at the top of each script if you want to generate any new files.  
 
 ## Naming convention for the files:  
-*  "Circumpolar_" : Start string for all data-files and scripts that create derived data files
-*  "DP190101858_": start string for all analysis/overview files that don't manipulate the data
-*  "EnvData_", "DownwardImages_", "Diatom": self explanatory :-D   
+*  "Circumpolar_" : self exlanatory :-D
+*  "DP190101858_": start string for all analysis/overview scripts that don't create derived datasets  
+*  "EnvData_", "DownwardImages_", "Diatom": also self explanatory  
 *  "500m","5km", etc: resolution of the raster. If none, then it's the original resolution from the raw data.  
 *  "shelf": in this case the data in the raster is restricted to the depth area between 0 - 3000m  
 *  "scaled": data are scaled by their mean  

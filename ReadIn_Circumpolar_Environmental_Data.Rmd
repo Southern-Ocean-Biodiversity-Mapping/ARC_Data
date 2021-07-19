@@ -107,7 +107,7 @@ set_data_roots(AAD_dir)
 
 ## Bathymetry
 
-If it's gebco, this chunk takes a few minutes
+If it's gebco, this chunk takes 30-40mins!
 
 ```{r, eval=FALSE}
 ## read in bathymetry data and project/reproject if needed
@@ -137,21 +137,22 @@ r.depth <- r
 r.slope <- terrain(r)
 r.tpi <- tpi(r)
 r.tpi5 <- tpi(r, scale=5)
-r.tpi21 <- tpi(r, scale=21)
-r.tpi31 <- tpi(r, scale=31)
+r.tpi11 <- tpi(r, scale=11)
+# r.tpi21 <- tpi(r, scale=21)
+# r.tpi31 <- tpi(r, scale=31)
 
 ## set anything on land to NA, and optionally set abyssal zone to NA
 r.depth[r>0] <- NA
 r.depth[r<depth.range[2]] <- NA
-
 r.slope[is.na(r.depth[])] <- NA
 r.tpi[is.na(r.depth[])] <- NA
 r.tpi5[is.na(r.depth[])] <- NA
-r.tpi21[is.na(r.depth[])] <- NA
-r.tpi31[is.na(r.depth[])] <- NA
+r.tpi11[is.na(r.depth[])] <- NA
+# r.tpi21[is.na(r.depth[])] <- NA
+# r.tpi31[is.na(r.depth[])] <- NA
 
-r.bathy <- stack(r.depth, r.slope, r.tpi, r.tpi5, r.tpi21, r.tpi31)
-names(r.bathy) <- c("depth","slope","tpi","tpi5","tpi21","tpi31")
+r.bathy <- stack(r.depth, r.slope, r.tpi, r.tpi5, r.tpi11)#, r.tpi21, r.tpi31)
+names(r.bathy) <- c("depth","slope","tpi","tpi5","tpi11")#"tpi21","tpi31")
 
 # # xlim=c(128,148)
 # # ylim=c(-67.5,-64)
@@ -175,21 +176,21 @@ if(data.name=="ibcso"){
 }
 if(data.name=="gebco"){
   if(data.depth=="full"){
-    if(data.format=="projected.raw"){ ## original resolution (119m x 460m)
+    if(data.format=="project.raw"){ ## original resolution (119m x 460m)
       res.string <- ""
       ra.string <- ""
     }
-    if(data.format=="projected.500"){ ## 500m resolution
+    if(data.format=="project.500"){ ## 500m resolution
       res.string <- string.res
       ra.string <- ""      
     }
   }
   if(data.depth=="shelf"){
-    if(data.format=="projected.raw"){ ## original resolution (119m x 460m)
+    if(data.format=="project.raw"){ ## original resolution (119m x 460m)
       res.string <- ""
       ra.string <- "shelf_"
     }
-    if(data.format=="projected.500"){ ## 500m resolution
+    if(data.format=="project.500"){ ## 500m resolution
       res.string <- string.res
       ra.string <- "shelf_"      
     }
@@ -216,6 +217,8 @@ Raw NPP is being read in and manipulated using a different script as part of pre
 Here, we're using the standardised files found in the derived data folder to produce NPP climatologies.  
 Files that are "filled": missing npp observations where chla observation were present, were replaced with predicted values from the npp-chla relationship in the region.  
 
+### Read data from NetCDF files
+
 ```{r, eval=FALSE}
 years <- as.character(2002:2020)
 
@@ -223,25 +226,25 @@ years <- as.character(2002:2020)
 npp.list <- list()
 
 ## load data:
-npp.list$npp_2002 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2002.Rdata")))
-npp.list$npp_2003 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2003.Rdata")))
-npp.list$npp_2004 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2004.Rdata")))
-npp.list$npp_2005 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2005.Rdata")))
-npp.list$npp_2006 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2006.Rdata")))
-npp.list$npp_2007 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2007.Rdata")))
-npp.list$npp_2008 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2008.Rdata")))
-npp.list$npp_2009 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2009.Rdata")))
-npp.list$npp_2010 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2010.Rdata")))
-npp.list$npp_2011 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2011.Rdata")))
-npp.list$npp_2012 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2012.Rdata")))
-npp.list$npp_2013 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2013.Rdata")))
-npp.list$npp_2014 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2014.Rdata")))
-npp.list$npp_2015 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2015.Rdata")))
-npp.list$npp_2016 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2016.Rdata")))
-npp.list$npp_2017 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2017.Rdata")))
-npp.list$npp_2018 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2018.Rdata")))
-npp.list$npp_2019 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2019.Rdata")))
-npp.list$npp_2020 <- get(load(paste0(env.derived,string_chr,"NPP_Cafe_filled_2020.Rdata")))
+npp.list$npp_2002 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2002.Rdata")))
+npp.list$npp_2003 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2003.Rdata")))
+npp.list$npp_2004 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2004.Rdata")))
+npp.list$npp_2005 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2005.Rdata")))
+npp.list$npp_2006 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2006.Rdata")))
+npp.list$npp_2007 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2007.Rdata")))
+npp.list$npp_2008 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2008.Rdata")))
+npp.list$npp_2009 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2009.Rdata")))
+npp.list$npp_2010 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2010.Rdata")))
+npp.list$npp_2011 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2011.Rdata")))
+npp.list$npp_2012 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2012.Rdata")))
+npp.list$npp_2013 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2013.Rdata")))
+npp.list$npp_2014 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2014.Rdata")))
+npp.list$npp_2015 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2015.Rdata")))
+npp.list$npp_2016 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2016.Rdata")))
+npp.list$npp_2017 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2017.Rdata")))
+npp.list$npp_2018 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2018.Rdata")))
+npp.list$npp_2019 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2019.Rdata")))
+npp.list$npp_2020 <- get(load(paste0(env.derived,string.chr,"NPP_Cafe_filled_2020.Rdata")))
 
 ## stack each month, keeping in mind:
 ## the year 2002 only has data for the second half of the year
@@ -288,10 +291,14 @@ Nov_ave <- mean(brick(list_11), na.rm=TRUE)
 Dec_ave <- mean(brick(list_12), na.rm=TRUE)
 
 Su_ave <- mean(Jan_ave,Feb_ave,Mar_ave,Oct_ave,Nov_ave,Dec_ave, na.rm=TRUE)
+writeRaster(Su_ave, filename=paste0(env.derived,string.chr,"NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
 
 npp_su <- projectRaster(Su_ave,r)
+writeRaster(npp_su, filename=paste0(env.derived,string.chr,"500m_NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
 
-writeRaster(npp_su, filename=paste0(env.derived,string.chr,"NPP_Cafe_filled_SummerAverage.Rdata"))
+npp_su_shelf <- npp_su
+npp_su_shelf[is.na(r.depth)] <- NA
+writeRaster(npp_su_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
 ```
 
 ## Currents & Temperature
@@ -344,12 +351,12 @@ t_500_shelf <- t_500
 t_500_shelf[is.na(r.depth)] <- NA
 
 ## write rasters to file
-writeRaster(uv,           filename=paste0(env.derived,string.chr,"seafloorcurrents.Rdata"))
-writeRaster(uv_500,       filename=paste0(env.derived,string.chr,"500m_seafloorcurrents.Rdata"))
-writeRaster(uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_seafloorcurrents.Rdata"))
-writeRaster(t,            filename=paste0(env.derived,string.chr,"seafloortemperature.Rdata"))
-writeRaster(t_500,        filename=paste0(env.derived,string.chr,"500m_seafloortemperature.Rdata"))
-writeRaster(t_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_seafloortemperature.Rdata"))
+writeRaster(uv,           filename=paste0(env.derived,string.chr,"waom2k_seafloorcurrents.Rdata"))
+writeRaster(uv_500,       filename=paste0(env.derived,string.chr,"500m_waom2k_seafloorcurrents.Rdata"))
+writeRaster(uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom2k_seafloorcurrents.Rdata"))
+writeRaster(t,            filename=paste0(env.derived,string.chr,"waom2k_seafloortemperature.Rdata"))
+writeRaster(t_500,        filename=paste0(env.derived,string.chr,"500m_waom2k_seafloortemperature.Rdata"))
+writeRaster(t_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom2k_seafloortemperature.Rdata"))
 
 # plot(uv,xlim=c(0,1000000),ylim=c(-2300000,-1500000))
 # plot(coast.proj, add=TRUE)

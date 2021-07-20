@@ -7,8 +7,7 @@ output: html_document
 
 This is an overview of the methods, scripts and code used to generate the biological and environmental data for the 2019-2022 ARC-DP
 
-
-```{r setup, include=FALSE}
+```{r, warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(SOmap)
 library(viridis) ## for a nice continuous color palette (viridis or magma)

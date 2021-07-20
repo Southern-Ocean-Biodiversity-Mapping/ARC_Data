@@ -5,49 +5,69 @@ date: "2019-2022"
 output: html_document
 ---
 
-This is an overview of all individual image transects
-
-Stats for the database:
-Survey ; # images ; # in subset  ;  Biigle annotations
-
-WAP:      2374
-NBP1402:   761                          ? 2628 ?
-PS06:      500
-PS14:     1523
-PS18:     1705
-PS61:       69
-PS81:    14543                           83471
-PS96:     2736                            7692
-PS118:    7702
-TAN0802: 13045                            6653
-TAN1802:  7470                           12977
-TAN1901:  8301                           17642
-
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, warning=FALSE, message=FALSE}
 library(SOmap)
 library(viridis) ## for a nice continuous color palette (viridis or magma)
 library(RColorBrewer)
 library(graticule)
-
-source("C:/Users/jjansen/Desktop/science/Scripts/small R scripts and functions/SOmap_functions_JJ.R")
-
-env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
-bio.dir <- "C:/Users/jjansen/Desktop/science/data_biological/"
-
-##### load still and diatom sample locations and bathymetry:
-load(paste0(bio.dir,"Circumpolar_downwardstills_locations.Rdata"))
-load(paste0(bio.dir,"Circumpolar_diatom_locations.Rdata"))
-r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_bathy_fulldepth.gri"))$depth
-
-##### load coastline
-stereo <- as.character(r2@crs)
-#coast.lonlat <- shapefile("C:/Users/jjansen/Desktop/science/data_environmental/antarctic coastline/addv5_sc_coast_ln_gg.shp")
-#coast.proj <- spTransform(coast.lonlat, CRS(stereo))
 ```
 
-```{r, echo=FALSE}
+This is an overview of all individual image transects  
+
+### Setting up the environment
+
+```{r}
+## Jan's local machine:
+sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+bio.dir <-      paste0(sci.dir,"data_biological/")
+
+## remote repository (DOESN'T WORK YET):
+# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+
+## common paths (after "sci.dir")
+tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+```
+
+```{r}
+source(paste0(tools.dir,"SOmap_functions_JJ.R"))
+```
+
+```{r}
+##### load still and diatom sample locations and bathymetry:
+
+## from "Readin_Circumpolar_DownwardImage_Data.Rmd"
+load(paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
+
+## from ???
+load(paste0(ARC_Data.dir,"Circumpolar_Diatom_metadata.Rdata"))
+
+## from "ReadIn_Circumpolar_Environmental_Data.Rmd"
+r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_bathy_gebco_depth.grd"))
+
+##### load coastline
+#stereo <- as.character(r2@crs)
+load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+```
+
+### how many images are annotated?
+
+```{r}
+m <- data.frame(matrix(NA,nrow=length(dat.subset.list), ncol=3))
+names(m) <- c("Survey", "Total number of useful images", "Images to annotate")
+m[,1] <- names(dat.list.clean)
+for(i in 1:length(dat.subset.list)){
+  m[i,2] <- nrow(dat.list.clean[[i]])
+  m[i,3] <- nrow(dat.subset.list[[i]])
+}
+m[length(dat.subset.list)+1,] <- c("TOTAL",sum(m[,2]),sum(m[,3]))
+m
+```
+
+### setup plotting parameters
+
+```{r}
 ##### set colour parameters
 ## disrete colours:
 leg.cols <- brewer.pal(12,"Paired")
@@ -88,44 +108,46 @@ for(i in 1:length(polar.dat.start.list)){
 }
 ```
 
+### show all transects
 
 ```{r, fig.width=10, fig.height=10}
 ## puffer for plotting:
 puff <- 500
-##
+## loop over surveys
 for(i in 1:length(proj.list)){
+  ## new plot setup for each survey
   par(mfrow=c(2,2), mar=c(2,2,4,0))
   print(names(proj.list)[i])
-  
+  ## load survey data: all images and subset for annotations only
   dat <- dat.list.clean[[i]]
   dat2 <- dat.subset.list[[i]]
+  ## dataframes differ a little so need to look for the right columns to choose
   col.sel <- which(names(dat)=="transectID")
   col.sel2 <- which(names(dat2)=="transectID")
   col.sel.annotated <- which(names(dat)=="image.select")
   col.sel.annotated2 <- which(names(dat2)=="image.select")
+  ## find out how many transects there are for each survey
   transects <- levels(dat[,col.sel])
   transects2 <- levels(dat2[,col.sel2])
-
+  ## loop over transects for each survey
   for(k in 1:length(transects)){
+    ## select a transect
     row.sel <- which(dat[,col.sel]==transects[k])
     row.sel2 <- which(dat2[,col.sel2]==transects2[k])
-    
+    ## find out the spatial extent that the transect covers
     plot.dims <- extent(proj.list[[i]][row.sel])
+    ## add some informtion to the plot
     main <- paste0(names(proj.list)[i]," - ",transects[k],"\n",length(row.sel2)," of ",length(row.sel)," images; ", round(total.t.length.list.clean[[i]][k],0),"m transect")
-    
+    ## plot
     plot(r2, xlim=c(plot.dims[1]-puff,plot.dims[2]+puff), ylim=c(plot.dims[3]-puff,plot.dims[4]+puff), main=main, col=cols, breaks=breaks, legend=FALSE)
     points(proj.list[[i]][row.sel], col="yellow")
     points(proj.list.s[[i]][row.sel2],col="red")
-    
     d <- round(range(m.list[[i]][row.sel], na.rm=T),0)
     legend("topleft",legend=paste0("Min depth: ", d[2],"m"))
     legend("topright",legend=paste0("Max depth: ",d[1],"m"))
   }
-  }
+}
 ```
-
-
-
 
 ```{r, echo=FALSE, eval=FALSE}
 # range(dat.list$PS81$Bathy.depth..m.)

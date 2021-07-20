@@ -8,7 +8,7 @@ https://owncloud.imas-data-service.cloud.edu.au/index.php/s/ORxSWb6xbJRWfNI
 Currently, the easiest way is to download the folders to your local machine, keep the folder structure the same and simply edit the file-path at the top of each script that points to the "EnvironmentalData"-folder (that is if you want to generate any new files).  
 
 ## Naming convention for the files:  
-*  "Circumpolar_" : self exlanatory :-D
+*  "ReadIn_": scripts/files that read in raw or derived  datas and chnage the files into a format ready for analysis  
 *  "DP190101858_": start string for all analysis/overview scripts that don't create derived datasets  
 *  "EnvData_", "DownwardImages_", "Diatom": also self explanatory  
 *  "500m","5km", etc: resolution of the raster. If none, then it's the original resolution from the raw data.  

@@ -1,9 +1,11 @@
 # ARC_Data
 
 Main Script is:  
-__ReadIn_Circumpolar_Environmental_Data.Rmd__
+__ReadIn_Circumpolar_Environmental_Data.Rmd__  
 
-All raw and derived environmental files are in two folders on Owncloud within the folder "EnvironmentalData": "raw" and "derived".  
+All scripts in the main folder are in Rmarkdown, so each file has a _.Rmd_ and a _.html_.
+
+All raw and derived environmental files are in two folders on Owncloud within the folder _EnvironmentalData_: _raw_ and _derived_.  
 https://owncloud.imas-data-service.cloud.edu.au/index.php/s/ORxSWb6xbJRWfNI  
 Currently, the easiest way is to download the folders to your local machine, keep the folder structure the same and simply edit the file-path at the top of each script that points to the "EnvironmentalData"-folder (that is if you want to generate any new files).  
 

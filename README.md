@@ -11,7 +11,6 @@ Currently, the easiest way is to download the folders to your local machine, kee
 
 ## Naming convention for the files:  
 *  "ReadIn_": scripts/files that read in raw or derived  datas and chnage the files into a format ready for analysis  
-*  "DP190101858_": start string for all analysis/overview scripts that don't create derived datasets  
 *  "EnvData_", "DownwardImages_", "Diatom": also self explanatory  
 *  "500m","5km", etc: resolution of the raster. If none, then it's the original resolution from the raw data.  
 *  "shelf": in this case the data in the raster is restricted to the depth area between 0 - 3000m  

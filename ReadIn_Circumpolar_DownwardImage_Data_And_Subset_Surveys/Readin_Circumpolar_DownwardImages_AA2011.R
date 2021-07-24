@@ -21,7 +21,7 @@ library(readxl)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 #### specify paths
-img.path <- txt.path <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/AA2011/"
+img.path <- txt.path <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/AA2011/"
 
 # img.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/AA2011/"
 # txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/AA2011/"
@@ -61,8 +61,8 @@ for(i in 1:length(levels(dat3$transectID))){
 dat <- dat3
 dat$transectID <- factor(dat$transectID)
 
-#save(dat, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/AA2011_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/AA2011_dat.Rdata")
+#save(dat, file="C:/Users/jjansen/Desktop/science/data_biological/AA2011_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/AA2011_dat.Rdata")
 
 spatial.dat <- data.frame(dat[which(dat$image.select==1),c(7,6)])
 coordinates(spatial.dat) <- c("lon","lat")
@@ -84,15 +84,15 @@ selected.filenames.renamed <- paste0("AA2011_",dat$transectID_folder[dat.sel],"_
 
 ## copy files into Annotation folder
 img.path.origin <- paste0(img.path,"camera/",selected.filenames.path)
-img.path.destin <- paste0("C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images/AA2011/",selected.filenames.seq)
+img.path.destin <- paste0("C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images/AA2011/",selected.filenames.seq)
 file.copy(img.path.origin,img.path.destin)
 
 ## write list of filenames into cropped Annotation folder for upload
-img.path.destin_crop <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images_cropped/AA2011/"
+img.path.destin_crop <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images_cropped/AA2011/"
 write.table(selected.filenames.renamed, paste0(img.path.destin_crop,"filenames.txt"), eol=",", col.names=FALSE, row.names=FALSE)
 
 filenames.in.folder_original <- img.path.destin
-filenames.in.folder_changed <- paste0("C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images/AA2011/",selected.filenames.renamed)
+filenames.in.folder_changed <- paste0("C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images/AA2011/",selected.filenames.renamed)
 file.rename(filenames.in.folder_original,filenames.in.folder_changed)
 
 ########################################################
@@ -104,7 +104,7 @@ file.rename(filenames.in.folder_original,filenames.in.folder_changed)
 ## @@@ !!! @@@ 
 ## crop images, do this in the terminal using the following code (after navigating into the "Stills" folder):
 C:
-cd C:\Users\jjansen\OneDrive - University of Tasmania\Desktop\science\data_biological\Stills\
+cd C:\Users\jjansen\Desktop\science\data_biological\Stills\
 magick mogrify -path Annotation_images_cropped\AA2011\ -gravity Center -crop 90% +repage Annotation_images\AA2011\*jpg
 ## @@@ !!! @@@ 
 

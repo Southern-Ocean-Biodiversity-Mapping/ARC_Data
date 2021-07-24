@@ -697,7 +697,7 @@ for(i in 1:length(dat.list.clean)){
 names(polar.dat.subset.list) <- names(dat.subset.list) <- names(dat.list)
 ```
 
-### save output
+### save output for analysis
 
 ```{r, eval=FALSE, warning=FALSE, message=FALSE}
 save(polar.dat.0802,
@@ -732,3 +732,26 @@ save(polar.dat.0802,
      stereo,
      file=paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
 ```
+
+### standardise image metadata for csv-files
+
+We need:
+* SurveyID  
+* TransectID  
+* Filename  
+* Filename-standardised  
+* Longitude  
+* Latitude  
+* Date taken 
+* Measured depth
+* Link to original source  
+* License  
+
+```{r, eval=FALSE, warning=FALSE}
+for(i in 1:length(dat.list)){
+  message(names(dat.list)[i])
+  print(names(dat.list[[i]]))
+}
+## csv-files for each survey
+```
+

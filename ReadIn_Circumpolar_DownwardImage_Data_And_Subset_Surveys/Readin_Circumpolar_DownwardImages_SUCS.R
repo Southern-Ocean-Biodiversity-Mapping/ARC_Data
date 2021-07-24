@@ -11,22 +11,22 @@ substrRight <- function(x, n){
   substr(x, nchar(x)-n+1, nchar(x))
 }
 
-env.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/"
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/derived/"
 image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/"
 
 ## environmental data for plotting
-# my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
+# my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
 # set_data_roots(my_data_dir)
 # r <- readtopo("ibcso")
 # r2 <- r
 # r2[r2>0] <- NA
 # r2[r2<(-2500)] <- NA
-r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_bathy500m_shelf_gebco2020_depth.grd"))
+r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 load(paste0(env.dir,"Circumpolar_Coastline.Rdata"))
 stereo <- crs(coast.proj)#"+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
 
 ## 4 different surveys, so a number of metadata records and image folders need to be loaded:
-bio.path <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/"
+bio.path <- "C:/Users/jjansen/Desktop/science/data_biological/"
 
 image.dir_1 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/JR262/"
 image.dir_2 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/JR15005/"
@@ -43,10 +43,13 @@ dat.JR262.raw <- dat.JR262.raw[-c(2,4,6),]
 dat.JR262.raw[,c(6,5)] <- dat.JR262.raw[,c(6,5)]*-1
 dat.JR15005.raw <- read.table(paste0(image.dir_2,"JR15005_SUCS.txt"),sep="\t", header=TRUE)
 names(dat.JR15005.raw)[3:4] <- c("Latitude","Longitude")
+dat.JR15005.raw$Time <- dmy_hm(dat.JR15005.raw$Time)
 dat.JR17001.raw <- read_xlsx(paste0(image.dir_3,"JR17001_SUCS.xlsx"))
+dat.JR17001.raw$Time <- ymd_hms(dat.JR17001.raw$Time)
 dat.JR17003.raw <- read.csv(paste0(image.dir_4,"JR17003_SUCS.csv"))
 dat.JR17003.raw$Event.No..Built.In...Integer.[which(dat.JR17003.raw$Event.No..Built.In...Integer.=="O11")] <- 11
 names(dat.JR17003.raw)[9:10] <- c("Latitude","Longitude")
+dat.JR17003.raw$Time <- dmy_hm(dat.JR17003.raw$Time)
 lonlat <- rbind((dat.JR262.raw[,c(6,5)]),dat.JR15005.raw[,c(4,3)],dat.JR17001.raw[,c(6,5)],dat.JR17003.raw[,c(10,9)])
 
 # spatial.dat <- data.frame(lonlat)
@@ -139,12 +142,15 @@ bad.dir.files_4 <- list.files(path.bad.images_4,pattern=".", recursive=TRUE)
 bad.dir.files_4 <- bad.dir.files_4[which(grepl(".png|.jpg", bad.dir.files_4))]
 good.images_4 <- bad.dir.files_4[-grep("bad_quality",bad.dir.files_4)]
 
-dat.JR262 <- data.frame(cbind("JR262",dir.files_1,sub("/.*","",dir.files_1),sub(".*/","",dir.files_1)),NA,NA)
-dat.JR15005 <- data.frame(cbind("JR15005",dir.files_2,sub("/.*","",dir.files_2),sub(".*/","",dir.files_2)),NA,NA)
-dat.JR17001 <- data.frame(cbind("JR17001",dir.files_3,sub("/.*","",dir.files_3),sub(".*/","",dir.files_3)),NA,NA)
-dat.JR17003 <- data.frame(cbind("JR17003",dir.files_4,sub("/.*","",dir.files_4),sub(".*/","",dir.files_4)),NA,NA)
+dat.JR262 <- data.frame(cbind("JR262",dir.files_1,sub("/.*","",dir.files_1),sub(".*/","",dir.files_1)),NA,NA,NA,NA)
+dat.JR15005 <- data.frame(cbind("JR15005",dir.files_2,sub("/.*","",dir.files_2),sub(".*/","",dir.files_2)),NA,NA,NA,NA)
+dat.JR17001 <- data.frame(cbind("JR17001",dir.files_3,sub("/.*","",dir.files_3),sub(".*/","",dir.files_3)),NA,NA,NA,NA)
+dat.JR17003 <- data.frame(cbind("JR17003",dir.files_4,sub("/.*","",dir.files_4),sub(".*/","",dir.files_4)),NA,NA,NA,NA)
 names(dat.JR262) <- names(dat.JR15005) <- names(dat.JR17001) <- names(dat.JR17003) <- 
-  c("surveyID", "filename_in_folder","transectID.raw", "filename","lon","lat")
+  c("surveyID", "filename_in_folder","transectID.raw", "filename","lon","lat","time","depth")
+dat.JR15005$time <- as_datetime(dat.JR15005$time)
+dat.JR17001$time <- as_datetime(dat.JR17001$time)
+dat.JR17003$time <- as_datetime(dat.JR17003$time)
 
 t <- sub("] stills","",dat.JR262$transectID.raw)
 t <- sub(") stills","",t)
@@ -174,6 +180,8 @@ dat.JR17003$transectID <- t
 for(i in 1:4){
   sel <- which(grepl(dat.JR262.raw$Location[i], dat.JR262$transectID.raw))
   dat.JR262[sel,5:6] <- dat.JR262.raw[i,c(6,5)]
+  dat.JR262$time[sel] <- dat.JR262.raw$Time[i]
+  dat.JR262$depth[sel] <- dat.JR262.raw$Depth[i]
 }
 ## JR15005 (interpolation)
 dat.JR15005$image.number <- as.numeric(substr(sub(".*P","",dat.JR15005$filename),1,2))
@@ -191,16 +199,24 @@ for(i in 1:length(levels(dat.JR15005.raw$transectID))){
   lats <- seq(dat.JR15005.raw$Latitude[r.sel[1]], dat.JR15005.raw$Latitude[r.sel[2]],length.out=l)
   lons <- seq(dat.JR15005.raw$Longitude[r.sel[1]], dat.JR15005.raw$Longitude[r.sel[2]],length.out=l)
   print(lats)
+  time.seq <- seq(dat.JR15005.raw$Time[r.sel[1]], dat.JR15005.raw$Time[r.sel[2]],length.out=l)
   for(k in 1:l){
     n.sel <- which(!is.na(match(dat.JR15005$image.number[sel],k)))
     dat.JR15005$lat[sel][n.sel] <- lats[k]
     dat.JR15005$lon[sel][n.sel] <- lons[k]
+    dat.JR15005$time[sel][n.sel] <- time.seq[k]
   }
 }
 ## JR17001 (lat-lons for each image)
 m.sel <- match(substr(dat.JR17001$filename,1,8),dat.JR17001.raw$`Image ID`)
 dat.JR17001$lat <- dat.JR17001.raw$Latitude[m.sel]
 dat.JR17001$lon <- dat.JR17001.raw$Longitude[m.sel]
+dat.JR17001$time <- dat.JR17001.raw$Time[m.sel]
+dat.JR17001$depth <- dat.JR17001.raw$Depth[m.sel]
+dat.JR17001$temperature <- dat.JR17001.raw$temp[m.sel]
+dat.JR17001$salinity <- dat.JR17001.raw$salinity[m.sel]
+dat.JR17001$oxygen <- dat.JR17001.raw$oxygen[m.sel]
+dat.JR17001$chla <- dat.JR17001.raw$chla[m.sel]
 
 ## JR17003 (lat-lons for each image)
 dat.JR17003$image.code <- paste0(substr(dat.JR17003$filename,4,5),"_",substr(sub(".*_","",dat.JR17003$filename),1,4))
@@ -208,6 +224,7 @@ dat.JR17003.raw$image.code <- paste0(dat.JR17003.raw$Event.No..Built.In...Intege
 m.sel <- match(dat.JR17003$image.code,dat.JR17003.raw$image.code)
 dat.JR17003$lat <- dat.JR17003.raw$Latitude.seatex.gga...seatex.gga.lat.[m.sel]
 dat.JR17003$lon <- dat.JR17003.raw$Longitude.seatex.gga...seatex.gga.lon[m.sel]
+dat.JR17003$depth <- dat.JR17003.raw$Water.depth.ea600...ea600.depth.[m.sel]
 
 ##### bad images
 good.dat.JR262 <- dat.JR262[which(dat.JR262$filename_in_folder%in%good.images_1),]
@@ -250,8 +267,8 @@ for(i in 1:length(levels(dat$transectID))){
 }
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR262_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR262_dat.Rdata")
+# save(dat, file="C:/Users/jjansen/Desktop/science/data_biological/JR262_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/JR262_dat.Rdata")
 
 spatial.dat <- data.frame(dat[,5:6])
 coordinates(spatial.dat) <- c("lon","lat")
@@ -354,8 +371,8 @@ for(i in 1:length(levels(dat$transectID))){
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR15005_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR15005_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/JR15005_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/JR15005_dat.Rdata")
 
 barplot(round(total.t.length.v), names.arg=as.character(levels(dat$transectID)), las=2, main="JR15005", xlab="TransectID", ylab="length in m")
 
@@ -427,6 +444,7 @@ dat <- good.dat.JR17001[-which(is.na(good.dat.JR17001$lon)),]
 dat$transectID <- factor(dat$transectID)
 
 ## calculate transect length, define how many images to select and give images a random number
+## IMAGE SELECT IS NOT REPRODUCIBLE BECAUSE THE SEED WAS NOT SET WHEN I RAN IT!!!
 dat$image.select <- NA
 total.t.length.v <- NA
 dat$dist.from.start <- NA
@@ -450,7 +468,7 @@ for(i in 1:length(levels(dat$transectID))){
   total.t.length.v[i] <- dat$dist.from.start[dat.subset.v[t.counts]]
   #### subset images
   ## choose a spatial random subset of images in each transect using quasiSamp on the distance from the start of the transect
-  set.seed(4)
+  #set.seed(4)
   samp <- quasiSamp(length(dat.subset.v)*5,dimension=1,potential.sites=dat$dist.from.start[dat.subset.v])
   samp.v <- samp$ID[which(duplicated(samp)==FALSE)]
   print(paste0("first double selection for image # ", which(duplicated(samp)==TRUE)[1]))
@@ -466,8 +484,8 @@ for(i in 1:length(levels(dat$transectID))){
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR17001_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR17001_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/JR17001_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/JR17001_dat.Rdata")
 
 barplot(round(total.t.length.v), names.arg=as.character(levels(dat$transectID)), las=2, main="JR17001", xlab="TransectID", ylab="length in m")
 
@@ -538,6 +556,7 @@ dat <- good.dat.JR17003[-which(is.na(good.dat.JR17003$lon)),]
 dat$transectID <- factor(dat$transectID)
 
 ## calculate transect length, define how many images to select and give images a random number
+## IMAGE SELECT IS NOT REPRODUCIBLE BECAUSE THE SEED WAS NOT SET WHEN I RAN IT!!!
 dat$image.select <- NA
 total.t.length.v <- NA
 dat$dist.from.start <- NA
@@ -561,7 +580,7 @@ for(i in 1:length(levels(dat$transectID))){
   total.t.length.v[i] <- dat$dist.from.start[dat.subset.v[t.counts]]
   #### subset images
   ## choose a spatial random subset of images in each transect using quasiSamp on the distance from the start of the transect
-  set.seed(2)
+  #set.seed(2)
   samp <- quasiSamp(length(dat.subset.v)*5,dimension=1,potential.sites=dat$dist.from.start[dat.subset.v])
   samp.v <- samp$ID[which(duplicated(samp)==FALSE)]
   print(paste0("first double selection for image # ", which(duplicated(samp)==TRUE)[1]))
@@ -577,8 +596,8 @@ for(i in 1:length(levels(dat$transectID))){
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR17003_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/JR17003_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/JR17003_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/JR17003_dat.Rdata")
 
 barplot(round(total.t.length.v), names.arg=as.character(levels(dat$transectID)), las=2, main="JR17003", xlab="TransectID", ylab="length in m")
 

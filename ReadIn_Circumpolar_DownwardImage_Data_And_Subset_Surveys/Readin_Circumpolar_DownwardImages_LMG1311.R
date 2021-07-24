@@ -6,12 +6,13 @@ library(raster)
 library(lubridate)
 library(raadtools)
 library(readxl)
+library(exifr)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 substrRight <- function(x, n){
   substr(x, nchar(x)-n+1, nchar(x))
 }
 
-env.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/"
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/derived/"
 image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/"
 
 ## environmental data for plotting
@@ -21,12 +22,12 @@ image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/"
 # r2 <- r
 # r2[r2>0] <- NA
 # r2[r2<(-2500)] <- NA
-r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_bathy500m_shelf_gebco2020_depth.grd"))
+r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 load(paste0(env.dir,"Circumpolar_Coastline.Rdata"))
 stereo <- crs(coast.proj)#"+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
 
 ## 4 different surveys, so a number of metadata records and image folders need to be loaded:
-bio.path <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/"
+bio.path <- "C:/Users/jjansen/Desktop/science/data_biological/"
 
 image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/LMG1311/"
 path.bad.images <- "D:/ARC_DP_data/adjusted_LMG1311/"
@@ -39,6 +40,8 @@ dat.LMG1311.raw$lon_end <- as.numeric(measurements::conv_unit(gsub('°',' ',dat.
 dat.LMG1311.raw$lat_end <- as.numeric(measurements::conv_unit(gsub('°',' ',dat.LMG1311.raw$Latitude.S.end), from='deg_dec_min',to='dec_deg'))*-1
 lons <- as.numeric(c(dat.LMG1311.raw$lon_start, dat.LMG1311.raw$lon_end))
 lats <- as.numeric(c(dat.LMG1311.raw$lat_start, dat.LMG1311.raw$lat_end))
+dat.LMG1311.raw$depth.start <- c(355,446)
+dat.LMG1311.raw$depth.end <- c(403,675.8)
 
 spatial.dat <- data.frame(cbind(lons,lats))
 coordinates(spatial.dat) <- c("lons","lats")
@@ -54,11 +57,15 @@ dir.files <- list.files(image.dir,pattern=".JPG", recursive=TRUE)
 bad.dir.files <- list.files(path.bad.images,pattern=".JPG", recursive=TRUE)
 good.images <- sub(".*/","",bad.dir.files[-grep("bad_quality",bad.dir.files)])
 
-dat.LMG1311 <- data.frame(cbind("LMG1311",NA,dir.files,sub(".*/","",dir.files)),NA,NA,NA)
-names(dat.LMG1311) <- c("surveyID", "transectID","filename_in_folder","filename","lon","lat","DateTime")
+dat.LMG1311 <- data.frame(cbind("LMG1311",NA,dir.files,sub(".*/","",dir.files)),NA,NA,NA,NA,NA)
+names(dat.LMG1311) <- c("surveyID", "transectID","filename_in_folder","filename","lon","lat","DateTime", "depth.start", "depth.end")
 dat.LMG1311$DateTime <- read_exif(paste0(image.dir,dir.files))$CreateDate
 dat.LMG1311$transectID[1:36] <- "2"
 dat.LMG1311$transectID[37:263] <- "3"
+dat.LMG1311$depth.start[1:36] <- dat.LMG1311.raw$depth.start[1]
+dat.LMG1311$depth.start[37:263] <- dat.LMG1311.raw$depth.start[2]
+dat.LMG1311$depth.end[1:36] <- dat.LMG1311.raw$depth.end[1]
+dat.LMG1311$depth.end[37:263] <- dat.LMG1311.raw$depth.end[2]
 
 transect2_start_image <- 5
 transect2_end_image <- 36
@@ -109,6 +116,7 @@ dat$transectID <- factor(dat$transectID)
 
 ## transect 2 has 3 images separated from the rest
 ## select these images and then base the subset on the remaining transect 
+## THIS IS NOT REPRODUCIBLE, SOMETHING WENT WRONG WHEN SETTING THE SEED
 dat$image.select <- NA
 #dat$image.select[1:3] <- 1:3
 total.t.length.v <- NA
@@ -136,7 +144,7 @@ for(i in 1:length(levels(dat$transectID))){
   total.t.length.v[i] <- dat$dist.from.start[dat.subset.v[t.counts]]
   #### subset images
   ## choose a spatial random subset of images in each transect using quasiSamp on the distance from the start of the transect
-  set.seed(42)
+  #set.seed(42)
   samp <- quasiSamp(length(dat.subset.v)*5,dimension=1,potential.sites=dat$dist.from.start[dat.subset.v])
   samp.v <- samp$ID[which(duplicated(samp)==FALSE)]
   print(paste0("first double selection for image # ", which(duplicated(samp)==TRUE)[1]))
@@ -155,8 +163,8 @@ for(i in 1:length(levels(dat$transectID))){
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/LMG1311_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/LMG1311_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/LMG1311_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/LMG1311_dat.Rdata")
 
 barplot(round(total.t.length.v), names.arg=as.character(levels(dat$transectID)), las=2, main="LMG1311", xlab="TransectID", ylab="length in m")
 
@@ -216,11 +224,11 @@ selected.filenames.folders <- paste0(gsub('/.*', '', dat$filename_in_folder)[dat
 
 ## copy files into Annotation folder
 img.path.origin <- paste0(image.dir,selected.filenames.folders,selected.filenames)
-img.path.destin <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images/LMG1311/"
+img.path.destin <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images/LMG1311/"
 file.copy(img.path.origin,img.path.destin)
 
 ## write list of filenames into cropped Annotation folder for upload
-img.path.destin_crop <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images_cropped/LMG1311/"
+img.path.destin_crop <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images_cropped/LMG1311/"
 write.table(selected.filenames.renamed, paste0(img.path.destin_crop,"LMG1311_filenames.txt"), eol=",", col.names=FALSE, row.names=FALSE)
 
 filenames.in.folder_original <- paste0(img.path.destin,selected.filenames)

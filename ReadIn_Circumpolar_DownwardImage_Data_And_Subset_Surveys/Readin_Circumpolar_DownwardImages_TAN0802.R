@@ -36,13 +36,29 @@ library(geosphere)
 library(MBHdesign)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+
+r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/TAN0802/TAN0802_1_raw_images_and_metadata/"
+
+ps.path <- paste0(r.path,"images_colourcorrected/")
+path.bad.images <- paste0(ps.path,"bad_quality/")
+
 #### specify paths
-img.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/TAN0802/"
+img.path <- paste0(r.path,"images_original/")
 #txt.path <- "D:/ARC_DP_data/TAN0802/tan0802_OFOP_QA_prot_files/"
 #gps.txt.path <- "D:/ARC_DP_data/TAN0802/DTIS_splined track_Jan09/"
-txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/TAN0802/DTIS_splined track_Jan09/"
+txt.path <- paste0(r.path,"metadata/DTIS_splined track_Jan09/")
 
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
+my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
+
+################################################
+## INSERT AFTER I'VE RUN IT
+load("C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/TAN0802_dat.Rdata")
+dat.old <- dat
+t.old <- total.t.length.v
+## TBC further below: THIS IS A MESS!!!
+################################################
 
 #### read in metadata associated with the images
 files <- list.files(img.path,pattern = "*.jpg", full.names = TRUE)
@@ -72,6 +88,7 @@ dat$GPS_lat <- NA
 dat$GPS_lon <- NA
 dat$GPS_ship_lat <- NA
 dat$GPS_ship_lon <- NA
+dat$depth <- NA
 for(i in 1:length(txt.files)){
   loop.transect.ID <- substr(txt.files.short[i],9,11)
   loop.dat.select <- which(dat$transectID==loop.transect.ID)
@@ -111,13 +128,14 @@ for(i in 1:length(txt.files)){
   dat$GPS_lon[loop.dat.select][sel.dat] <- txt.loop$SUB1_Lon[sel.txt]
   dat$GPS_ship_lat[loop.dat.select][sel.dat] <- txt.loop$SHIP_Lat[sel.txt]
   dat$GPS_ship_lon[loop.dat.select][sel.dat] <- txt.loop$SHIP_Lon[sel.txt]
+  dat$depth[loop.dat.select][sel.dat] <- txt.loop$Water_Depth[sel.txt]
 }
 
 #### plot all positions of the actual images, and underlay all tracked gps locations to check if anything is off ####
-set_data_roots(my_data_dir)
-r <- readtopo("ibcso")
-r2 <- r
-r2[r2>0] <- NA
+# set_data_roots(my_data_dir)
+# r <- readtopo("ibcso")
+# r2 <- r
+# r2[r2>0] <- NA
 
 dat$GPS_lat[dat$GPS_lat==-999.9] <- NA
 dat$GPS_lon[dat$GPS_lon==-999.9] <- NA
@@ -125,51 +143,51 @@ dat$GPS_lon[dat$GPS_lon==0] <- NA
 
 dat2 <- dat[-which(is.na(dat$GPS_lat+dat$GPS_lon)),]
 
-## overview
-spatial.dat <- data.frame(cbind(dat2$GPS_lon, dat2$GPS_lat))
-names(spatial.dat) <- c("Longitude","Latitude")
-coordinates(spatial.dat) <- c("Longitude","Latitude")
-proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
-polar.dat <- spTransform(spatial.dat, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-
-spatial.dat.ship <- data.frame(cbind(dat2$GPS_ship_lon, dat2$GPS_ship_lat))[!is.na(dat2$GPS_ship_lat+dat2$GPS_ship_lon),]
-names(spatial.dat.ship) <- c("Longitude","Latitude")
-coordinates(spatial.dat.ship) <- c("Longitude","Latitude")
-proj4string(spatial.dat.ship) <- CRS("+proj=longlat +datum=WGS84")
-polar.dat.ship <- spTransform(spatial.dat.ship, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-
-plot(r2, xlim=c(-600000,500000), ylim=c(-2600000,-1200000))
-points(polar.dat)
-#points(polar.dat.ship, col="red")
-text(polar.dat,labels=substr(dat2$FileName,9,11), adj=c(2,2))
-
-## each transect individually
-for(i in 1:length(txt.files)){
-  loop.transect.ID <- substr(txt.files.short[i],9,11)
-  loop.dat.select <- which(dat2$transectID==loop.transect.ID)
-  loop.dat <- dat2[loop.dat.select,]
-  message(i)
-  print(paste0("transect ",loop.transect.ID))
-  #print(loop.dat$GPS_lon)
-  if(nrow(loop.dat)==0) next
-  ## transform coordinates
-  spatial.dat <- data.frame(cbind(loop.dat$GPS_lon, loop.dat$GPS_lat))
-  names(spatial.dat) <- c("Longitude","Latitude")
-  coordinates(spatial.dat) <- c("Longitude","Latitude")
-  proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
-  polar.dat <- spTransform(spatial.dat, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-  
-  spatial.dat.ship <- data.frame(cbind(loop.dat$GPS_ship_lon, loop.dat$GPS_ship_lat))[!is.na(loop.dat$GPS_ship_lat+loop.dat$GPS_ship_lon),]
-  names(spatial.dat.ship) <- c("Longitude","Latitude")
-  coordinates(spatial.dat.ship) <- c("Longitude","Latitude")
-  proj4string(spatial.dat.ship) <- CRS("+proj=longlat +datum=WGS84")
-  polar.dat.ship <- spTransform(spatial.dat.ship, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-  
-  ## plot
-  plot(polar.dat, main=paste0("transect ",loop.transect.ID))
-  points(polar.dat.ship, col="blue")
-  scalebar(200, type="bar")
-}
+# ## overview
+# spatial.dat <- data.frame(cbind(dat2$GPS_lon, dat2$GPS_lat))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat <- spTransform(spatial.dat, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+# 
+# spatial.dat.ship <- data.frame(cbind(dat2$GPS_ship_lon, dat2$GPS_ship_lat))[!is.na(dat2$GPS_ship_lat+dat2$GPS_ship_lon),]
+# names(spatial.dat.ship) <- c("Longitude","Latitude")
+# coordinates(spatial.dat.ship) <- c("Longitude","Latitude")
+# proj4string(spatial.dat.ship) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.ship <- spTransform(spatial.dat.ship, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+# 
+# plot(r2, xlim=c(-600000,500000), ylim=c(-2600000,-1200000))
+# points(polar.dat)
+# #points(polar.dat.ship, col="red")
+# text(polar.dat,labels=substr(dat2$FileName,9,11), adj=c(2,2))
+# 
+# ## each transect individually
+# for(i in 1:length(txt.files)){
+#   loop.transect.ID <- substr(txt.files.short[i],9,11)
+#   loop.dat.select <- which(dat2$transectID==loop.transect.ID)
+#   loop.dat <- dat2[loop.dat.select,]
+#   message(i)
+#   print(paste0("transect ",loop.transect.ID))
+#   #print(loop.dat$GPS_lon)
+#   if(nrow(loop.dat)==0) next
+#   ## transform coordinates
+#   spatial.dat <- data.frame(cbind(loop.dat$GPS_lon, loop.dat$GPS_lat))
+#   names(spatial.dat) <- c("Longitude","Latitude")
+#   coordinates(spatial.dat) <- c("Longitude","Latitude")
+#   proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+#   polar.dat <- spTransform(spatial.dat, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#   
+#   spatial.dat.ship <- data.frame(cbind(loop.dat$GPS_ship_lon, loop.dat$GPS_ship_lat))[!is.na(loop.dat$GPS_ship_lat+loop.dat$GPS_ship_lon),]
+#   names(spatial.dat.ship) <- c("Longitude","Latitude")
+#   coordinates(spatial.dat.ship) <- c("Longitude","Latitude")
+#   proj4string(spatial.dat.ship) <- CRS("+proj=longlat +datum=WGS84")
+#   polar.dat.ship <- spTransform(spatial.dat.ship, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#   
+#   ## plot
+#   plot(polar.dat, main=paste0("transect ",loop.transect.ID))
+#   points(polar.dat.ship, col="blue")
+#   scalebar(200, type="bar")
+# }
 
 #####################################################################
 ##### 2. SUBSET IMAGES FROM IMAGE LOCATIONS (& STORE FILENAMES) #####
@@ -183,7 +201,7 @@ transects.dist.to.end <- c("141","219","244")
 #bad_images.path <- "D:/ARC_DP_data/adjusted_TAN0802/bad_quality/"
 #bad_images <- list.files(bad_images.path)
 # save(bad_images, file="TAN0802_filenames_badimages.RData")
-load("TAN0802_filenames_badimages.RData")
+load("C:/Users/jjansen/Desktop/science/DP190101858_MappingAntarcticSeafloorBiodiversity/TAN0802_filenames_badimages.RData")
 # ## good images have been copied into the folder "TAN0802_good_images"
 # good_images.path <- "D:/ARC_DP_data/TAN0802/TAN0802_good_images/"
 # good_images <- list.files(good_images.path)
@@ -193,8 +211,24 @@ usable.images.raw <- dat[which(dat$FileName%!in%bad_images),]
 ## and also those without gps data
 usable.images <- usable.images.raw[!is.na(usable.images.raw$GPS_lat+usable.images.raw$GPS_lon),]
 
-dat <- data.frame(usable.images[,which(names(usable.images)%in%c("FileName","GPS_lon", "GPS_lat","GPS_ship_lon","GPS_ship_lat"))])[,c(3,2,1,5,4)]
+dat <- data.frame(usable.images[,which(names(usable.images)%in%c("FileName","GPS_lon", "GPS_lat","GPS_ship_lon","GPS_ship_lat","depth","CreateDate.datetime"))])[,c(4,3,1,6,5,7,2)]
 dat$transectID <- as.factor(substr(dat$FileName,9,11))
+
+
+
+################################################
+## SECOND INSERT AFTER I'VE RUN IT:
+dat.old$depth <- dat$depth
+dat.old$time <- dat$CreateDate.datetime
+dat <- dat.old
+total.t.length.v <- t.old
+save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/Desktop/science/data_biological/TAN0802_dat.Rdata")
+################################################
+
+  
+  
+  
+  
 ## calculate transect length, define how many images to select and give images a random number
 dat$image.select <- NA
 total.t.length.v <- NA
@@ -254,8 +288,8 @@ for(i in 1:length(levels(dat$transectID))){
 dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-#save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/TAN0802_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/TAN0802_dat.Rdata")
+#save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/Desktop/science/data_biological/TAN0802_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/TAN0802_dat.Rdata")
 
 t.images <- ceiling(total.t.length.v/100)
 t.images.full <- ceiling(t.l/100)

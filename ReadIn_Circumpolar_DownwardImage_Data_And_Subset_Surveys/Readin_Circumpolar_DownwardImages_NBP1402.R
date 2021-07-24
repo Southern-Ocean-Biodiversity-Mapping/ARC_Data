@@ -25,7 +25,10 @@ img.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/"
 txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/"
 gps.txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/Totten_all/"
 
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
+r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
+nbp.path <- paste0(r.path,"NBP1402/NBP1402_1_raw_images_and_metadata/images_colourcorrected/")
+
+my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/raw/accessed_through_R"
 
 ###############################################################################
 ##
@@ -36,6 +39,7 @@ dat$FileName <- as.character(dat$FileName)
 add.yoyo <- which(grepl("yoyo",dat$FileName)==FALSE)
 dat$FileName[add.yoyo] <- paste0("yoyo",as.character(dat$FileName[add.yoyo]))
 dat$FileName <- paste0(dat$FileName,".jpg")
+dat$time <- dmy_hm(paste0(dat$Date," ",dat$Time))
 
 #### plot all positions of the actual images, and underlay all tracked gps locations to check if anything is off ####
 set_data_roots(my_data_dir)
@@ -140,10 +144,10 @@ dat3 <- dat2
 ## dat3 already has all images without gps removed
 
 ## now remove images that are taken too close or too ar off the seafloor and copy them into a different folder to visually check
-path.bad.images <- "D:/ARC_DP_data/adjusted_NBP1402/bad_quality/"
+path.bad.images <- paste0(nbp.path, "bad_quality/")
 #bad_images <- list.files(path.bad.images)
 # save(bad_images, file="NBP1402_filenames_badimages.RData")
-load("NBP1402_filenames_badimages.RData")
+load("C:/Users/jjansen/Desktop/science/DP190101858_MappingAntarcticSeafloorBiodiversity/NBP1402_filenames_badimages.RData")
 # file.copy(dat3$SourceFile[dat3$SUB1_Altitude>35|dat3$SUB1_Altitude<10], path.bad.images)
 # file.copy(dat3$SourceFile[dat3$SUB1_Altitude<=35&dat3$SUB1_Altitude>=10], path.good.images)
 # dat3$SUB1_Altitude[dat3$FileName=="tan1901_164_225.jpg"]
@@ -153,16 +157,17 @@ usable.images.raw <- dat3[which(dat3$FileName%!in%bad_images),]
 ## and also those without gps data
 usable.images.raw2 <- usable.images.raw[!is.na(usable.images.raw$GPS_lat+usable.images.raw$GPS_lon),]
 ## and those that seem to not extist in file
-usable.images <- usable.images.raw2[-which(usable.images.raw2$FileName%!in%list.files("D:/ARC_DP_data/adjusted_NBP1402/")),]
+usable.images <- usable.images.raw2[-which(usable.images.raw2$FileName%!in%list.files(nbp.path)),]
 
 ## all transects are straight, but some gps variation: use distance to start point to calculate subset
-dat <- data.frame(usable.images[,which(names(usable.images)%in%c("FileName","GPS_lon", "GPS_lat","Depth"))])[,c(4,3,1,2)]
+dat <- data.frame(usable.images[,which(names(usable.images)%in%c("FileName","GPS_lon", "GPS_lat","Depth","time"))])[,c(4,3,1,5,2)]
 dat$FileName_uniform <- substr(dat$FileName,1,6)
 dat$FileName_uniform <- gsub("yoyo","",dat$FileName_uniform)
 dat$FileName_uniform <- gsub("_DSC","",dat$FileName_uniform)
 dat$FileName_uniform <- paste0("Transect",dat$FileName_uniform)
 dat$transectID <- factor(dat$FileName_uniform)
 ## calculate transect length, define how many images to select and give images a random number
+## SUBSET NOT REPRODUCIBLE BECAUSE set.seed() DIDN'T WORK
 dat$image.select <- NA
 total.t.length.v <- NA
 t.l <- NA
@@ -223,8 +228,8 @@ for(i in 1:length(levels(dat$transectID))){
 dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-#save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/NBP1402_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/NBP1402_dat.Rdata")
+#save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/Desktop/science/data_biological/NBP1402_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/NBP1402_dat.Rdata")
 
 t.images <- ceiling(total.t.length.v/100)
 t.images.full <- ceiling(t.l/100)

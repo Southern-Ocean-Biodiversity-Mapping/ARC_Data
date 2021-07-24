@@ -17,28 +17,36 @@ library(lubridate)
 library(readxl)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+
+r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/PS14/PS14_1_raw_images_and_metadata/"
+
+ps.path <- paste0(r.path,"images_colourcorrected/")
+path.bad.images <- paste0(ps.path,"bad_quality/")
+
+ps.path.img <- paste0(r.path,"images_original/")
+ps.path.met <- paste0(r.path,"metadata/")
+
+##
 # #### load depth
-library(raadtools)
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
-set_data_roots(my_data_dir)
-r <- readtopo("ibcso")
-r2 <- r
-r2[r2>0] <- NA
-r2[r2<(-2000)] <- NA
+# library(raadtools)
+# my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
+# set_data_roots(my_data_dir)
+# r <- readtopo("ibcso")
+# r2 <- r
+# r2[r2>0] <- NA
+# r2[r2<(-2000)] <- NA
 # 
 #### load coastline
 stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
-coast.lonlat <- shapefile("C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/antarctic coastline/addv5_sc_coast_ln_gg.shp")
-coast.proj <- spTransform(coast.lonlat, CRS(stereo))
 
-##
-image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/PS14/"
-path.bad.images <- "D:/ARC_DP_data/adjusted_PS14/bad_quality/"
+load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 
 ## metadata
-dat.PS14 <- get(load(file=paste0(image.dir,"/PS14_metadata.Rdata")))
+dat.PS14 <- get(load(file=paste0(ps.path.met,"/PS14_metadata.Rdata")))
 ## image names
-dir.files <- list.files(image.dir,pattern=".jpg")
+dir.files <- list.files(ps.path.img,pattern=".jpg")
 
 ## sort by descending transectID
 dat.PS14.1 <- dat.PS14[order(substring(dat.PS14[,1],1,3)),]
@@ -94,10 +102,18 @@ for(i in 1:ntransects){
 ## but replace lon/lat positions for all images on transects that were unrealistically fast with starting lon-lat only
 files.dat[,6] <- NA
 files.dat[,7] <- NA
-names(files.dat)[6:7] <- c("lon","lat")
+files.dat[,8] <- as_datetime(NA)
+files.dat[,9] <- as_datetime(NA)
+files.dat[,10] <- NA
+files.dat[,11] <- NA
+names(files.dat)[6:11] <- c("lon","lat","time_start", "time_end","depth_start","depth_end")
 for(i in 1:ntransects){
   t.sel <- which(files.dat[,2]==levels(files.dat[,2])[i])
   img.sel <- files.dat[t.sel,5]
+  files.dat[t.sel,8] <- ymd_hms(dat.PS14$`Date/Time_Start`[i])
+  files.dat[t.sel,9] <- ymd_hms(dat.PS14$`Date/Time_End`[i])
+  files.dat[t.sel,10] <- dat.PS14$Elevation_Start[i]
+  files.dat[t.sel,11] <- dat.PS14$Elevation_End[i]
   if(i%in%t.toofast){
     files.dat[t.sel,6] <- dat.PS14$Longitude_Start[i]
     files.dat[t.sel,7] <- dat.PS14$Latitude_Start[i]
@@ -107,28 +123,22 @@ for(i in 1:ntransects){
   }
 }
 PS14_image_metadata <- files.dat
-#save(PS14_image_metadata, file=paste0(image.dir,"PS14_image_metadata.Rdata"))
+#save(PS14_image_metadata, file=paste0(ps.path.met,"PS14_image_metadata.Rdata"))
 
 #####################################################################
 ##### 2. SUBSET IMAGES FROM IMAGE LOCATIONS (& STORE FILENAMES) #####
 #####################################################################
 ## dataframe containing: coordinates, filename, transectID
 
+## RANDOM NUMBER IN THE SUBSETTING NOT FULLY REPRODUCIBLE!!! EVERYTHING ELSE IS...
+
 ## now remove bad quality images
-bad_images <- list.files(path.bad.images)
+bad_images <- list.files(path.bad.images, pattern=".jpg")
 dat.raw <- PS14_image_metadata[which(PS14_image_metadata$Filename%!in%bad_images),]
 ## remove transect 312 from the south atlantic
 ## also remove transect 274 because it appears to be on land
 dat <- dat.raw[-which(dat.raw$transectID=="312"|dat.raw$transectID=="274"),]
 dat$transectID <- factor(dat$transectID)
-
-## remove transects with images that are too blurry
-t.quality <- data.frame(read_excel(paste0(image.dir,"PS14_Transect_quality.xlsx")))
-bad_transects <- which(t.quality$quality=="blurry")
-bad_transect.sel <- which(dat$transectID%in%t.quality$transectID[bad_transects])
-dat2 <- dat[-bad_transect.sel,]
-dat2$transectID <- factor(dat2$transectID)
-dat <- dat2
 
 ## sort out badly illumianted images, calculate transect length, define how many images to select and give images a random number
 dat$image.select <- NA
@@ -180,11 +190,19 @@ for(i in 1:length(levels(dat$transectID))){
 ## 
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
+# ## remove transects with images that are too blurry
+# t.quality <- data.frame(read_excel(paste0(ps.path.met,"PS14_Transect_quality.xlsx")))
+# bad_transects <- which(t.quality$quality=="blurry")
+# bad_transect.sel <- which(dat$transectID%in%t.quality$transectID[bad_transects])
+# dat2 <- dat[-bad_transect.sel,]
+# dat2$transectID <- factor(dat2$transectID)
+# dat <- dat2
+
 barplot(round(total.t.length.v), names.arg=levels(dat$transectID), las=2, main="PS14", xlab="TransectID", ylab="length in m")
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS14_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS14_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/PS14_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/PS14_dat.Rdata")
 
 ## total transect length across all the survey
 #total.t.length <- sum(total.t.length.v)

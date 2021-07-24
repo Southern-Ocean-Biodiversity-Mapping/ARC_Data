@@ -20,7 +20,7 @@ library(geosphere)
 library(MBHdesign)
 library(measurements)
 '%!in%' <- function(x,y)!('%in%'(x,y))
-env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/derived/"
 
 #### specify paths
 img.path2 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP1502/"
@@ -28,9 +28,9 @@ img.path <- "D:/ARC_DP_data/adjusted_NBP1502/"
 txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP1502/"
 gps.txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP1502/"
 
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
+my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
 
-r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_bathy500m_shelf_gebco2020_depth.grd"))
+r2 <- raster(paste0(env.dir,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 load(paste0(env.dir,"Circumpolar_Coastline.Rdata"))
 stereo <- crs(coast.proj)#"+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
 

@@ -10,7 +10,7 @@ library(measurements)
 
 # #### load depth
 library(raadtools)
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
+my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/raw/accessed_through_R"
 set_data_roots(my_data_dir)
 r <- readtopo("ibcso")
 r2 <- r
@@ -67,8 +67,8 @@ for(i in 1:3){dat.WAP[,i] <- as.factor(dat.WAP[,i])}
 for(i in 4:7){dat.WAP[,i] <- as.numeric(dat.WAP[,i])}
 
 ## create dataframe with images, transectID, individual coordinates and whether images are good or bad
-WAP_metadata <- data.frame(matrix(NA, ncol=5,nrow=1))
-names(WAP_metadata) <- c("Filename","transectID","lon","lat","imageQuality")
+WAP_metadata <- data.frame(matrix(NA, ncol=6,nrow=1))
+names(WAP_metadata) <- c("Filename","transectID","lon","lat","imageQuality", "depth")
 #### load raw image names
 dir.folders <- list.files(paste0(bio.path,"images_original/"))
 # dir.files.raw <- list.files(paste0(bio.path,"images_original/"), recursive=T)
@@ -84,6 +84,7 @@ WAP_metadata[1:49,1] <- loop.files.raw
 WAP_metadata[1:49,2] <- substr(dir.folders[1],5,8)
 WAP_metadata[1:49,3] <- lon.seq
 WAP_metadata[1:49,4] <- lat.seq
+WAP_metadata[1:49,6] <- dat.WAP$`Mean.depth.(m)`[transect.sel]
 bad <- which(loop.files.raw%!in%loop.files.cor)
 WAP_metadata[c(1:49)[bad],5] <- "bad"
 ## now for all other transects
@@ -111,6 +112,7 @@ for(i in 2:length(dir.folders)){
   WAP_metadata[dat.sel,2] <- t.ID
   WAP_metadata[dat.sel,3] <- lon.seq
   WAP_metadata[dat.sel,4] <- lat.seq
+  WAP_metadata[dat.sel,6] <- dat.WAP$`Mean.depth.(m)`[transect.sel]
   bad <- which(loop.files.raw[folder.sel]%!in%loop.files.cor)
   WAP_metadata[dat.sel[bad],5] <- "bad"
   ## update the running total
@@ -284,7 +286,7 @@ WAP_metadata$imageQuality <- as.factor(WAP_metadata$imageQuality)
 ## dataframe containing: coordinates, filename, transectID
 
 ## now remove bad quality images
-dat <- WAP_metadata[which(WAP_metadata$imageQuality=="good"),c(3,4,1,2,5)]
+dat <- WAP_metadata[which(WAP_metadata$imageQuality=="good"),c(3,4,1,2,5,6)]
 dat$transectID <- factor(dat$transectID)
 
 ####
@@ -332,8 +334,8 @@ for(i in 1:length(levels(dat$transectID))){
 dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/CRS_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/CRS_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/CRS_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/CRS_dat.Rdata")
 
 ## how many images from each transect, if we select on average 1 every 50m?
 t.images <- ceiling(total.t.length.v/100)
@@ -392,7 +394,7 @@ selected.filenames.folders <- folder.names_full[match(dat$transectID[dat.sel],le
 ## copy files into Annotation folder and rename immediately because filenames are not unique between transects
 path_D <- "D:/ARC_DP_data/adjusted_CRS/"
 img.path.origin <- paste0(path_D,selected.filenames.folders,"/",selected.filenames) #bio.path,"images_original/"
-img.path.destin <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images/CRS/"
+img.path.destin <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images/CRS/"
 #file.copy(img.path.origin,img.path.destin)
 for(i in 1:length(img.path.origin)){
   file.copy(img.path.origin[i],img.path.destin)
@@ -406,7 +408,7 @@ for(i in 1:length(img.path.origin)){
 # file.rename(filenames.in.folder_original,filenames.in.folder_changed)
 
 ## write list of filenames into cropped Annotation folder for upload
-img.path.destin_crop <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images_cropped/CRS/"
+img.path.destin_crop <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images_cropped/CRS/"
 write.table(selected.filenames.renamed, paste0(img.path.destin_crop,"filenames.txt"), eol=",", col.names=FALSE, row.names=FALSE)
 
 

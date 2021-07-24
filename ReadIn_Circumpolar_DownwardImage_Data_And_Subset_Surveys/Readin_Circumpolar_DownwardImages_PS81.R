@@ -13,19 +13,36 @@ library(raster)
 
 ########## DO THIS SEPARATELY FOR EACH SURVEY ##########
 
-#### TAN0802:
-## transect 186 images 0021 - 0067 useless cause of a droplet on the camera
-## transect 298 iamge 0254 useless
-
-#### TAN1802
-## transect 107 images 001-002, 246 useless
-## transect 108 images 001, 287-289 useless
-## transect 113 useless
-## transects 125,126,127,160 always image 001 useless
-
 #### PS81
 ## transect 159 super low vis
 ## need to split transect 222
+
+
+#########################################
+## INSERT AFTER I'VE DONE EVERYTHING: THIS IS TO ADD PS-AREA TO "PS81_dat_FINAL.Rdata"
+met.dat <- read_excel("R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/PS81/PS81_1_raw_images_and_metadata/metadata/140520_PS81_OFOS_allStnsalleFotos_MetaDaten_GIS.xls",skip=9)
+met.dat$`Photo name` <- gsub("_at_","T",met.dat$`Photo name`)
+met.dat$`Photo name` <- gsub("2013_01_","2013-01-",met.dat$`Photo name`)
+met.dat$`Photo name` <- gsub("2013_02_","2013-02-",met.dat$`Photo name`)
+met.dat$`Photo name` <- gsub("2013_03_","2013-03-",met.dat$`Photo name`)
+
+load(file="C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/PS81_dat_FINAL.Rdata")
+#PS81.dat$Filename%in%met.dat$`Photo name`
+chrs <- charmatch(PS81.dat$Filename,met.dat$`Photo name`)
+PS81.dat$Area_from_metadata <- met.dat$`area (m^2)`[chrs]
+#save(PS81.dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/PS81_dat_FINAL.Rdata")
+
+load(file="C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/PS81_dat_shallow.Rdata")
+chrs <- charmatch(dat$Filename,met.dat$`Photo name`)
+dat$Area_from_metadata <- met.dat$`area (m^2)`[chrs]
+#save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/PS81_dat_shallow.Rdata")
+
+
+
+
+#########################################
+
+
 
 
 ########## PS81 ##########
@@ -154,8 +171,8 @@ for(i in 1:length(levels(dat$t.ID_temp))){
 ##
 dat$image.select[is.na(dat$image.select)] <- 9999
 
-#save(dat,total.t.length.v,samp.v.list, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS81_dat_2ndrun.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS81_dat_FINAL.Rdata")
+#save(dat,total.t.length.v,samp.v.list, file="C:/Users/jjansen/Desktop/science/data_biological/PS81_dat_2ndrun.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/PS81_dat_FINAL.Rdata")
 
 ## total transect length across all the survey
 #total.t.length <- sum(total.t.length.v)

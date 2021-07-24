@@ -17,7 +17,7 @@ library(lubridate)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 # path.bad.images <- paste0(bio.path,"Stills/PS06/bad_quality/")
-# bio.path <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/"
+# bio.path <- "C:/Users/jjansen/Desktop/science/data_biological/"
 # image.dir <- ...
 # dat.PS06 <- get(load(file=paste0(bio.path,"Stills/PS06/PS06_metadata.Rdata")))
 
@@ -60,15 +60,21 @@ for(i in 1:ntransects){
 }
 names(files.dat) <- c("Filename","transectID","imageID","imageNumber","imageSequence")
 
-## assign median lon/lat to each image
+## assign median lon/lat and time to each image
 files.dat[,6] <- NA
 files.dat[,7] <- NA
-names(files.dat)[6:7] <- c("lon","lat")
+files.dat[,8] <- as_datetime(NA)
+files.dat[,9] <- as_datetime(NA)
+files.dat[,10] <- NA
+names(files.dat)[6:10] <- c("lon","lat","time_start","time_end","depth")
 for(i in 1:ntransects){
   t.sel <- which(files.dat[,2]==levels(files.dat[,2])[i])
   img.sel <- files.dat[t.sel,5]
   files.dat[t.sel,6] <- dat.PS06$Median_Longitude[i]
   files.dat[t.sel,7] <- dat.PS06$Median_Latitude[i]
+  files.dat[t.sel,8] <- ymd_hms(dat.PS06$`Date/Time_Start`[i])
+  files.dat[t.sel,9] <- ymd_hms(dat.PS06$`Date/Time_End`[i])
+  files.dat[t.sel,10] <- dat.PS06$Elevation[i]
 }
 PS06_image_metadata <- files.dat
 #save(PS06_image_metadata, file=paste0(r.path,"PS06_1_raw_images_and_metadata/metadata/PS06_image_metadata.Rdata"))
@@ -79,7 +85,7 @@ PS06_image_metadata <- files.dat
 ## dataframe containing: coordinates, filename, transectID
 
 ## now remove bad quality images
-bad_images <- list.files(path.bad.images)
+bad_images <- list.files(path.bad.images, pattern=".jpg")
 dat.raw <- PS06_image_metadata[which(PS06_image_metadata$Filename%!in%bad_images),]
 ## remove transect 312 from the south atlantic
 ## also remove transect 288 because there is no environmental data for it
@@ -128,8 +134,8 @@ for(i in 1:length(levels(dat$transectID))){
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS06_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS06_dat.Rdata")
+# save(dat, file="C:/Users/jjansen/Desktop/science/data_biological/PS06_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/PS06_dat.Rdata")
 
 spatial.dat <- data.frame(dat[,6:7])
 coordinates(spatial.dat) <- c("lon","lat")

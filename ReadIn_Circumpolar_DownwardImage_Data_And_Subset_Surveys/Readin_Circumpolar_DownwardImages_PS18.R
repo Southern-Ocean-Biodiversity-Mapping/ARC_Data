@@ -7,27 +7,34 @@ library(lubridate)
 library(raadtools)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
-bio.path <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/"
-path.bad.images <- paste0(bio.path,"Stills/PS18/bad_quality/")
-image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/PS18/"
+sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+
+r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/PS18/PS18_1_raw_images_and_metadata/"
+
+ps.path <- paste0(r.path,"images_colourcorrected/")
+path.bad.images <- paste0(ps.path,"bad_quality/")
+
+ps.path.img <- paste0(r.path,"images_original/")
+ps.path.met <- paste0(r.path,"metadata/")
 
 ## metadata
-dat.PS18 <- get(load(file=paste0(bio.path,"Stills/PS18/PS18_metadata.Rdata")))
+dat.PS18 <- get(load(file=paste0(ps.path.met,"PS18_metadata.Rdata")))
 ## image names
 #dir.files <- list.files(paste0(bio.path,"Stills/PS18/originals/"),pattern=".jpg")
-dir.files <- list.files(image.dir,pattern=".jpg")
+dir.files <- list.files(ps.path.img,pattern=".jpg")
 
-## environmental data for plotting
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
-set_data_roots(my_data_dir)
-r <- readtopo("ibcso")
-r2 <- r
-r2[r2>0] <- NA
-r2[r2<(-2000)] <- NA
-## coastline
-stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
-coast.lonlat <- shapefile("C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/antarctic coastline/addv5_sc_coast_ln_gg.shp")
-coast.proj <- spTransform(coast.lonlat, CRS(stereo))
+# ## environmental data for plotting
+# my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
+# set_data_roots(my_data_dir)
+# r <- readtopo("ibcso")
+# r2 <- r
+# r2[r2>0] <- NA
+# r2[r2<(-2000)] <- NA
+# ## coastline
+# stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+# coast.lonlat <- shapefile("C:/Users/jjansen/Desktop/science/data_environmental/antarctic coastline/addv5_sc_coast_ln_gg.shp")
+# coast.proj <- spTransform(coast.lonlat, CRS(stereo))
 
 ##################################
 ######### PS18
@@ -82,10 +89,18 @@ for(i in c(1:23,25)){
 ## but replace lon/lat positions for all images on transects that were unrealistically fast with starting lon-lat only
 files.dat[,6] <- NA
 files.dat[,7] <- NA
-names(files.dat)[6:7] <- c("lon","lat")
+files.dat[,8] <- as_datetime(NA)
+files.dat[,9] <- as_datetime(NA)
+files.dat[,10] <- NA
+files.dat[,11] <- NA
+names(files.dat)[6:11] <- c("lon","lat","time_start", "time_end","depth_start","depth_end")
 for(i in c(1:23,25)){
   t.sel <- which(files.dat[,2]==levels(files.dat[,2])[i])
   img.sel <- files.dat[t.sel,5]
+  files.dat[t.sel,8] <- ymd_hms(dat.PS18$`Date/Time_Start`[i])
+  files.dat[t.sel,9] <- ymd_hms(dat.PS18$`Date/Time_End`[i])
+  files.dat[t.sel,10] <- dat.PS18$Elevation_Start[i]
+  files.dat[t.sel,11] <- dat.PS18$Elevation_End[i]
   if(i%in%t.toofast){
     files.dat[t.sel,6] <- dat.PS18$Longitude_Start[i]
     files.dat[t.sel,7] <- dat.PS18$Latitude_Start[i]
@@ -98,12 +113,14 @@ PS18_image_metadata <- files.dat
 ## transect 24 has no start/end, so replace with median points
 PS18_image_metadata[1558:1624,6] <- dat.PS18$Median_Longitude[24]
 PS18_image_metadata[1558:1624,7] <- dat.PS18$Median_Latitude[24]
-#save(PS18_image_metadata, file=paste0(bio.path,"Stills/PS18/PS18_image_metadata.Rdata"))
+# save(PS18_image_metadata, file=paste0(ps.path.met,"PS18_image_metadata.Rdata"))
 
 #####################################################################
 ##### 2. SUBSET IMAGES FROM IMAGE LOCATIONS (& STORE FILENAMES) #####
 #####################################################################
 ## dataframe containing: coordinates, filename, transectID
+
+## RANDOM NUMBERS IN THE SUBSETTING NOT FULLY REPRODUCIBLE!!! EVERYTHING ELSE IS...
 
 ## now remove bad quality images
 bad_images <- list.files(path.bad.images)
@@ -164,7 +181,7 @@ for(i in 1:length(levels(dat$transectID))){
 #dat$image.select[is.na(dat$image.select)] <- 9999
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS18_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/PS18_dat.Rdata")
 #load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS18_dat.Rdata")
 
 barplot(round(total.t.length.v), names.arg=as.character(levels(dat$transectID)), las=2, main="PS18", xlab="TransectID", ylab="length in m")
@@ -222,7 +239,7 @@ img.path.destin <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/s
 file.copy(img.path.origin,img.path.destin)
 
 ## write list of filenames into cropped Annotation folder for upload
-img.path.destin_crop <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/Stills/Annotation_images_cropped/PS18/"
+img.path.destin_crop <- "C:/Users/jjansen/Desktop/science/data_biological/Stills/Annotation_images_cropped/PS18/"
 write.table(selected.filenames.renamed, paste0(img.path.destin_crop,"filenames.txt"), eol=",", col.names=FALSE, row.names=FALSE)
 
 filenames.in.folder_original <- paste0(img.path.destin,selected.filenames)

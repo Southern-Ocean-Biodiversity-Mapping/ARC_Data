@@ -1,4 +1,8 @@
-Scripts in here still have the original file-paths from Jan's local machine. Edits needed to change that but low priority at the moment (July 2021).
+These scripts are quite messy. If I don't absolutely have to, I won't revisit these scripts.  
+- random subsets differ between surveys due to the quality of the gps-data. Therefore, I couldn't create simple scripts that woprk for each survey.  
+- not everything is reproducible, in particular there seems to have been an issue with set.seed, so often the random subset cannot be reproduced  
+- PS81 & PS96 have multiple files due to issues with the first subset. This is also messy.
+- I tried to do too many things within a single script, making them difficult to run again.
 
 Each file contains code that aims to:
 - assign coordinates (lon/lat) to each image

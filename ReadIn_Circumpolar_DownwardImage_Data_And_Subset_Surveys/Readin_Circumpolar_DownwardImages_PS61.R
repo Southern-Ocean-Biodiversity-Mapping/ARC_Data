@@ -5,39 +5,54 @@ library(MBHdesign)
 library(raster)
 library(lubridate)
 
-# #### load depth
-library(raadtools)
-my_data_dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/accessed_through_R"
-set_data_roots(my_data_dir)
-r <- readtopo("ibcso")
-r2 <- r
-r2[r2>0] <- NA
-r2[r2<(-2000)] <- NA
-# 
-#### load coastline
-stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
-coast.lonlat <- shapefile("C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_environmental/antarctic coastline/addv5_sc_coast_ln_gg.shp")
-coast.proj <- spTransform(coast.lonlat, CRS(stereo))
+# # #### load depth
+# library(raadtools)
+# my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
+# set_data_roots(my_data_dir)
+# r <- readtopo("ibcso")
+# r2 <- r
+# r2[r2>0] <- NA
+# r2[r2<(-2000)] <- NA
+# # 
+# #### load coastline
+# stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+# coast.lonlat <- shapefile("C:/Users/jjansen/Desktop/science/data_environmental/antarctic coastline/addv5_sc_coast_ln_gg.shp")
+# coast.proj <- spTransform(coast.lonlat, CRS(stereo))
+
+sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+
+r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/PS61/PS61_1_raw_images_and_metadata/"
+
+ps.path <- paste0(r.path,"images_colourcorrected/")
+path.bad.images <- paste0(ps.path,"bad_quality/")
+
+ps.path.img <- paste0(r.path,"images_original/")
+ps.path.met <- paste0(r.path,"metadata/")
+
+## image names
+#dir.files <- list.files(paste0(bio.path,"Stills/PS61/originals/"),pattern=".jpg")
+dir.files <- list.files(ps.path.img,pattern=".jpg")
 
 ##################################
 ######### PS61
 ##################################
-bio.path <- "C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/"
-path.bad.images <- paste0(bio.path,"Stills/PS61/bad_quality/")
-image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/PS61/"
+# bio.path <- "C:/Users/jjansen/Desktop/science/data_biological/"
+# path.bad.images <- paste0(bio.path,"Stills/PS61/bad_quality/")
+# image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/PS61/"
 
-dat.PS61.raw <- read.table(paste0(bio.path,"Stills/PS61/PS61_metadata.txt"),skip=7,fill=TRUE,row.names=NULL, sep="\t")
+dat.PS61.raw <- read.table(paste0(ps.path.met,"PS61_metadata.txt"),skip=7,fill=TRUE,row.names=NULL, sep="\t")
 dat.PS61 <- data.frame(matrix(NA,ncol=19,nrow=2))
 names(dat.PS61) <- dat.PS61.raw[1:19,1]
 dat.PS61[1,] <- dat.PS61.raw[1:19,2]
 dat.PS61[2,] <- dat.PS61.raw[20:38,2]
 
-PS61_235.txt <- read.csv(file=paste0(bio.path,"Stills/PS61/PS61_235-1_track.txt"),skip=3,sep="\t")
-PS61_249.txt <- read.csv(file=paste0(bio.path,"Stills/PS61/PS61_249-1_track.txt"),skip=3,sep="\t")
+PS61_235.txt <- read.csv(file=paste0(ps.path.met,"PS61_235-1_track.txt"),skip=3,sep="\t")
+PS61_249.txt <- read.csv(file=paste0(ps.path.met,"PS61_249-1_track.txt"),skip=3,sep="\t")
 PS61.txt <- rbind(PS61_235.txt,PS61_249.txt)
 
 #### load image names
-dir.files <- list.files(paste0(bio.path,"Stills/PS61/originals/"),pattern=".jpg")
+dir.files <- list.files(ps.path.img,pattern=".jpg")
 files.dat <- data.frame(matrix(ncol=3,nrow=length(dir.files)))
 files.dat[,1] <- dir.files
 files.dat[,2] <- substring(dir.files,6,10)
@@ -66,21 +81,36 @@ names(files.dat) <- c("Filename","transectID","imageID","imageNumber","imageSequ
 ## assign a time to each image
 files.dat$Lon <- NA
 files.dat$Lat <- NA
+files.dat[,8] <- as_datetime(NA)
+files.dat[,9] <- as_datetime(NA)
+files.dat[,10] <- NA
+files.dat[,11] <- NA
+names(files.dat)[6:11] <- c("lon","lat","time_start", "time_end","depth_start","depth_end")
 files.dat$imageTime <- as.factor(c(c(paste0("4:",round(seq(27,59, length.out=69),0)),"5:00"),paste0("7:",round(seq(14,51, length.out=69),0))))
 ## assign lonlat to each image depending on time
 for(i in 1:nrow(PS61.txt)){
   sel <- which(files.dat$imageTime==PS61.txt$Time..UTC.[i])
-  files.dat$Lon[sel] <- PS61.txt$Longitude[i]
-  files.dat$Lat[sel] <- PS61.txt$Latitude[i]
+  files.dat$lon[sel] <- PS61.txt$Longitude[i]
+  files.dat$lat[sel] <- PS61.txt$Latitude[i]
+}
+## assign time & depth depending on transect
+for(i in 1:2){
+  t.sel <- which(files.dat[,2]==levels(files.dat[,2])[i])
+  files.dat[t.sel,8] <- ymd_hms(dat.PS61$`Date/Time Start`[i])
+  files.dat[t.sel,9] <- ymd_hms(dat.PS61$`Date/Time End`[i])
+  files.dat[t.sel,10] <- dat.PS61$`Elevation Start`[i]
+  files.dat[t.sel,11] <- dat.PS61$`Elevation End`[i]
 }
 
 PS61_image_metadata <- files.dat
-save(PS61_image_metadata, file=paste0(bio.path,"Stills/PS61/PS61_image_metadata.Rdata"))
+#save(PS61_image_metadata, file=paste0(ps.path.met,"PS61_image_metadata.Rdata"))
 
 #####################################################################
 ##### 2. SUBSET IMAGES FROM IMAGE LOCATIONS (& STORE FILENAMES) #####
 #####################################################################
 ## dataframe containing: coordinates, filename, transectID
+
+## RANDOM NUMBERS IN THE SUBSETTING NOT FULLY REPRODUCIBLE!!! EVERYTHING ELSE IS...
 
 ## now remove bad quality images
 bad_images <- list.files(path.bad.images)
@@ -124,8 +154,8 @@ for(i in 1:2){
 }
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS61_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/PS61_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/PS61_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/data_biological/PS61_dat.Rdata")
 
 ## how many images from each transect, if we select on average 1 every 50m?
 t.images <- ceiling(total.t.length.v/100)

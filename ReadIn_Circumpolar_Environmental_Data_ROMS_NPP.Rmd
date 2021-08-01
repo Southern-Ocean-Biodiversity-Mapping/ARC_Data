@@ -10,6 +10,7 @@ library(ncdf4) # package for netcdf manipulation
 library(raster) # package for raster manipulation
 library(rgdal) # package for geospatial analysis
 library(ggplot2) # package for plotting
+library(terra) # spatraster library, for calculating distance to coast
 ```
 
 __Setup NPP-export file for use in ROMS__  
@@ -285,10 +286,13 @@ save(npp.s.crop,file=paste0(env.derived,file.npp,"_original_",year,".Rdata"))
 
 ## Extract NPP values from raster files and place them into the netcdf file for use in ROMS
 
+#### data-points
 ```{r, eval=FALSE}
 coords <- cbind(c(lon_rho),c(lat_rho))
+```
 
-#### load data:
+#### NPP data
+```{r, eval=FALSE}
 # year <- "2002" ## year 2002 only has data for October-December: Need to tweak the code below in that case
 # year <- "2003"
 # year <- "2004"
@@ -306,11 +310,13 @@ coords <- cbind(c(lon_rho),c(lat_rho))
 # year <- "2016"
 # year <- "2017"
 # year <- "2018"
-# year <- "2019"
+year <- "2019"
 # year <- "2020"
-
 load(file=paste0(env.derived,file.npp,"_filled_",year,".Rdata"))
+```
 
+
+```{r, eval=FALSE}
 # npp10 <- extract(npp.filled$cafe.2002274, coords)
 # npp11 <- extract(npp.filled$cafe.2002305, coords)
 # npp12 <- extract(npp.filled$cafe.2002335, coords)
@@ -398,7 +404,7 @@ a[[1]] <- npp.filled
 names(a) <- "NPP.2002"
 for(i in 2:length(years)){
   j <- years[i]
-  load(file=paste0(env.dir,"Circumpolar_NPP_Cafe_filled_",j,".Rdata"))
+  load(file=paste0(env.derived,file.npp,"_filled_",j,".Rdata"))
   a[[i]] <- npp.filled
   names(a)[i] <- paste0("NPP.",years[i])
 }
@@ -508,6 +514,184 @@ npp[10,17,6]
 matrix((npp12/1000000)/86400, ncol=560)[10,17]
 ```
 
+#### NPP only near the continental shelf? PROJECTED
+
+```{r, eval=FALSE}
+#### load NPP
+npp <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_NPP_Cafe_filled_SummerAverage.grd"))
+
+#### create raster with distance to coast:
+## vector data with vect()
+ant <- vect(subset(SOmap::SOmap_data$continent, continent == "Antarctica"))
+## raster data with rast(), and we extend beyond the boundary of our coastline by 100 pix or so 
+#extend(rast(ant, res = 25000), 1.3e2)
+## now calculate distance of pixel to polygon (use lines if need internal)
+dd <- distance(extend(rast(ant, res = 25000), 130), ant)
+# plot(dd)
+# plot(ant, add=TRUE)
+
+#### bring npp and dd to the same raster, then set limits for the npp raster
+npp.spat <- rast(npp)
+dd.new <- resample(dd,npp.spat)
+
+npp.spat.new <- npp.spat
+npp.spat.new[dd.new>=700000] <- NA
+```
+
+#### NPP only near the continental shelf? UNPROJECTED - CLIMATOLOGY
+
+```{r, eval=FALSE}
+## load all npp files for the years
+years <- as.character(2002:2019)
+load(file=paste0(env.derived,file.npp,"_filled_2002.Rdata"))
+a <- list()
+a[[1]] <- npp.filled
+names(a) <- "NPP.2002"
+for(i in 2:length(years)){
+  j <- years[i]
+  load(file=paste0(env.derived,file.npp,"_filled_",j,".Rdata"))
+  a[[i]] <- npp.filled
+  names(a)[i] <- paste0("NPP.",years[i])
+}
+
+## load coastline and make it a SpatVector
+library(rworldmap)
+data(coastsCoarse)
+coast.world <- vect(coastsCoarse)
+## Antarctic is line 99
+coast.ant <- coast.world[99]
+
+## make npp a SpatRaster
+npp.unproj.spat.raw <- rast(a$NPP.2002$cafe.2002244)
+npp.unproj.spat.agg <- aggregate(npp.unproj.spat.raw,10)
+## calculate distance to coastline
+dist.unproj <- distance(npp.unproj.spat.agg, coast.ant)
+
+plot(dist.unproj)
+plot(coast.ant, add=TRUE)
+
+dist.new <- resample(dist.unproj,npp.unproj.spat.raw)
+
+#### bring npp and dist.unproj to the same raster, then set limits for the npp raster
+a2 <- list()
+for(i in 1:length(a)){
+  a2[[i]] <- rast(a[[i]])
+  a2[[i]][dist.new>=700000] <- NA
+}
+a <- a2
+###########################
+
+## dataframe of npp-values by years, for each month where there is light/data (1,2,3,10,11,12)
+npp1.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)-1))
+names(npp1.df) <- years[-1]
+for(i in 2:length(years)){
+  npp1.df[,i-1] <- extract(a[[i]][[1]], coords)
+}
+npp2.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)-1))
+names(npp2.df) <- years[-1]
+for(i in 2:length(years)){
+  npp2.df[,i-1] <- extract(a[[i]][[2]], coords)
+}
+npp3.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)-1))
+names(npp3.df) <- years[-1]
+for(i in 2:length(years)){
+  npp3.df[,i-1] <- extract(a[[i]][[3]], coords)
+}
+npp10.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
+names(npp10.df) <- years
+npp10.df[,1] <- extract(a[[1]][[1]], coords)
+for(i in 2:length(years)){
+  npp10.df[,i] <- extract(a[[i]][[6]], coords)
+}
+npp11.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
+names(npp11.df) <- years
+npp11.df[,1] <- extract(a[[1]][[2]], coords)
+for(i in 2:length(years)){
+  npp11.df[,i] <- extract(a[[i]][[7]], coords)
+}
+npp12.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
+names(npp12.df) <- years
+npp12.df[,1] <- extract(a[[1]][[3]], coords)
+for(i in 2:length(years)){
+  npp12.df[,i] <- extract(a[[i]][[8]], coords)
+}
+
+## average monthly npp across all years
+npp1 <- rowMeans(npp1.df, na.rm=TRUE)
+npp2 <- rowMeans(npp2.df, na.rm=TRUE)
+npp3 <- rowMeans(npp3.df, na.rm=TRUE)
+npp10 <-rowMeans(npp10.df, na.rm=TRUE)
+npp11 <-rowMeans(npp11.df, na.rm=TRUE)
+npp12 <-rowMeans(npp12.df, na.rm=TRUE)
+
+#### create NetCDF file
+file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
+          paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
+ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), write=TRUE)
+
+npp_winter <- npp1
+npp_winter[npp_winter>0] <-0
+# npp.v <- c(npp_winter,npp_winter,npp_winter,npp10,npp11,npp12,npp1,npp2,npp3,npp_winter,npp_winter,npp_winter)
+npp.v <- c(npp1,npp2,npp3,npp_winter,npp_winter,npp_winter,npp_winter,npp_winter,npp_winter,npp10,npp11,npp12)
+npp.v[is.na(npp.v)] <- 0
+## change values from mg/m2/day to kg/m2/day (1 kg is 1 million mg)
+npp.v <- npp.v/1000000
+## now change values from kg/m2/day to kg/m2/s (1 day is 86400s)
+npp.v <- npp.v/86400
+
+## define variable dimensions
+xdim2 <- ini10k_nc$dim$xi_rho
+ydim2 <- ini10k_nc$dim$eta_rho
+tdim2 <- ini10k_nc$dim$sst_time
+#tdim2$vals <- ini10k_nc$dim$sst_time$vals[c(7:12,1:6)]
+
+## define variable
+#var_q <- ncvar_def('NPP','mg/m2/day',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction")
+var_1 <- ncvar_def('sand_01_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_2 <- ncvar_def('sand_02_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_3 <- ncvar_def('sand_03_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_4 <- ncvar_def('sand_04_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_5 <- ncvar_def('sand_05_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_6 <- ncvar_def('sand_06_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_7 <- ncvar_def('sand_07_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+var_8 <- ncvar_def('sand_08_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
+
+## add variable to netcdf and then add values to that variable
+ncid_old <- ncvar_add(ini10k_nc,var_1)
+ncvar_put(ncid_old, "sand_01_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_2)
+ncvar_put(ncid_old, "sand_02_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_3)
+ncvar_put(ncid_old, "sand_03_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_4)
+ncvar_put(ncid_old, "sand_04_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_5)
+ncvar_put(ncid_old, "sand_05_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_6)
+ncvar_put(ncid_old, "sand_06_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_7)
+ncvar_put(ncid_old, "sand_07_sflux", npp.v)
+ncid_old <- ncvar_add(ini10k_nc,var_8)
+ncvar_put(ncid_old, "sand_08_sflux", npp.v)
+
+## check output
+print(ncid_old)
+## close file
+nc_close(ncid_old)
+
+## check results
+ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
+npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
+npp[100,17,12]
+matrix((npp12/1000000)/86400, ncol=560)[100,170]
+
+```
+
+```{r, eval=FALSE}
+test <- brick(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), varname="sand_01_sflux")
+plot(test,c(1:3,10:12))
+```
+
 ## Bash-code needed to copy files onto GADI for the ROMS
 
 ```{r, eval=FALSE}
@@ -552,24 +736,24 @@ ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_2008.nc
 ## then make the file readable:
 chmod 755 waom10extend_nudge_2008.nc
 
-ncatted -O -a add_offset,sand_01_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_02_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_03_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_04_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_05_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_06_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_07_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a add_offset,sand_08_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_01_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_02_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_03_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_04_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_05_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_06_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_07_sflux,d,, waom10extend_nudge_climatology20022019.nc
-ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_climatology20022019.nc
+ncatted -O -a add_offset,sand_01_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_02_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_03_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_04_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_05_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_06_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_07_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_08_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_01_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_02_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_03_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_04_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_05_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_06_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_07_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
 ## then make the file readable:
-chmod 755 waom10extend_nudge_climatology20022019.nc
+chmod 755 waom10extend_nudge_climatology20022019_shelf.nc
 ```
 
 ## generate file to release floats
@@ -635,4 +819,14 @@ write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease.txt"),row.names=
 # }
 # plot(a)
 ```
+
+
+
+
+
+
+
+
+
+
 

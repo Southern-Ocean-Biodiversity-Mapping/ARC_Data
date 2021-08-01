@@ -7,8 +7,14 @@ output: html_document
 
 This script is to create the summary data:  
 __"Circumpolar_DownwardImages_metadata.Rdata"__  
+and standardised/consistent __metadata csv-files for each individual survey__  
 
-This file contains the following objects:  
+TO DO FOR THE CSV-FILES:  
+- transect-dates for CRS-data
+- license-information for CRS, all TAN, all JR except 17003
+- data-links for CRS, all TAN, all JR except 17003
+
+This summary file contains the following objects:  
 
 *  starting positions for each transect in each survey:
     + unprojected dataframes: __dat.start.list__
@@ -36,6 +42,7 @@ library(raadtools)
 library(readxl)
 library(raster)
 library(maptools)
+library(lubridate)
 ```
 
 ### Setting up the environment
@@ -68,6 +75,14 @@ r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_dept
 #### load coastline
 load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 ```
+
+### load image area information
+```{r}
+R.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
+area.xlsx <- list.files(R.dir,pattern=".xlsx", full.names=TRUE)
+area.raw <- ldply(area.xlsx, read_excel, skip=1)
+```
+
 
 ### prepare data
 
@@ -695,6 +710,40 @@ for(i in 1:length(dat.list.clean)){
   names(dat.subset.list[[i]]) <- col.select2
 }
 names(polar.dat.subset.list) <- names(dat.subset.list) <- names(dat.list)
+
+## if available, add image area to data
+for(i in 1:length(dat.subset.list)){
+  dat.subset.list[[i]]$area <- NA
+  ## fill if there is a standard area for the survey
+  if(names(dat.subset.list)[i]=="PS14"){
+    dat.subset.list[[i]]$area <- 0.56
+  }
+  if(names(dat.subset.list)[i]=="PS18"){
+    dat.subset.list[[i]]$area <- 0.9
+  }
+  if(names(dat.subset.list)[i]=="PS61"){
+    dat.subset.list[[i]]$area <- 1
+  }
+  if(names(dat.subset.list)[i]=="WAP"){
+    dat.subset.list[[i]]$area <- 3
+  }
+  if(names(dat.subset.list)[i]=="NBP1402"){
+    dat.subset.list[[i]]$area <- 4.8
+  }
+  if(names(dat.subset.list)[i]%in%c("JR262","JR15005","JR17001","JR17003")){
+    dat.subset.list[[i]]$area <- 0.51
+  }
+  ## first find for which images some area estimates exist (and then select only the first appearance of that image)
+  area.sel.raw <- which(area.raw$`image filename`%in%dat.subset.list[[i]]$Filename.standardised)
+  if(length(area.sel.raw>0)){
+    area.sel <- area.sel.raw[seq(1,length(area.sel.raw),by=2)]
+    area.raw$`image filename`[area.sel]
+    ## then find  matches between data and area
+    dat.sel <- match(area.raw$`image filename`[area.sel], dat.subset.list[[i]]$Filename.standardised)
+    ## then fill if available
+    dat.subset.list[[i]]$area[dat.sel] <- area.raw$`image area in m²`[area.sel]
+  }
+}
 ```
 
 ### save output for analysis
@@ -748,6 +797,7 @@ We need:
 * License  
 
 ```{r, eval=FALSE, warning=FALSE}
+##### first, read in all metadata and store as a list
 csv.list <- list()
 csv.names <- c("Filename","Filename.standardised","Survey.ID","Transect.ID","Longitude","Latitude",
                "Date","Date_start","Date_end","Source.link","License","Depth","Depth_start","Depth_end","Area","Area_from_annotations")
@@ -756,7 +806,7 @@ csv.list$CRS <- cbind(dat.list$WAP[,c('Filename','Filename.standardised')],
                       "CRS",dat.list$WAP[,c('transectID','lon','lat')],
                        NA,NA,NA,
                        NA,NA,
-                       dat.list$WAP[,c('depth.mean')],NA,NA,NA,NA)
+                       dat.list$WAP[,c('depth.mean')],NA,NA,3,NA)
 
 csv.list$PS06 <- cbind(dat.list$PS06[,c('Filename','Filename.standardised')],
                        "PS06",dat.list$PS06[,c('transectID','lon','lat')],
@@ -768,19 +818,19 @@ csv.list$PS14 <- cbind(dat.list$PS14[,c('Filename','Filename.standardised')],
                        "PS14",dat.list$PS14[,c('transectID','lon','lat')],
                        NA,dat.list$PS14[,c('time_start','time_end')],
                        NA,"CC-BY-3.0",
-                       NA,dat.list$PS14[,c('depth_start','depth_end')],NA,NA)
+                       NA,dat.list$PS14[,c('depth_start','depth_end')],0.56,NA)
 
 csv.list$PS18 <- cbind(dat.list$PS18[,c('Filename','Filename.standardised')],
                        "PS18",dat.list$PS18[,c('transectID','lon','lat')],
                        NA,dat.list$PS18[,c('time_start','time_end')],
                        NA,"CC-BY-3.0",
-                       NA,dat.list$PS18[,c('depth_start','depth_end')],NA,NA)
+                       NA,dat.list$PS18[,c('depth_start','depth_end')],0.9,NA)
 
 csv.list$PS61 <- cbind(dat.list$PS61[,c('Filename','Filename.standardised')],
                        "PS61",dat.list$PS61[,c('transectID','lon','lat')],
                        NA,dat.list$PS61[,c('time_start','time_end')],
                        NA,"CC-BY-3.0",
-                       NA,dat.list$PS61[,c('depth_start','depth_end')],NA,NA)
+                       NA,dat.list$PS61[,c('depth_start','depth_end')],1,NA)
 
 
 temp.PS81 <- cbind(dat.list$PS81[,c('Filename','Filename.standardised')],
@@ -830,7 +880,7 @@ csv.list$NBP1402 <- cbind(dat.list$NBP1402[,c('FileName','Filename.standardised'
                              "NBP1402",dat.list$NBP1402[,c('transectID','GPS_lon','GPS_lat','time')],
                              NA,NA,
                              "www.usap-dc.org/view/dataset/601310","CC-BY-NC 4.0",
-                             dat.list$NBP1402[,c('Depth')],NA,NA,NA,NA)
+                             dat.list$NBP1402[,c('Depth')],NA,NA,4.8,NA)
 
 csv.list$NBP1502 <- cbind(dat.list$NBP1502[,c('FileName','Filename.standardised')],
                              "NBP1502",dat.list$NBP1502[,c('transectID','GPS_lon','GPS_lat')],
@@ -840,33 +890,33 @@ csv.list$NBP1502 <- cbind(dat.list$NBP1502[,c('FileName','Filename.standardised'
 
 csv.list$AA2011 <- cbind(dat.list$AA2011[,c('Filename','Filename.standardised')],
                              "AA2011",dat.list$AA2011[,c('transectID','lon','lat','DateTime')],
-                             NA,NA,NA,
+                             NA,NA,
                              "doi.org/doi:10.4225/15/59acda196ccfb","CC-BY-4.0",
                              dat.list$AA2011[,c('altimeter')],NA,NA,NA,NA)
 
 csv.list$JR262 <- cbind(dat.list$JR262[,c('filename','Filename.standardised')],
                              "JR262",dat.list$JR262[,c('transectID','lon','lat','time')],
-                             NA,NA,NA,
                              NA,NA,
-                             dat.list$JR262[,c('depth')],NA,NA,NA,NA)
+                             NA,NA,
+                             dat.list$JR262[,c('depth')],NA,NA,0.51,NA)
 
 csv.list$JR15005 <- cbind(dat.list$JR15005[,c('filename','Filename.standardised')],
                              "JR15005",dat.list$JR15005[,c('transectID','lon','lat','time')],
-                             NA,NA,NA,
                              NA,NA,
-                             dat.list$JR15005[,c('depth')],NA,NA,NA,NA)
+                             NA,NA,
+                             dat.list$JR15005[,c('depth')],NA,NA,0.51,NA)
 
 csv.list$JR17001 <- cbind(dat.list$JR17001[,c('filename','Filename.standardised')],
                              "JR17001",dat.list$JR17001[,c('transectID','lon','lat','time')],
-                             NA,NA,NA,
                              NA,NA,
-                             dat.list$JR17001[,c('depth')],NA,NA,NA,NA)
+                             NA,NA,
+                             dat.list$JR17001[,c('depth')],NA,NA,0.51,NA)
 
 csv.list$JR17003 <- cbind(dat.list$JR17003[,c('filename','Filename.standardised')],
                              "JR17003",dat.list$JR17003[,c('transectID','lon','lat','time')],
-                             NA,NA,NA,
+                             NA,NA,
                              "doi.org/10.5285/48dcef16-6719-45e5-a335-3a97f099e451","http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-                             dat.list$JR17003[,c('depth')],NA,NA,NA,NA)
+                             dat.list$JR17003[,c('depth')],NA,NA,0.51,NA)
 
 csv.list$LMG1311 <- cbind(dat.list$LMG1311[,c('filename','Filename.standardised')],
                              "LMG1311",dat.list$LMG1311[,c('transectID','lon','lat','DateTime')],
@@ -877,5 +927,111 @@ csv.list$LMG1311 <- cbind(dat.list$LMG1311[,c('filename','Filename.standardised'
 for(i in 1:length(csv.list)){
   names(csv.list[[i]]) <- csv.names
 }
+
+##### some surveys need special attention
+## PS06, PS14, PS18, PS61 all have a separate doi/link for each transect
+unique(csv.list$PS06$Transect.ID)
+csv.list$PS06$Source.link[csv.list$PS06$Transect.ID=="289"] <- "doi.pangaea.de/10.1594/PANGAEA.713324"
+csv.list$PS06$Source.link[csv.list$PS06$Transect.ID=="292"] <- "doi.pangaea.de/10.1594/PANGAEA.713325"
+unique(csv.list$PS14$Transect.ID)
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="245"] <- "doi.pangaea.de/10.1594/PANGAEA.691559"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="246"] <- "doi.pangaea.de/10.1594/PANGAEA.691560"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="250"] <- "doi.pangaea.de/10.1594/PANGAEA.691561"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="256"] <- "doi.pangaea.de/10.1594/PANGAEA.691562"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="259"] <- "doi.pangaea.de/10.1594/PANGAEA.691563"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="260"] <- "doi.pangaea.de/10.1594/PANGAEA.691564"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="261"] <- "doi.pangaea.de/10.1594/PANGAEA.691565"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="270"] <- "doi.pangaea.de/10.1594/PANGAEA.691566"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="275"] <- "doi.pangaea.de/10.1594/PANGAEA.691568"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="276"] <- "doi.pangaea.de/10.1594/PANGAEA.691569"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="277"] <- "doi.pangaea.de/10.1594/PANGAEA.691570"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="278-2"] <- "doi.pangaea.de/10.1594/PANGAEA.691571"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="278-3"] <- "doi.pangaea.de/10.1594/PANGAEA.691572"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="280"] <- "doi.pangaea.de/10.1594/PANGAEA.691573"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="285"] <- "doi.pangaea.de/10.1594/PANGAEA.691574"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="293"] <- "doi.pangaea.de/10.1594/PANGAEA.691575"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="294"] <- "doi.pangaea.de/10.1594/PANGAEA.691576"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="304"] <- "doi.pangaea.de/10.1594/PANGAEA.691577"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="305"] <- "doi.pangaea.de/10.1594/PANGAEA.691578"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="306"] <- "doi.pangaea.de/10.1594/PANGAEA.691579"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="307"] <- "doi.pangaea.de/10.1594/PANGAEA.691580"
+unique(csv.list$PS18$Transect.ID)
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="126-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667008"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="126-6"] <- "doi.pangaea.de/10.1594/PANGAEA.667009"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="129-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667010"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="131-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667011"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="134-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667012"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="135-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667013"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="136-4"] <- "doi.pangaea.de/10.1594/PANGAEA.667014"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="160-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667015"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="165-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667017"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="169-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667018"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="171-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667019"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="174-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667021"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="175-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667022"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="179-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667023"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="180-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667024"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="182-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667025"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="189-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667026"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="206-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667027"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="211-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667029"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="212-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667030"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="220-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667031"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="222-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667032"
+unique(csv.list$PS61$Transect.ID)
+csv.list$PS61$Source.link[csv.list$PS61$Transect.ID=="235-1"] <- "doi.org/10.1594/PANGAEA.220746"
+csv.list$PS61$Source.link[csv.list$PS61$Transect.ID=="249-1"] <- "doi.org/10.1594/PANGAEA.220747"
+
+
+
+#### CRS survey information 
+## Anvord, Flanders and Barilla in 2010 during NBP10-01 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5214585/)
+unique(csv.list$CRS$Transect.ID)
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1289"] <- ymd("2010:01:20")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1290"] <- ymd("2010:01:20")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1283"] <- ymd("2010:01:18")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1284"] <- ymd("2010:01:19")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1337"] <- ymd("2010:02:20")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1338"] <- ymd("2010:02:20")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1285"] <- ymd("2010:01:19")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1286"] <- ymd("2010:01:19")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1281"] <- ymd("2010:01:18")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1282"] <- ymd("2010:01:18")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1279"] <- ymd("2010:01:17")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1280"] <- ymd("2010:01:17")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1276"] <- ymd("2010:01:14")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1278"] <- ymd("2010:01:17")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1300"] <- ymd("2010:01:27")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1295"] <- ymd("2010:01:24")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1297"] <- ymd("2010:01:26")
+## LMG0902: https://www.marine-geo.org/tools/entry/LMG0902
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1207"] <- ymd("2009:02:27")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1208"] <- ymd("2009:02:27")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1217"] <- ymd("2009:02:28")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1219"] <- ymd("2009:02:28")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1255"] <- ymd("2009:03:05")
+csv.list$CRS$Date[csv.list$CRS$Transect.ID=="1267"] <- ymd("2009:03:06")
+
+## still missing:
+# 1069
+# 1072
+# 1091
+# 1103
+# 1130
+# 1132
+# 1315
+# 1320
+# 1323
+# 1324
+# 1325
+
+
+
 ```
 
+```{r}
+for(i in 1:19){
+  message(names(csv.list)[i])
+  print(head(csv.list[[i]]))
+}
+```

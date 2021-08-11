@@ -117,7 +117,9 @@ If it's gebco, this chunk takes 30-40mins!
 r <- readtopo("ibcso") ## already projected and at 500m resolution
 if(data.name=="gebco"){
   ## load raw (unprojected) data
-  g <- raster(paste0(env.raw,"GEBCO_2020/gebco_2020_SO.tif"))
+  # g <- raster(paste0(env.raw,"GEBCO_2020/gebco_2020_SO.tif"))
+  g <- raster(paste0(env.raw,"gebco_2021_sub_ice_topo/GEBCO_2021_sub_ice_topo_CF.nc"))
+  crs(g) <- "+proj=longlat +datum=WGS84 +no_defs"
   if(data.format=="project.500"|data.format=="project.raw"){
     ## project raster to polar stereographic
     g <- projectRaster(g,crs=stereo)

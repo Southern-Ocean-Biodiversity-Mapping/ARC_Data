@@ -554,21 +554,27 @@ for(i in 2:length(years)){
   names(a)[i] <- paste0("NPP.",years[i])
 }
 
-## load coastline and make it a SpatVector
-library(rworldmap)
-data(coastsCoarse)
-coast.world <- vect(coastsCoarse)
-## Antarctic is line 99
-coast.ant <- coast.world[99]
-
 ## make npp a SpatRaster
 npp.unproj.spat.raw <- rast(a$NPP.2002$cafe.2002244)
 npp.unproj.spat.agg <- aggregate(npp.unproj.spat.raw,10)
-## calculate distance to coastline
-dist.unproj <- distance(npp.unproj.spat.agg, coast.ant)
 
-plot(dist.unproj)
-plot(coast.ant, add=TRUE)
+##### either coastline or shelf-line as cutoff:
+### load coastline and make it a SpatVector
+# library(rworldmap)
+# data(coastsCoarse)
+# coast.world <- vect(coastsCoarse)
+# ## Antarctic is line 99
+# coast.ant <- coast.world[99]
+# ## calculate distance to coastline
+# dist.unproj <- distance(npp.unproj.spat.agg, coast.ant)
+### use shelfline instead (from small script on generating continental shelf outline)
+shelf_contour <- vect(readOGR(paste0(env.derived,"Antarctic_shelf_1500m_outline/Antarctic_shelf_1500m_outline.shp")))
+## calculate distance to shelf line
+dist.unproj <- distance(npp.unproj.spat.agg, shelf_contour)
+
+# plot(dist.unproj)
+# plot(coast.ant, add=TRUE)
+# plot(shelf_contour, add=TRUE, col="blue")
 
 dist.new <- resample(dist.unproj,npp.unproj.spat.raw)
 
@@ -576,7 +582,7 @@ dist.new <- resample(dist.unproj,npp.unproj.spat.raw)
 a2 <- list()
 for(i in 1:length(a)){
   a2[[i]] <- rast(a[[i]])
-  a2[[i]][dist.new>=700000] <- NA
+  a2[[i]][dist.new>=750000] <- NA
 }
 a <- a2
 ###########################
@@ -626,7 +632,7 @@ npp12 <-rowMeans(npp12.df, na.rm=TRUE)
 
 #### create NetCDF file
 file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
-          paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
+          paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), overwrite=TRUE)
 ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), write=TRUE)
 
 npp_winter <- npp1
@@ -682,9 +688,8 @@ nc_close(ncid_old)
 ## check results
 ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
 npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
-npp[100,17,12]
+npp[100,170,12]
 matrix((npp12/1000000)/86400, ncol=560)[100,170]
-
 ```
 
 ```{r, eval=FALSE}

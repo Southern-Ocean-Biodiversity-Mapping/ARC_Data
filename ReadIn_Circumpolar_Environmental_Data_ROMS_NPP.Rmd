@@ -277,11 +277,11 @@ monthly_loop <- function(){
 
 # year <- "2020"
 
-prepare_data(year)
-monthly_loop()
-
-save(npp.filled,file=paste0(env.derived,file.npp,"_filled_",year,".Rdata"))
-save(npp.s.crop,file=paste0(env.derived,file.npp,"_original_",year,".Rdata"))
+# prepare_data(year)
+# monthly_loop()
+# 
+# save(npp.filled,file=paste0(env.derived,file.npp,"_filled_",year,".Rdata"))
+# save(npp.s.crop,file=paste0(env.derived,file.npp,"_original_",year,".Rdata"))
 ```
 
 ## Extract NPP values from raster files and place them into the netcdf file for use in ROMS
@@ -583,8 +583,34 @@ a2 <- list()
 for(i in 1:length(a)){
   a2[[i]] <- rast(a[[i]])
   a2[[i]][dist.new>=750000] <- NA
+  a2[[i]] <- brick(a2[[i]])
 }
 a <- a2
+
+## average monthly npp across all years
+list.01 <- lapply(a[-1],"[[",1)
+names(list.01) <- paste0("Jan_",2003:2019)
+clim.01 <- mean(stack(list.01), na.rm=TRUE)
+list.02 <- lapply(a[-1],"[[",2)
+names(list.02) <- paste0("Feb_",2003:2019)
+clim.02 <- mean(stack(list.02), na.rm=TRUE)
+list.03 <- lapply(a[-1],"[[",3)
+names(list.03) <- paste0("Mar_",2003:2019)
+clim.03 <- mean(stack(list.03), na.rm=TRUE)
+list.10 <- c(a[[1]][[2]],lapply(a[-1],"[[",6))
+names(list.10) <- paste0("Oct_",2002:2019)
+clim.10 <- mean(stack(list.10), na.rm=TRUE)
+list.11 <- c(a[[1]][[3]],lapply(a[-1],"[[",6))
+names(list.11) <- paste0("Nov_",2002:2019)
+clim.11 <- mean(stack(list.11), na.rm=TRUE)
+list.12 <- c(a[[1]][[4]],lapply(a[-1],"[[",6))
+names(list.12) <- paste0("Dec_",2002:2019)
+clim.12 <- mean(stack(list.12), na.rm=TRUE)
+
+clim.all <- mean(clim.01, clim.02, clim.03, clim.10, clim.11, clim.12, na.rm=TRUE)
+
+save(clim.all, file=paste0(env.derived,file.npp,"_filled_climatology.Rdata"))
+
 ###########################
 
 ## dataframe of npp-values by years, for each month where there is light/data (1,2,3,10,11,12)
@@ -605,19 +631,19 @@ for(i in 2:length(years)){
 }
 npp10.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
 names(npp10.df) <- years
-npp10.df[,1] <- extract(a[[1]][[1]], coords)
+npp10.df[,1] <- extract(a[[1]][[2]], coords)
 for(i in 2:length(years)){
   npp10.df[,i] <- extract(a[[i]][[6]], coords)
 }
 npp11.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
 names(npp11.df) <- years
-npp11.df[,1] <- extract(a[[1]][[2]], coords)
+npp11.df[,1] <- extract(a[[1]][[3]], coords)
 for(i in 2:length(years)){
   npp11.df[,i] <- extract(a[[i]][[7]], coords)
 }
 npp12.df <- data.frame(matrix(NA, nrow=nrow(coords),ncol=length(years)))
 names(npp12.df) <- years
-npp12.df[,1] <- extract(a[[1]][[3]], coords)
+npp12.df[,1] <- extract(a[[1]][[4]], coords)
 for(i in 2:length(years)){
   npp12.df[,i] <- extract(a[[i]][[8]], coords)
 }
@@ -765,12 +791,24 @@ chmod 755 waom10extend_nudge_climatology20022019_shelf.nc
 
 A table of active cells/coordinates for each monthly file
 
+##### from a climatology:
+
+```{r}
+ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
+npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
+
+
+
+```
+
+##### from yearly files:
+
 ```{r, eval=FALSE}
 ######
 coords <- data.frame(cbind(c(lon_rho),c(lat_rho)))
 names(coords) <- c("lon","lat")
 floats_list <- list()
-years <- as.character(2002:2018)
+years <- as.character(2002:2019)
 
 ## 
 load(file=paste0(env.derived,file.npp,"_filled_2002.Rdata"))
@@ -789,14 +827,13 @@ for(i in 2:length(years)){
 e <- extract(c,coords)
 length(which(e>0))
 
-## transform to monthly lat-lon points without NAs
-m_floats_list <- list()
-for(i in 1:length(floats_list)){
-  m_floats_list[[i]] <- list()
-  for(j in 1:(ncol(floats_list[[i]])-2)){
-    m_floats_list[[i]][[j]] <- floats_list[[i]][which(floats_list[[i]][,j+2]>0),1:2]
-}}
-
+# ## transform to monthly lat-lon points without NAs
+# m_floats_list <- list()
+# for(i in 1:length(floats_list)){
+#   m_floats_list[[i]] <- list()
+#   for(j in 1:(ncol(floats_list[[i]])-2)){
+#     m_floats_list[[i]][[j]] <- floats_list[[i]][which(floats_list[[i]][,j+2]>0),1:2]
+# }}
 ## produce .txt-file with monthly release-points
 # for(i in 1:length(floats_list)){
 #   for(j in 1:length(m_floats_list[[i]])){
@@ -807,10 +844,22 @@ for(i in 1:length(floats_list)){
 sel <- which(e>0)
 m <- data.frame(matrix(NA,nrow=length(sel),ncol=12))
 names(m) <- c("G","C","T","N","Ft0","Fx0","Fy0","Fz0","Fdt","Fdx","Fdy","Fdz")
-m[,1:4] <- 1
 m[,c(5,8:12)] <- "0.d0"
+
+## when using lon/lat to indicate release locations:
+m[,1:4] <- 1
 m[,6:7] <- coords[sel,]
-write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease.txt"),row.names=FALSE, quote=FALSE)
+
+## when using matrix indices instead of lon/lat:
+## x is the colum, y the row. Need to create to lookup tables to identify x/y index for each location with a NPP value. Start at the bottom left corner...!
+mat.x <- matrix(rep(1:560,630), ncol=560, byrow=TRUE)
+mat.y <- matrix(rep(630:1,560), ncol=560)
+m[,1:4] <- c(1,0,1,1)
+m[,6] <- mat.x[sel]
+m[,7] <- mat.y[sel]
+
+## then write table
+write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease_idx.txt"),row.names=FALSE, quote=FALSE)
 
 # ## first look which cells are ever ice-free
 # load(file=paste0(env.dir,"Circumpolar_NPP_Cafe_filled_2002.Rdata"))

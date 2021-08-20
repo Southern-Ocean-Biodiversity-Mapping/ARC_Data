@@ -118,8 +118,10 @@ r <- readtopo("ibcso") ## already projected and at 500m resolution
 if(data.name=="gebco"){
   ## load raw (unprojected) data
   # g <- raster(paste0(env.raw,"GEBCO_2020/gebco_2020_SO.tif"))
-  g <- raster(paste0(env.raw,"gebco_2021_sub_ice_topo/GEBCO_2021_sub_ice_topo_CF.nc"))
-  crs(g) <- "+proj=longlat +datum=WGS84 +no_defs"
+  # g <- raster(paste0(env.raw,"gebco_2021_sub_ice_topo/GEBCO_2021_sub_ice_topo_CF.nc"))
+  # crs(g) <- "+proj=longlat +datum=WGS84 +no_defs"
+  # g <- crop(g,extent(c(-180,180,-90,-60)))
+  g <- raster(paste0(env.raw,"GEBCO_2021/gebco_2021_SO.tif"))
   if(data.format=="project.500"|data.format=="project.raw"){
     ## project raster to polar stereographic
     g <- projectRaster(g,crs=stereo)
@@ -147,8 +149,8 @@ r.tpi11 <- tpi(r, scale=11)
 # r.tpi31 <- tpi(r, scale=31)
 
 ## set anything on land to NA, and optionally set abyssal zone to NA
-r.depth[r>0] <- NA
-r.depth[r<depth.range[2]] <- NA
+r.depth[r>=0] <- NA
+r.depth[r<=depth.range[2]] <- NA
 r.slope[is.na(r.depth[])] <- NA
 r.tpi[is.na(r.depth[])] <- NA
 r.tpi5[is.na(r.depth[])] <- NA
@@ -203,11 +205,12 @@ if(data.name=="gebco"){
 }
 save.string <- paste0(env.derived, string.chr, res.string, ra.string, "bathy_", data.name)
 
-writeRaster(r.depth, filename=paste0(save.string,"_depth.Rdata"), overwrite=TRUE)
-writeRaster(r.slope, filename=paste0(save.string,"_slope.Rdata"), overwrite=TRUE)
-writeRaster(r.tpi,   filename=paste0(save.string,"_tpi.Rdata"), overwrite=TRUE)
-writeRaster(r.tpi5,  filename=paste0(save.string,"_tpi5.Rdata"), overwrite=TRUE)
-writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.Rdata"), overwrite=TRUE)
+# writeRaster(g, filename=paste0("C:/Users/jjansen/Desktop/science/data_environmental/derived/Circumpolar_EnvData_500m_bathy_gebco.Rdata"), overwrite=TRUE)
+writeRaster(r.depth, filename=paste0(save.string,"_depth.grd"), overwrite=TRUE)
+writeRaster(r.slope, filename=paste0(save.string,"_slope.grd"), overwrite=TRUE)
+writeRaster(r.tpi,   filename=paste0(save.string,"_tpi.grd"), overwrite=TRUE)
+writeRaster(r.tpi5,  filename=paste0(save.string,"_tpi5.grd"), overwrite=TRUE)
+writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.grd"), overwrite=TRUE)
 ```
 
 ```{r, eval=RUN_ALL}

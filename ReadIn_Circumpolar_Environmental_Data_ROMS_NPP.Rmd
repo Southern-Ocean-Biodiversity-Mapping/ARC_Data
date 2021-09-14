@@ -794,11 +794,65 @@ A table of active cells/coordinates for each monthly file
 ##### from a climatology:
 
 ```{r}
-ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
-npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
+load(paste0(env.derived,file.npp,"_filled_climatology.Rdata"))
 
+h.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="h")
+lon.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lon_rho")
+lat.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lat_rho")
+r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 
+plot(h.ra)
+plot(lon.ra)
+plot(lat.ra)
 
+crs(h.ra) <- crs(r2)
+
+# waom.file <- brick(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), varname="sand_01_sflux")
+# crs(waom.file) <- crs(r2)
+# 
+# waom.mean <- mean(waom.file[[1]],waom.file[[2]],waom.file[[3]],waom.file[[10]],waom.file[[11]],waom.file[[12]], na.rm=TRUE)
+
+## extract coordinates from the ROMS raster
+coords <- cbind(c(lon.ra[]), c(lat.ra[]))
+names(coords) <- c("lon","lat")
+
+## extract NPP values at the grid cell locations of the raster
+f <- extract(clim.all,coords)
+
+## cell-idx, lon, lat, npp, and x/y locations of ROMS grid points
+dat <- data.frame(cbind(1:length(lon.ra[]), coords, f, coordinates(h.ra)))
+names(dat) <- c("cellidx_r","lon","lat","npp","x","y")
+
+## find out which idx have a value
+sel <- which(f>0)
+not.sel <- which(is.na(f)|f==0)
+
+### to check the output:
+# ## create new raster with npp values
+# npp.ra <- raster(h.ra)
+# npp.ra[] <- f
+# ## check the locations of the values, and compare to npp.ra
+# idx.ra <- h.ra
+# idx.ra[not.sel] <- NA
+# par(mfrow=c(1,2))
+# plot(idx.ra)
+# plot(npp.ra)
+
+## single table for ROMS:
+m <- data.frame(matrix(NA,nrow=length(sel),ncol=12))
+names(m) <- c("G","C","T","N","Ft0","Fx0","Fy0","Fz0","Fdt","Fdx","Fdy","Fdz")
+m[,c(5,9:12)] <- "0.d0"
+m[,8] <- "31.d0"
+
+m[,1] <- 1
+m[,2] <- 0
+m[,3] <- 1
+m[,4] <- 1
+m[,6] <- dat$x[sel]
+m[,7] <- dat$y[sel]
+
+## then write table
+write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease_idx.txt"),row.names=FALSE, quote=FALSE)
 ```
 
 ##### from yearly files:

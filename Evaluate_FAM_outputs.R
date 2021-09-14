@@ -48,11 +48,11 @@ settle_07 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_07", 
 settle_08 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_08", level=1)
 
 
+##### Evaluate something?
 breaks <- seq(-0.000025,0.000025,length.out=99)
 breaks.susp <- seq(0,0.000025, length.out=256)
 breaks.settle <- seq(0.1245,0.1255, length.out=256)
 #ticks.susp <- c(0,0.00001,0.00002)
-
 
 par(mfrow=c(2,2))
 plot(surf_01[[6]], xlim=xlim, ylim=ylim, main="NPP-avg", breaks=breaks.susp)
@@ -73,10 +73,6 @@ plot(settle_01[[6]], xlim=xlim, ylim=ylim, main="FAM-settled", breaks=breaks.set
 contour(h, add=TRUE)
 plot(uv2[[6]], xlim=xlim, ylim=ylim, main="currents_his")
 contour(h, add=TRUE)
-
-
-
-
 
 par(mfrow=c(2,2))
 plot(h, xlim=xlim, ylim=ylim, main="depth")
@@ -149,3 +145,93 @@ plot(uv[[6]], xlim=xlim, ylim=ylim, main="currents")
 contour(h, add=TRUE)
 plot(sand5_01[[6]]-surf_01[[6]], xlim=xlim, ylim=ylim, breaks=breaks, col=diverge_hsv(99), main="FAM-NPP")
 contour(h, add=TRUE)
+
+
+
+
+
+##### Evaluate sedimentation patterns:
+settle_01 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_01", level=1)
+plot(settle_01[[1]])
+
+breaks=seq(-0.0001,0.0001,length.out = 255)
+col=diverge_hcl(256)
+
+set8.6 <- settle_08[[6]]-settle_08[[1]]
+set6.6 <- settle_06[[6]]-settle_06[[1]]
+set4.6 <- settle_04[[6]]-settle_04[[1]]
+set2.6 <- settle_02[[6]]-settle_02[[1]]
+
+plot(set8.6, breaks=breaks, col=col)
+plot(set6.6, breaks=breaks, col=col)
+plot(set4.6, breaks=breaks, col=col)
+plot(set2.6, breaks=breaks, col=col)
+
+
+##### Evaluate floats
+### it's being stored in a rather weird way...
+### if you read in as a raster, the rows are the time-steps
+data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/"
+grd.x <- brick(paste0(data.flts,"ocean_flt.nc"), varname="Xgrid", level=1)
+grd.y <- brick(paste0(data.flts,"ocean_flt.nc"), varname="Ygrid", level=1)
+grd.z <- brick(paste0(data.flts,"ocean_flt.nc"), varname="Zgrid", level=1)
+flts.x <- brick(paste0(data.flts,"ocean_flt.nc"), varname="x", level=1)
+flts.y <- brick(paste0(data.flts,"ocean_flt.nc"), varname="y", level=1)
+flts.z <- brick(paste0(data.flts,"ocean_flt.nc"), varname="depth", level=1)
+
+pts.1 <- cbind(grd.x[1,], grd.y[1,], grd.z[1,])
+pts.31 <- cbind(grd.x[31,], grd.y[31,], grd.z[31,])
+pts.51 <- cbind(grd.x[51,], grd.y[51,], grd.z[51,])
+pts.71 <- cbind(grd.x[71,], grd.y[71,], grd.z[71,])
+pts.91 <- cbind(grd.x[91,], grd.y[91,], grd.z[91,])
+pts.111 <- cbind(grd.x[111,], grd.y[111,], grd.z[111,])
+pts.121 <- cbind(grd.x[121,], grd.y[121,], grd.z[121,])
+pts.131 <- cbind(grd.x[131,], grd.y[131,], grd.z[131,])
+pts.100 <- cbind(grd.x[100,], grd.y[100,], grd.z[100,])
+pts.152 <- cbind(grd.x[152,], grd.y[152,], grd.z[152,])
+
+
+plot(pts.1[,1:2], cex=0.5)
+points(pts.31[,1:2], col="red", cex=0.5)
+points(pts.100[,1:2], col="blue", cex=0.3)
+points(pts.152[,1:2], col="green", cex=0.3)
+
+library(rgl)
+
+plot3d(pts.1[10000:20000,])
+points3d(pts.31[10000:20000,], col="red")
+points3d(pts.152[10000:20000,], col="red")
+
+flts.1   <- cbind(flts.x[1,],   flts.y[1,],   flts.z[1,])
+flts.31  <- cbind(flts.x[31,],  flts.y[31,],  flts.z[31,])
+flts.51  <- cbind(flts.x[51,],  flts.y[51,],  flts.z[51,])
+flts.71  <- cbind(flts.x[71,],  flts.y[71,],  flts.z[71,])
+flts.90  <- cbind(flts.x[90,],  flts.y[90,],  flts.z[90,])
+flts.91  <- cbind(flts.x[91,],  flts.y[91,],  flts.z[91,])
+flts.92  <- cbind(flts.x[92,],  flts.y[92,],  flts.z[92,])
+flts.111 <- cbind(flts.x[111,], flts.y[111,], flts.z[111,])
+flts.121 <- cbind(flts.x[121,], flts.y[121,], flts.z[121,])
+flts.131 <- cbind(flts.x[131,], flts.y[131,], flts.z[131,])
+flts.100 <- cbind(flts.x[100,], flts.y[100,], flts.z[100,])
+flts.152 <- cbind(flts.x[152,], flts.y[152,], flts.z[152,])
+
+
+plot(flts.1[25000:35000,3])
+
+plot(flts.91[25000:35000,3])
+points(flts.90[25000:35000,3],col="blue")
+points(flts.92[25000:35000,3],col="red")
+
+
+plot(flts.91[25385,3], ylim=c(-100,0))
+points(flts.90[25385,3], col="red")
+points(flts.92[25385,3], col="blue")
+points(flts.111[25385,3])
+points(flts.131[25385,3])
+points(flts.152[25385,3])
+points(flts.71[25385,3])
+points(flts.51[25385,3])
+points(flts.31[25385,3])
+
+
+plot(pts.1)

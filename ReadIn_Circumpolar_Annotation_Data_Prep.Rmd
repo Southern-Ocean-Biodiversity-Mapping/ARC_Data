@@ -61,14 +61,14 @@ dat_area <- sapply(area_xls_files, readxl::read_excel, simplify=FALSE, skip=1) %
 dat_area_subset <- dat_area[match(unique(dat_area$`image filename`),dat_area$`image filename`),]
 
 ## load Biigle image annotations
-Biigle_csv_files <- list.files(paste0(ann.dir,"counts/"),full.names=TRUE,recursive=TRUE,pattern="254")
+Biigle_csv_files <- list.files(paste0(ann.dir,"Counts_annotation_files_individual_surveys/"),full.names=TRUE,recursive=TRUE,pattern="254")
 dat_counts <- sapply(Biigle_csv_files, readr::read_csv, simplify=FALSE) %>% bind_rows(.id="id")
 dat_counts$Label <- gsub(" ","",dat_counts$label_hierarchy) # fixing label names
 dat_counts$Label <- gsub(">","__",dat_counts$Label)
 dat_counts$Label <- gsub("-","_",dat_counts$Label)
 
 ## load %-cover image annotations
-cover_csv_files <- list.files(paste0(ann.dir,"cover/"),full.names=TRUE,recursive=TRUE,pattern=".csv")
+cover_csv_files <- list.files(paste0(ann.dir,"Cover_annotation_files_individual_surveys/"),full.names=TRUE,recursive=TRUE,pattern="_03_")
 dat_cover <- sapply(cover_csv_files, readr::read_csv, simplify=FALSE) %>% bind_rows(.id="id")
 dat_cover$Label <- gsub("1","",dat_cover$Label) # fixing label names
 dat_cover$Label <- gsub("2","",dat_cover$Label)
@@ -248,7 +248,7 @@ text(image_metadata[which(image_metadata$cover=="yes"),4:5], labels=image_metada
 #### aggregated cover of some living things on a single transect
 
 ```{r}
-## projected coordinates for plottng
+## projected coordinates for plotting
 img.coord <- SpatialPoints(coords=image_metadata[,4:5], proj4string=crs(stereo))
 
 #### create subset of data to plot
@@ -272,6 +272,34 @@ points(image_metadata[,4:5])
 points(image_metadata[which(image_metadata$cover=="yes"),4:5],col="red",cex=0.5)
 points(img.coord[sel2], cex=log(val), col="blue")
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ```{r, eval=FALSE}

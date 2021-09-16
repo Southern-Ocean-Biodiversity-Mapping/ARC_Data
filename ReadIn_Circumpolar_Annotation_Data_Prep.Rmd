@@ -128,15 +128,15 @@ image_metadata[which(image_metadata$cover=="yes"),]
 __count_images__
 
 ```{r}
-labs <- unique(dat_counts$Label)
-nams <- unique(dat_counts$filename)
-dat_counts_image_by_species <- data.frame(matrix(NA,nrow=length(nams),ncol=length(labs)))
-rownames(dat_counts_image_by_species) <- nams
-colnames(dat_counts_image_by_species) <- labs
-for(i in 1:length(nams)){
-  sel.r <- which(dat_counts$filename==nams[i])  
-  for(j in 1:length(labs)){
-    sel.c <- which(dat_counts$Label[sel.r]==labs[j])  
+labs.counts <- unique(dat_counts$Label)
+nams.counts <- unique(dat_counts$filename)
+dat_counts_image_by_species <- data.frame(matrix(NA,nrow=length(nams.counts),ncol=length(labs.counts)))
+rownames(dat_counts_image_by_species) <- nams.counts
+colnames(dat_counts_image_by_species) <- labs.counts
+for(i in 1:length(nams.counts)){
+  sel.r <- which(dat_counts$filename==nams.counts[i])  
+  for(j in 1:length(labs.counts)){
+    sel.c <- which(dat_counts$Label[sel.r]==labs.counts[j])  
     dat_counts_image_by_species[i,j] <- length(sel.c)
   }
 }
@@ -148,17 +148,17 @@ __count_cells__
 
 ```{r}
 ## create new dataframe using image locations
-dat_counts_cell_by_species <- data.frame(matrix(NA,nrow=length(ids),ncol=length(labs)))
+dat_counts_cell_by_species <- data.frame(matrix(NA,nrow=length(ids),ncol=length(labs.counts)))
 rownames(dat_counts_cell_by_species) <- ids
-colnames(dat_counts_cell_by_species) <- labs
-counts_N <- rep(NA, length(labs))
-counts_area <- rep(NA, length(labs))
+colnames(dat_counts_cell_by_species) <- labs.counts
+counts_N <- rep(NA, length(ids))
+counts_area <- rep(NA, length(ids))
 for(i in 1:length(ids)){
   #print(i)
   sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$counts=="yes") # find images that are part of that cell and annotated in biigle
   if(length(sel.r)==0) next # if none of the images are annotated, skip to the next iteration
   sel.names <- image_metadata$Filename.standardised[sel.r] # find the names of these images
-  dat.temp <- dat_counts_image_by_species[which(nams%in%sel.names),] # find annotations from these images from the image-dataset
+  dat.temp <- dat_counts_image_by_species[which(nams.counts%in%sel.names),] # find annotations from these images from the image-dataset
   counts_N[i] <-  nrow(dat.temp)
   counts_area[i] <- sum(image_metadata$area[sel.r])
   dat_counts_cell_by_species[i,] <- colSums(dat.temp)
@@ -195,18 +195,29 @@ __cover_cells__
 dat_cover_cell_by_species <- data.frame(matrix(NA,nrow=length(ids),ncol=length(labs.cov)))
 rownames(dat_cover_cell_by_species) <- ids
 colnames(dat_cover_cell_by_species) <- labs.cov
-cover_N <- rep(NA, length(labs.cov))
-cover_area <- rep(NA, length(labs.cov))
+cover_N <- rep(NA, length(ids))
+cover_area <- rep(NA, length(ids))
 for(i in 1:length(ids)){
   #print(i)
   sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$cover=="yes") # find images that are part of that cell and annotated in coralnet
   if(length(sel.r)==0) next # if none of the images are annotated, skip to the next iteration
   sel.names <- image_metadata$Filename.standardised[sel.r] # find the names of these images
-  dat.temp <- dat_cover_image_by_species[which(nams%in%sel.names),] # find annotations from these images from the image-dataset
+  dat.temp <- dat_cover_image_by_species[which(nams.cov%in%sel.names),] # find annotations from these images from the image-dataset
   cover_N[i] <-  nrow(dat.temp)
   cover_area[i] <- sum(image_metadata$area[sel.r])
   dat_cover_cell_by_species[i,] <- colSums(dat.temp)
 }
+```
+
+### cell metadata
+
+```{r}
+cell.coords <- xyFromCell(r2, ids)
+cell.lonlat <- project(cell.coords, proj=crs(r2), inverse=TRUE) 
+
+cell_metadata <- data.frame(cbind(ids,cell.lonlat,cell.coords,cover_N, counts_N, cover_area, counts_area))
+names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y", "cover_N", "counts_N", "cover_area", "counts_area")
+
 ```
 
 ### save output
@@ -218,10 +229,11 @@ cover_images <- dat_cover_image_by_species
 count_images <- dat_counts_image_by_species
 
 image_metadata
+cell_metadata
 ```
 
 ```{r}
-save(image_metadata, cover_cells, cover_images, count_cells, count_images,
+save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, count_images,
      file=paste0(ARC_Data.dir,"Circumpolar_Annotation_Data.Rdata"))
 ```
 

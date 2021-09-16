@@ -43,6 +43,7 @@ library(readxl)
 library(raster)
 library(maptools)
 library(lubridate)
+library(plyr)
 ```
 
 ### Setting up the environment

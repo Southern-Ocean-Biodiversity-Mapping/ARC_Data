@@ -19,7 +19,8 @@ library(stringr)
 
 ```{r}
 ## Jan's local machine:
-sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+#sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+sci.dir <-      "C:/Users/cgros/code/IMAS/"
 env.derived <-  paste0(sci.dir,"data_environmental/derived/")
 #bio.dir <-      paste0(sci.dir,"data_biological/")
 
@@ -27,8 +28,10 @@ env.derived <-  paste0(sci.dir,"data_environmental/derived/")
 # env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
 
 ## common paths (after "sci.dir")
-tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
-ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+#tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+#ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+tools.dir <-    paste0(sci.dir,"Useful_Functions_Tools/")
+ARC_Data.dir <- paste0(sci.dir,"ARC_Data/")
 
 ## R-drive paths
 RS.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"

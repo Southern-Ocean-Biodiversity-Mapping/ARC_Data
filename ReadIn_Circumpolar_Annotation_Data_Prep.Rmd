@@ -124,6 +124,12 @@ search.idx <- idx[fill.idx]
 image_metadata$counts[fill.idx] <- "yes" # replace area values where filenames match
 # check:
 image_metadata[which(image_metadata$cover=="yes"),]
+
+# Add image quality score
+# Read csv file
+df_image_quality_score <- read.csv(image.quality.path)
+# Add column to image_metadata by matching filename columns
+image_metadata$image_quality_score <- df_image_quality_score$image_quality_score[match(image_metadata$Filename.standardised, df_image_quality_score$filename)]
 ```
 
 

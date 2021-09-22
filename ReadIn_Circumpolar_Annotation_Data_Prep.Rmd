@@ -37,6 +37,9 @@ ARC_Data.dir <- paste0(sci.dir,"ARC_Data/")
 RS.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
 ann.dir <- paste0(RS.dir,"AnnotationLibrary_AllFinishedSurveys/")
 
+# Image quality path
+image.quality.path <- "R:/IMAS/Antarctic_Seafloor/image_quality_analysis/image_quality_score.csv"
+
 ```
 
 ```{r}

@@ -52,14 +52,19 @@ file.npp <- "Circumpolar_EnvData_NPP_Cafe"
 ```{r}
 #### load ROMS netcdf files (original download from GADI using Filezilla)
 ## 10k models:
-grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
+#grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
+
+## 4k models:
+grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
+lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
+lat_rho <- ncvar_get(grd4k_nc, varid="lat_rho")
 
 #### load data from file with initial conditions
 #SST <- ncvar_get(ini10k_nc, varid="SST")
 
 #### 
-lon_rho <- ncvar_get(grd10k_nc, varid="lon_rho")
-lat_rho <- ncvar_get(grd10k_nc, varid="lat_rho")
+# lon_rho <- ncvar_get(grd10k_nc, varid="lon_rho")
+# lat_rho <- ncvar_get(grd10k_nc, varid="lat_rho")
 # lon_psi <- ncvar_get(grd10k_nc, varid="lon_psi")
 # lat_psi <- ncvar_get(grd10k_nc, varid="lat_psi")
 # lon_u <- ncvar_get(grd10k_nc, varid="lon_u")
@@ -453,9 +458,12 @@ npp11 <-rowMeans(npp11.df, na.rm=TRUE)
 npp12 <-rowMeans(npp12.df, na.rm=TRUE)
 
 #### create NetCDF file
-file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
-          paste0(env.derived,"waom10extend_nudge_climatology20022019.nc"))
-ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019.nc"), write=TRUE)
+# file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
+#           paste0(env.derived,"waom10extend_nudge_climatology20022019.nc"))
+# ini_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019.nc"), write=TRUE)
+file.copy(paste0(env.raw,"waom4extend_nudge.nc"),
+          paste0(env.derived,"waom4extend_nudge_climatology20022019.nc"))
+ini_nc <- nc_open(paste0(env.derived,"waom4extend_nudge_climatology20022019.nc"), write=TRUE)
 
 npp_winter <- npp1
 npp_winter[npp_winter>0] <-0
@@ -468,9 +476,9 @@ npp.v <- npp.v/1000000
 npp.v <- npp.v/86400
 
 ## define variable dimensions
-xdim2 <- ini10k_nc$dim$xi_rho
-ydim2 <- ini10k_nc$dim$eta_rho
-tdim2 <- ini10k_nc$dim$sst_time
+xdim2 <- ini_nc$dim$xi_rho
+ydim2 <- ini_nc$dim$eta_rho
+tdim2 <- ini_nc$dim$sst_time
 #tdim2$vals <- ini10k_nc$dim$sst_time$vals[c(7:12,1:6)]
 
 ## define variable
@@ -485,21 +493,21 @@ var_7 <- ncvar_def('sand_07_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetP
 var_8 <- ncvar_def('sand_08_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
 
 ## add variable to netcdf and then add values to that variable
-ncid_old <- ncvar_add(ini10k_nc,var_1)
+ncid_old <- ncvar_add(ini_nc,var_1)
 ncvar_put(ncid_old, "sand_01_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_2)
+ncid_old <- ncvar_add(ini_nc,var_2)
 ncvar_put(ncid_old, "sand_02_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_3)
+ncid_old <- ncvar_add(ini_nc,var_3)
 ncvar_put(ncid_old, "sand_03_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_4)
+ncid_old <- ncvar_add(ini_nc,var_4)
 ncvar_put(ncid_old, "sand_04_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_5)
+ncid_old <- ncvar_add(ini_nc,var_5)
 ncvar_put(ncid_old, "sand_05_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_6)
+ncid_old <- ncvar_add(ini_nc,var_6)
 ncvar_put(ncid_old, "sand_06_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_7)
+ncid_old <- ncvar_add(ini_nc,var_7)
 ncvar_put(ncid_old, "sand_07_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_8)
+ncid_old <- ncvar_add(ini_nc,var_8)
 ncvar_put(ncid_old, "sand_08_sflux", npp.v)
 
 ## check output
@@ -508,11 +516,15 @@ print(ncid_old)
 nc_close(ncid_old)
 
 ## check results
-ini10k_nc <- nc_open(paste0(env.dir,"Circumpolar_ROMS/waom10extend_nudge_climatology20022019.nc"))
-npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
-npp[10,17,6]
-matrix((npp12/1000000)/86400, ncol=560)[10,17]
+#ini_nc <- nc_open(paste0(env.dir,"Circumpolar_ROMS/waom10extend_nudge_climatology20022019.nc"))
+ini_nc <- nc_open(paste0(env.derived,"waom4extend_nudge_climatology20022019.nc"))
+npp <- ncvar_get(ini_nc, "sand_01_sflux")
+npp[10,17,12]
+# matrix((npp12/1000000)/86400, ncol=560)[10,17]
+matrix((npp12/1000000)/86400, ncol=1400)[10,17]
 ```
+
+CONTINUE HERE!!!
 
 #### NPP only near the continental shelf? PROJECTED
 
@@ -657,9 +669,12 @@ npp11 <-rowMeans(npp11.df, na.rm=TRUE)
 npp12 <-rowMeans(npp12.df, na.rm=TRUE)
 
 #### create NetCDF file
-file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
-          paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), overwrite=TRUE)
-ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), write=TRUE)
+# file.copy(paste0(env.raw,"waom10extend_nudge.nc"),
+#           paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), overwrite=TRUE)
+# ini_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), write=TRUE)
+file.copy(paste0(env.raw,"waom4extend_nudge.nc"),
+          paste0(env.derived,"waom4extend_nudge_climatology20022019_shelf.nc"), overwrite=TRUE)
+ini_nc <- nc_open(paste0(env.derived,"waom4extend_nudge_climatology20022019_shelf.nc"), write=TRUE)
 
 npp_winter <- npp1
 npp_winter[npp_winter>0] <-0
@@ -672,9 +687,9 @@ npp.v <- npp.v/1000000
 npp.v <- npp.v/86400
 
 ## define variable dimensions
-xdim2 <- ini10k_nc$dim$xi_rho
-ydim2 <- ini10k_nc$dim$eta_rho
-tdim2 <- ini10k_nc$dim$sst_time
+xdim2 <- ini_nc$dim$xi_rho
+ydim2 <- ini_nc$dim$eta_rho
+tdim2 <- ini_nc$dim$sst_time
 #tdim2$vals <- ini10k_nc$dim$sst_time$vals[c(7:12,1:6)]
 
 ## define variable
@@ -689,21 +704,21 @@ var_7 <- ncvar_def('sand_07_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetP
 var_8 <- ncvar_def('sand_08_sflux','kg/s',list(xdim2,ydim2,tdim2),longname="NetPrimaryProduction",prec="double")
 
 ## add variable to netcdf and then add values to that variable
-ncid_old <- ncvar_add(ini10k_nc,var_1)
+ncid_old <- ncvar_add(ini_nc,var_1)
 ncvar_put(ncid_old, "sand_01_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_2)
+ncid_old <- ncvar_add(ini_nc,var_2)
 ncvar_put(ncid_old, "sand_02_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_3)
+ncid_old <- ncvar_add(ini_nc,var_3)
 ncvar_put(ncid_old, "sand_03_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_4)
+ncid_old <- ncvar_add(ini_nc,var_4)
 ncvar_put(ncid_old, "sand_04_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_5)
+ncid_old <- ncvar_add(ini_nc,var_5)
 ncvar_put(ncid_old, "sand_05_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_6)
+ncid_old <- ncvar_add(ini_nc,var_6)
 ncvar_put(ncid_old, "sand_06_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_7)
+ncid_old <- ncvar_add(ini_nc,var_7)
 ncvar_put(ncid_old, "sand_07_sflux", npp.v)
-ncid_old <- ncvar_add(ini10k_nc,var_8)
+ncid_old <- ncvar_add(ini_nc,var_8)
 ncvar_put(ncid_old, "sand_08_sflux", npp.v)
 
 ## check output
@@ -712,14 +727,15 @@ print(ncid_old)
 nc_close(ncid_old)
 
 ## check results
-ini10k_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
-npp <- ncvar_get(ini10k_nc, "sand_01_sflux")
-npp[100,170,12]
-matrix((npp12/1000000)/86400, ncol=560)[100,170]
+# ini_nc <- nc_open(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"))
+ini_nc <- nc_open(paste0(env.derived,"waom4extend_nudge_climatology20022019_shelf.nc"))
+npp <- ncvar_get(ini_nc, "sand_01_sflux")
+npp[1000,570,12]
+matrix((npp12/1000000)/86400, ncol=1400)[1000,570]
 ```
 
 ```{r, eval=FALSE}
-test <- brick(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), varname="sand_01_sflux")
+test <- brick(paste0(env.derived,"waom4extend_nudge_climatology20022019_shelf.nc"), varname="sand_01_sflux")
 plot(test,c(1:3,10:12))
 ```
 
@@ -785,6 +801,25 @@ ncatted -O -a scale_factor,sand_07_sflux,d,, waom10extend_nudge_climatology20022
 ncatted -O -a scale_factor,sand_08_sflux,d,, waom10extend_nudge_climatology20022019_shelf.nc
 ## then make the file readable:
 chmod 755 waom10extend_nudge_climatology20022019_shelf.nc
+
+ncatted -O -a add_offset,sand_01_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_02_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_03_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_04_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_05_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_06_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_07_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a add_offset,sand_08_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_01_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_02_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_03_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_04_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_05_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_06_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_07_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+ncatted -O -a scale_factor,sand_08_sflux,d,, waom4extend_nudge_climatology20022019_shelf.nc
+## then make the file readable:
+chmod 755 waom4extend_nudge_climatology20022019_shelf.nc
 ```
 
 ## generate file to release floats
@@ -796,9 +831,12 @@ A table of active cells/coordinates for each monthly file
 ```{r}
 load(paste0(env.derived,file.npp,"_filled_climatology.Rdata"))
 
-h.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="h")
-lon.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lon_rho")
-lat.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lat_rho")
+# h.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="h")
+# lon.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lon_rho")
+# lat.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lat_rho")
+h.ra <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="h")
+lon.ra <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="lon_rho")
+lat.ra <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="lat_rho")
 r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 
 plot(h.ra)
@@ -852,7 +890,7 @@ m[,6] <- dat$x[sel]
 m[,7] <- dat$y[sel]
 
 ## then write table
-write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease_idx.txt"),row.names=FALSE, quote=FALSE)
+write.table(m, file=paste0(env.derived,file.npp,"_4kFloatsRelease_idx.txt"),row.names=FALSE, quote=FALSE)
 ```
 
 ##### from yearly files:

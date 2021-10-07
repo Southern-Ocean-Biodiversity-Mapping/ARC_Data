@@ -1,0 +1,60 @@
+---
+title: "Circumpolar Environmental Data - Crop and Scale"
+author: "Jan Jansen"
+date: "16/07/2021"
+output: html_document
+---
+
+```{r, warning=FALSE, message=FALSE}
+##### load libraries
+library(raster)       ## package for raster manipulation
+```
+
+__Circumpolar Environmental Data:  Scale environmental variables for analysis in R__  
+
+## Things you need to do to run this script
+
+#### 1. specify the directory where to find the data
+
+- specify your local directory or point to the owncloud directories (THIS DOESN'T WORK YET)
+
+- Download the data from the link below and change "env.dir" in the code snippet below to match your local machine.
+
+Owncloud repository folder is "EnvironmentalData". All data can be found here:
+[link](https://owncloud.imas-data-service.cloud.edu.au/index.php/apps/files/?dir=/EnvironmentalData&fileid=186349)
+
+```{r}
+## Jan's local machine:
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+
+## remote repository (DOESN'T WORK YET):
+# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+```
+
+```{r}
+##### setting up directories
+env.raw <- paste0(env.dir,"raw/")
+env.derived <- paste0(env.dir,"derived/")
+AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
+
+string.chr <- "Circumpolar_EnvData_"
+string.res <- "500m_"
+```
+
+## Load data
+
+```{r, eval=FALSE}
+## to do
+```
+
+## Scale data
+
+```{r, eval=FALSE}
+## to do
+```
+
+## Save data
+
+```{r, eval=FALSE}
+## to do
+```

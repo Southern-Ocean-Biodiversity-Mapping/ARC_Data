@@ -37,7 +37,7 @@ image.quality.path <- "R:/IMAS/Antarctic_Seafloor/image_quality_analysis/image_q
 ##### load still and diatom sample locations and bathymetry:
 
 ## from "Readin_Circumpolar_DownwardImage_Data.Rmd"
-load(paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
+load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
 
 ## from "ReadIn_Circumpolar_Environmental_Data.Rmd"
 r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
@@ -72,7 +72,6 @@ dat_cover$Label <- gsub("2","",dat_cover$Label)
 dat_cover$Label <- gsub("3","",dat_cover$Label)
 dat_cover$Label <- gsub("4","",dat_cover$Label)
 dat_cover$Label <- gsub("5","",dat_cover$Label)
-```
 
 
 ## metadata for each image, including cellIDs (things like filename, full_path, surveyID, transectID, cellID, lon, lat, x, y, area, CoralNet, Biigle)

@@ -524,7 +524,6 @@ npp[10,17,12]
 matrix((npp12/1000000)/86400, ncol=1400)[10,17]
 ```
 
-CONTINUE HERE!!!
 
 #### NPP only near the continental shelf? PROJECTED
 

@@ -216,7 +216,7 @@ image_metadata
 cell_metadata
 
 save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, count_images,
-     file=paste0(ARC_Data.dir,"Circumpolar_Annotation_Data.Rdata"))
+     file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data.Rdata"))
 
 
 

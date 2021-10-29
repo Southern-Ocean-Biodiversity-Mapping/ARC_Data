@@ -74,7 +74,7 @@ count_cells_env<- right_join(cell_metadata_env,
                             by='cellID')
 
 
-save(cell_metadata_env, 
+save(cell_metadata_env, cover_cells_env, count_cells_env,
            file =paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
 
 

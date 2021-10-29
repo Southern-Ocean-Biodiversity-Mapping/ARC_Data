@@ -1,4 +1,10 @@
-##### This code extracts the derived environmental rasters at the location of annotated images. Currently matched at the 500m cell ID level.
+#######################################################################################################
+##### This code extracts the derived environmental rasters at the location of annotated images.    ####
+##### Currently matched at the 500m cell ID level.                                                 ####
+#### Then merges theannoations with the cell level environmental data                              ####
+#### Author Nicole Hill October 2021                                                               ####
+#######################################################################################################
+
 
 ## 1) set up----
 library(tidyverse)
@@ -40,7 +46,7 @@ geomorph_cat<-levels(env_stack[[25]])[[1]]
 
 ## 3) Match environmental data to image data (at cell level) ----
 #can run a image level too if needed
-load(paste0(ARC_Data.dir, "Circumpolar_Annotation_Data.RData"))
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
 
 # subset to only cells that have scored images
 cell_metadata_env<- cell_metadata %>%
@@ -55,9 +61,21 @@ cell_metadata_env<-cell_metadata_env %>%
  
 cell_metadata_env<- rename(cell_metadata_env, geomorph_cat=VALUE)
 
-## 4) Save combined Annotation and environmental data as RData file
+
+## 4) Merge annotation save combined Annotation and environmental data as RData file
+cover_cells_env<- left_join(cell_metadata_env,
+                            cover_cells %>%
+                                      mutate(cellID=as.numeric(rownames(cover_cells))),  
+                            by='cellID')
+
+count_cells_env<- right_join(cell_metadata_env,
+                            count_cells %>%
+                                    mutate(cellID=as.numeric(rownames(count_cells))),  
+                            by='cellID')
+
+
 save(cell_metadata_env, 
-           file =paste0(ARC_Data.dir, "Circumpolar_Annotation_Env_Data.RData"))
+           file =paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
 
 
 ##########################################

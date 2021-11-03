@@ -35,7 +35,7 @@ names(env_stack)
 names(env_stack)[1:5]<-env_names[1:5]
 names(env_stack)[6:14]<-paste(rep(c("CARS_NO3", "CARS_O2", "CARS_PO4"),each=3),c("mean", "seas_range", "std_dev"), sep="_")
 names(env_stack)[25]<-"NPP_su_mean"
-names(env_stack)[38:39]<-env_names[9:10]
+names(env_stack)[38:39]<-env_names[13:14]
 
 
 #add environmental data with non-conformant names

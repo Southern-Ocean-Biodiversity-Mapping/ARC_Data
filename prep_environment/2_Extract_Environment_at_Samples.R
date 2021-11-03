@@ -1,7 +1,7 @@
 #######################################################################################################
 ##### This code extracts the derived environmental rasters at the location of annotated images.    ####
 ##### Currently matched at the 500m cell ID level.                                                 ####
-#### Then merges theannoations with the cell level environmental data                              ####
+#### Then merges the annoations with the cell level environmental data                              ####
 #### Author Nicole Hill October 2021                                                               ####
 #######################################################################################################
 
@@ -33,15 +33,17 @@ env_names<-gsub(".*_|\\..*","",env_list)
 env_stack<-stack(env_list)
 names(env_stack)
 names(env_stack)[1:5]<-env_names[1:5]
-names(env_stack)[16]<-"NPP_su_mean"
-names(env_stack)[23:24]<-env_names[9:10]
+names(env_stack)[6:14]<-paste(rep(c("CARS_NO3", "CARS_O2", "CARS_PO4"),each=3),c("mean", "seas_range", "std_dev"), sep="_")
+names(env_stack)[25]<-"NPP_su_mean"
+names(env_stack)[38:39]<-env_names[9:10]
+
 
 #add environmental data with non-conformant names
 env_stack<-stack( env_stack,
                   raster(paste0(env.derived, "Circumpolar_EnvData_geomorphology")))
-names(env_stack)[25]<-"geomorph"
+names(env_stack)[40]<-"geomorph"
 
-geomorph_cat<-levels(env_stack[[25]])[[1]]
+geomorph_cat<-levels(env_stack[[40]])[[1]]
 
 
 ## 3) Match environmental data to image data (at cell level) ----

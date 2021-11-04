@@ -748,10 +748,7 @@ for(i in 1:length(dat.subset.list)){
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-
 for(i in 1:length(dat.subset.list)){
-  print(names(dat.subset.list)[i])
-  
   # Convert area values from string to float
   dat.subset.list[[i]]$area <- as.numeric(dat.subset.list[[i]]$area)
   
@@ -766,13 +763,22 @@ for(i in 1:length(dat.subset.list)){
       # Get indexes
       idx_NA_values <- which(is.na(dat.subset.list[[i]]$area))
       idx_nonNA_values <- which(!is.na(dat.subset.list[[i]]$area))
+      
+      # Init column
+      dat.subset.list[[i]]$estimated_area <- NA
+      
       # Compute average value of non NA images
       avg_value <- mean(dat.subset.list[[i]]$area[idx_nonNA_values])
+      # Assign this value to images with NA area
+      dat.subset.list[[i]]$estimated_area[idx_NA_values] <- avg_value
+      
+      # Assign true area for images with non NA area
+      dat.subset.list[[i]]$estimated_area[idx_nonNA_values] <- dat.subset.list[[i]]$area[idx_nonNA_values]
     }
   
   }
   else {
-    # If no missing values, the estimated area = area
+    # If no missing values, the estimated area = true area
     dat.subset.list[[i]]$estimated_area <- dat.subset.list[[i]]$area
   }
 }

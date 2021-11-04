@@ -747,6 +747,15 @@ for(i in 1:length(dat.subset.list)){
 }
 ```
 
+```{r, warning=FALSE, message=FALSE}
+
+for(i in 1:length(dat.subset.list)){
+  print(names(dat.subset.list)[i])
+  # Convert area values from string to float
+  dat.subset.list[[i]]$area <- as.numeric(dat.subset.list[[i]]$area)
+}
+```
+
 ### save output for analysis
 
 ```{r, eval=FALSE, warning=FALSE, message=FALSE}

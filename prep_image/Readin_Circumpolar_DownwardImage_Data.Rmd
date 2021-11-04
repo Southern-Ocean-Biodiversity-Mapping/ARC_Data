@@ -751,8 +751,19 @@ for(i in 1:length(dat.subset.list)){
 
 for(i in 1:length(dat.subset.list)){
   print(names(dat.subset.list)[i])
+  
   # Convert area values from string to float
   dat.subset.list[[i]]$area <- as.numeric(dat.subset.list[[i]]$area)
+  
+  # Check if missing area values
+  if (sum(is.na(dat.subset.list[[i]]$area))) {
+    
+    print(names(dat.subset.list)[i])
+  }
+  else {
+    # If no missing values, the estimated area = area
+    dat.subset.list[[i]]$estimated_area <- dat.subset.list[[i]]$area
+  }
 }
 ```
 

@@ -758,7 +758,18 @@ for(i in 1:length(dat.subset.list)){
   # Check if missing area values
   if (sum(is.na(dat.subset.list[[i]]$area))) {
     
-    print(names(dat.subset.list)[i])
+    if (sum(is.na(dat.subset.list[[i]]$area)) == nrow(dat.subset.list[[i]])) {
+      # If no area value available at all, estimated_area filled with NA
+      dat.subset.list[[i]]$estimated_area <- NA
+    }
+    else {
+      # Get indexes
+      idx_NA_values <- which(is.na(dat.subset.list[[i]]$area))
+      idx_nonNA_values <- which(!is.na(dat.subset.list[[i]]$area))
+      # Compute average value of non NA images
+      avg_value <- mean(dat.subset.list[[i]]$area[idx_nonNA_values])
+    }
+  
   }
   else {
     # If no missing values, the estimated area = area

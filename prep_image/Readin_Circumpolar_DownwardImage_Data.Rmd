@@ -754,26 +754,34 @@ for(i in 1:length(dat.subset.list)){
   
   # Check if missing area values
   if (sum(is.na(dat.subset.list[[i]]$area))) {
+    # Iterate through all transects
+    transect_ids <- as.vector(unique(dat.subset.list[[i]]$transectID))
+    for (transect_id in transect_ids) {
+      # Get transect data
+      idxes_transet <- which(dat.subset.list[[i]]$transectID == transect_id)
+      dat_transect <- dat.subset.list[[i]][idxes_transet, ]
+      if (sum(is.na(dat_transect$area)) == nrow(dat_transect)) {
+        # If no area value available at all, estimated_area filled with NA
+        dat.subset.list[[i]][idxes_transet, ]$estimated_area <- NA
+        print(paste("survey: ", names(dat.subset.list)[[i]] , " / Transect: ", as.vector(unique(dat_transect$transectID))))
+      }
+      else {
+        # Get indexes
+        idx_NA_values <- which(is.na(dat_transect$area))
+        idx_nonNA_values <- which(!is.na(dat_transect$area))
+     
+        # Init column
+        dat.subset.list[[i]][idxes_transet, ]$estimated_area <- NA
     
-    if (sum(is.na(dat.subset.list[[i]]$area)) == nrow(dat.subset.list[[i]])) {
-      # If no area value available at all, estimated_area filled with NA
-      dat.subset.list[[i]]$estimated_area <- NA
-    }
-    else {
-      # Get indexes
-      idx_NA_values <- which(is.na(dat.subset.list[[i]]$area))
-      idx_nonNA_values <- which(!is.na(dat.subset.list[[i]]$area))
+        # Compute average value of non NA images
+        avg_value <- mean(dat_transect$area[idx_nonNA_values])
+        # Assign this value to images with NA area
+        dat.subset.list[[i]][idxes_transet, ]$estimated_area[idx_NA_values] <- avg_value
+    
+        # Assign true area for images with non NA area
+        dat.subset.list[[i]][idxes_transet, ]$estimated_area[idx_nonNA_values] <- dat.subset.list[[i]][idxes_transet, ]$area[idx_nonNA_values]
+      }
       
-      # Init column
-      dat.subset.list[[i]]$estimated_area <- NA
-      
-      # Compute average value of non NA images
-      avg_value <- mean(dat.subset.list[[i]]$area[idx_nonNA_values])
-      # Assign this value to images with NA area
-      dat.subset.list[[i]]$estimated_area[idx_NA_values] <- avg_value
-      
-      # Assign true area for images with non NA area
-      dat.subset.list[[i]]$estimated_area[idx_nonNA_values] <- dat.subset.list[[i]]$area[idx_nonNA_values]
     }
   
   }

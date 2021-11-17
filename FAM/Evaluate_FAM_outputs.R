@@ -2,14 +2,23 @@
 library(raster)
 library(colorspace)
 library(viridis)
+library(ncdf4)
+library(raadtools)
+
 env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
 env.raw <- paste0(env.dir,"raw/")
 env.derived <- paste0(env.dir,"derived/")
 #data.dat <- paste0("Circumpolar_ROMS/10km_outputs/sed_test1/")
 data.dat <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/sed_test5/")
+AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
+
 
 xlim=c(250,340)
 ylim=c(100,180)
+
+## load projected coastline for plotting
+load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+
 
 #### load lon/lat information from ROMS-grid
 grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
@@ -148,7 +157,11 @@ plot(set2.6, breaks=breaks, col=col, main="sand_02")
 ### if you read in as a raster, the rows are the time-steps
 ### everything between 153-183 is NA for some reason
 
-data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/"
+#data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/"
+data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/output_sed_float_test1/"
+data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/output_sed_float_test3/"
+data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/output_sed_float_test4/"
+data.flts <- "C:/Users/jjansen/Desktop/science/data_environmental/Circumpolar_ROMS/10km_outputs/output_sed_float_test5/"
 grd.x <- brick(paste0(data.flts,"ocean_flt.nc"), varname="Xgrid", level=1)
 grd.y <- brick(paste0(data.flts,"ocean_flt.nc"), varname="Ygrid", level=1)
 grd.z <- brick(paste0(data.flts,"ocean_flt.nc"), varname="Zgrid", level=1)
@@ -164,6 +177,44 @@ flts.s6 <- brick(paste0(data.flts,"ocean_flt.nc"), varname="sand_06", level=1)
 flts.s7 <- brick(paste0(data.flts,"ocean_flt.nc"), varname="sand_07", level=1)
 flts.s8 <- brick(paste0(data.flts,"ocean_flt.nc"), varname="sand_08", level=1)
 
+#### start with a simple 2D plot
+## only use a subset of 500 traces
+set.seed(1)
+s <- sample(1:length(which(!is.na(grd.x[151,]))), 500)
+
+## plot depth vs index
+par(mfrow=c(1,1))
+plot(flts.z[1:152,s])
+
+## trajectories:
+plot(uv$X662904000, xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)))
+points(cbind(grd.x[152,s], grd.y[152,s]), pch=16, col="blue")
+points(cbind(grd.x[1:151,s], grd.y[1:151,s]), pch=16, col="blue", cex=0.2)
+## end-points
+plot(uv$X662904000, xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)))
+points(cbind(grd.x[1,], grd.y[1,]), pch=16, col="blue", cex=0.2)
+
+## Mertz Glacier end-points
+# plot(uv$X662904000, xlim=c(430,480), ylim=c(70,110), col=rev(magma(99)))
+plot(h$bathymetry.at.RHO.points, xlim=c(430,480), ylim=c(70,110), col=rev(magma(99)))
+points(cbind(grd.x[1,], grd.y[1,]), pch=16, col="blue", cex=0.2)
+
+s2 <- sample(1:ncol(flts.z),9)
+## plot a single float through time:
+par(mfrow=c(3,3))
+plot(flts.z[1:152,s2[1]])
+plot(flts.z[1:152,s2[2]])
+plot(flts.z[1:152,s2[3]])
+plot(flts.z[1:152,s2[4]])
+plot(flts.z[1:152,s2[5]])
+plot(flts.z[1:152,s2[6]])
+plot(flts.z[1:152,s2[7]])
+plot(flts.z[1:152,s2[8]])
+plot(flts.z[1:152,s2[9]])
+
+
+
+
 #### Need to translate grid points into polar stereographic projection values to allow proper plotting:
 r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 ## ROMS lon/lats
@@ -173,28 +224,51 @@ lat.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lat_rho")
 lons.1 <- extract(lon.ra, cbind(grd.x[1,],grd.y[1,]))
 lons.not.nas <- which(!is.na(lons.1))
 pts.list <- list()
-for(i in 1:153){
+for(i in 1:152){
   print(i)
   lons <- extract(lon.ra, cbind(grd.x[i,],grd.y[i,]))
   lats <- extract(lat.ra, cbind(grd.x[i,],grd.y[i,]))
   ## spatialpoints:
   sp <- SpatialPoints(coords=cbind(lons[lons.not.nas],lats[lons.not.nas]),
                       proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
+  # spdf <- SpatialPointsDataFrame(sp, 
   pts.list[[i]] <- spTransform(sp, crs(r2))
 }
 
-lapply(pts.list,"[",1)
-pts.sample <- unlist(lapply(pts.list,"[",1))
-
-
 
 ### start with plotting in 2D:
-set.seed(1)
-s <- sample(1:ncol(grd.x), 500)
-#s <- seq(1,ncol(grd.x), length.out=500)
-plot(cbind(grd.x[152,], grd.y[152,]), pch=16, cex=0.2, xlim=c(220,370), ylim=c(90,190))
-points(cbind(grd.x[1:151,s], grd.y[1:151,s]), pch=16, col=rep(viridis(100),10), cex=0.5)
-points(cbind(grd.x[152,s], grd.y[152,s]), pch=16, col=rep(viridis(100),10))
+##
+plot(pts.list[[1]][s], pch=16, cex=0.5, col=viridis(500))
+points(list.rbind(lapply(pts.list,"[",s)), pch=16, cex=0.2, col=viridis(500))
+plot(coast.proj, add=TRUE)
+##
+plot(pts.list[[1]][s], pch=16, cex=0.5, col=rep(viridis(500)[1],500))
+points(list.rbind(lapply(pts.list,"[",s)), pch=16, cex=0.2, col=viridis(75500))
+plot(coast.proj, add=TRUE)
+# points(pts.list[1:152][s])
+# points(cbind(grd.x[1:151,s], grd.y[1:151,s]), pch=16, col=rep(viridis(100),10), cex=0.5)
+# points(cbind(grd.x[152,s], grd.y[152,s]), pch=16, col=rep(viridis(100),10))
+
+plot(uv$X662904000, xlim=c())
+plot(pts.list[[1]][s], pch=16, cex=0.5, col=viridis(500))
+points(list.rbind(lapply(pts.list,"[",s)), pch=16, cex=0.2, col=viridis(500))
+plot(coast.proj, add=TRUE)
+
+
+
+pts.subset.list <- list()
+for(i in 1:152){
+  pts.subset.list[[i]] <- pts.list[[i]]@coords[s,]
+}
+## traces of individual particles
+pts.subset.df <- list.rbind(pts.subset.list)
+traces.list <- list()
+for(i in 1:500){
+  traces.list[[i]] <- pts.subset.df[seq(i,nrow(pts.subset.df),by=500),]
+}
+traces.df <- list.rbind(traces.list)
+
+
 
 # plot(cbind(grd.x[152,], grd.y[152,]), pch=16, cex=0.2, xlim=c(220,370), ylim=c(90,190))
 # points(cbind(grd.x[1:151,109875], grd.y[1:151,109875]), pch=16, col="green3", cex=0.5)
@@ -231,16 +305,19 @@ require(rgeos)
 
 ## create a lagged version of the track that we can use to show a trailing "worm"
 tail_length <- 8
-ele_lagged <- ele %>% mutate(lag_n = 0)
+pts_lagged <- ele %>% mutate(lag_n = 0)
 for (li in seq_len(tail_length)) ele_lagged <- rbind(ele_lagged, ele %>% mutate(date = lead(date, li), lag_n = -li))
 ele_lagged <- ele_lagged %>% dplyr::filter(!is.na(date))
 
-g <- ggplot() + geom_raster(data = cx, aes(x, y, fill = z)) +
+g <- ggplot() + 
+  geom_raster(data = cx, aes(x, y, fill = z)) +
   scale_fill_distiller(palette = "Greys", guide = FALSE, na.value = "#FFFFFF00") +
   geom_path(data = ele_lagged, aes(x, y, alpha = lag_n), colour = "orange", size = 1) +
   scale_alpha_continuous(guide = FALSE) +
   geom_path(data = ele, aes(x, y), colour = "orange", size = 2) +
-  theme_void() + xlim(c(-4e6, 4e6)) + ylim(c(-4.75e6, 4.75e6)) +
+  theme_void() +
+  # xlim(c(-4e6, 4e6)) +
+  # ylim(c(-4.75e6, 4.75e6)) +
   transition_time(date)
 animate(g)
 

@@ -75,21 +75,21 @@ dat_cover$Label <- gsub("5","",dat_cover$Label)
 
 
 ## metadata for each image, including cellIDs (things like filename, full_path, surveyID, transectID, cellID, lon, lat, x, y, area, CoralNet, Biigle)
-image_metadata <- select(dat.list.clean[[1]],Filename.standardised,lon,lat)
+image_metadata <- select(dat.list.clean[[1]],Filename.standardised,lon,lat,transectID)
 for(i in 2:length(dat.list.clean)){
   message(i)
   print(names(dat.list.clean[[i]]))
-  if("lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,lon,lat) }
-  if("Lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,Lon,Lat) }
-  if("Longitude" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,Longitude,Latitude) }
-  if("GPS_lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,GPS_lon,GPS_lat) }  
-  names(dat.temp) <- c("Filename.standardised","lon","lat")
+  if("lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,lon,lat,transectID) }
+  if("Lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,Lon,Lat,transectID) }
+  if("Longitude" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,Longitude,Latitude,transectID) }
+  if("GPS_lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,GPS_lon,GPS_lat,transectID) }  
+  names(dat.temp) <- c("Filename.standardised","lon","lat","transectID")
   image_metadata <- rbind(image_metadata,dat.temp)
 }
 image_metadata$Filename.standardised <- gsub(".tif",".jpg",image_metadata$Filename.standardised)
 image_metadata$proj_coord_x <- project(image_metadata[,2:3], proj=crs(r2))$x
 image_metadata$proj_coord_y <- project(image_metadata[,2:3], proj=crs(r2))$y
-image_metadata$cellID <- extract(r2, image_metadata[,4:5], cellnumbers=TRUE)[,1]
+image_metadata$cellID <- extract(r2, image_metadata[,5:6], cellnumbers=TRUE)[,1]
 ids <- unique(image_metadata$cellID)
 #
 image_metadata$area <- NA
@@ -148,6 +148,11 @@ rownames(dat_counts_cell_by_species) <- ids
 colnames(dat_counts_cell_by_species) <- labs.counts
 counts_N <- rep(NA, length(ids))
 counts_area <- rep(NA, length(ids))
+counts_cells_survey <- rep(NA, length(ids))
+counts_cells_transect1 <- rep(NA, length(ids))
+counts_cells_transect2 <- rep(NA, length(ids))
+counts_cells_transect3 <- rep(NA, length(ids))
+
 for(i in 1:length(ids)){
   #print(i)
   sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$counts=="yes") # find images that are part of that cell and annotated in biigle
@@ -157,6 +162,16 @@ for(i in 1:length(ids)){
   counts_N[i] <-  nrow(dat.temp)
   counts_area[i] <- sum(image_metadata$area[sel.r])
   dat_counts_cell_by_species[i,] <- colSums(dat.temp)
+  ## check if all images are from the same survey and same transect
+  counts_cells_survey[i] <- unique(image_metadata$survey[sel.r])
+  counts_cells_transect1[i] <- unique(image_metadata$transectID[sel.r])[1]
+  print(length(unique(image_metadata$transectID[sel.r])))
+  if(length(unique(image_metadata$transectID[sel.r]))>1){
+    counts_cells_transect2[i] <- unique(image_metadata$transectID[sel.r])[2]
+    if(length(unique(image_metadata$transectID[sel.r]))>2){
+      counts_cells_transect3[i] <- unique(image_metadata$transectID[sel.r])[3]
+    }}
+  
 }
 
 ### 4) %-cover ----
@@ -185,6 +200,10 @@ rownames(dat_cover_cell_by_species) <- ids
 colnames(dat_cover_cell_by_species) <- labs.cov
 cover_N <- rep(NA, length(ids))
 cover_area <- rep(NA, length(ids))
+cover_cells_survey <- rep(NA, length(ids))
+cover_cells_transect1 <- rep(NA, length(ids))
+cover_cells_transect2 <- rep(NA, length(ids))
+cover_cells_transect3 <- rep(NA, length(ids))
 for(i in 1:length(ids)){
   #print(i)
   sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$cover=="yes") # find images that are part of that cell and annotated in coralnet
@@ -194,6 +213,14 @@ for(i in 1:length(ids)){
   cover_N[i] <-  nrow(dat.temp)
   cover_area[i] <- sum(image_metadata$area[sel.r])
   dat_cover_cell_by_species[i,] <- colSums(dat.temp)
+  ## check if all images are from the same survey and same transect
+  cover_cells_survey[i] <- unique(image_metadata$survey[sel.r])
+  cover_cells_transect1[i] <- unique(image_metadata$transectID[sel.r])[1]
+  if(length(unique(image_metadata$transectID[sel.r]))>1){
+    cover_cells_transect2[i] <- unique(image_metadata$transectID[sel.r])[2]
+    if(length(unique(image_metadata$transectID[sel.r]))>2){
+      cover_cells_transect3[i] <- unique(image_metadata$transectID[sel.r])[3]
+    }}
 }
 
 ### 4b) cell metadata
@@ -201,8 +228,97 @@ for(i in 1:length(ids)){
 cell.coords <- xyFromCell(r2, ids)
 cell.lonlat <- project(cell.coords, proj=crs(r2), inverse=TRUE) 
 
-cell_metadata <- data.frame(cbind(ids,cell.lonlat,cell.coords,cover_N, counts_N, cover_area, counts_area))
-names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y", "cover_N", "counts_N", "cover_area", "counts_area")
+cell_metadata <- data.frame(cbind(ids,cell.lonlat,cell.coords,cover_N, counts_N, cover_area, counts_area, 
+                                  cover_cells_survey, cover_cells_transect1, cover_cells_transect2, cover_cells_transect3, 
+                                  counts_cells_survey, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3))
+names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y", "cover_N", "counts_N", "cover_area", "counts_area",
+                          "cover_cells_survey", "cover_cells_transect1", "cover_cells_transect2", "cover_cells_transect3", 
+                          "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3")
+
+
+### add survey/year/gear information based on filename
+image_metadata$survey <- str_split(image_metadata$Filename.standardised,"_", simplify=T)[,1]
+image_metadata$year <- NA
+image_metadata$year[image_metadata$survey=="PS06"] <- 1984
+image_metadata$year[image_metadata$survey=="PS14"] <- 1989
+image_metadata$year[image_metadata$survey=="PS18"] <- 1990
+image_metadata$year[image_metadata$survey=="PS61"] <- 2002
+image_metadata$year[image_metadata$survey=="PS81"] <- 2013
+image_metadata$year[image_metadata$survey=="PS96"] <- 2015
+image_metadata$year[image_metadata$survey=="PS118"] <- 2019
+image_metadata$year[image_metadata$survey=="TAN0802"] <- 2008
+image_metadata$year[image_metadata$survey=="TAN1802"] <- 2018
+image_metadata$year[image_metadata$survey=="TAN1901"] <- 2019
+image_metadata$year[image_metadata$survey=="AA2011"] <- 2011
+image_metadata$year[image_metadata$survey=="CRS"] <- NA
+image_metadata$year[image_metadata$survey=="NBP1402"] <- 2014
+image_metadata$year[image_metadata$survey=="NBP1502"] <- 2015
+image_metadata$year[image_metadata$survey=="LMG1311"] <- 2013
+image_metadata$year[image_metadata$survey=="JR262"] <- 2011
+image_metadata$year[image_metadata$survey=="JR15005"] <- 2015
+image_metadata$year[image_metadata$survey=="JR17001"] <- 2017
+image_metadata$year[image_metadata$survey=="JR17003"] <- 2018
+image_metadata$gear <- NA
+image_metadata$gear[image_metadata$survey=="PS06"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS14"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS18"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS61"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS81"] <- "OFOS"
+image_metadata$gear[image_metadata$survey=="PS96"] <- "OFOS"
+image_metadata$gear[image_metadata$survey=="PS118"] <- "OFOBS"
+image_metadata$gear[image_metadata$survey=="TAN0802"] <- "DTIS"
+image_metadata$gear[image_metadata$survey=="TAN1802"] <- "DTIS"
+image_metadata$gear[image_metadata$survey=="TAN1901"] <- "DTIS"
+image_metadata$gear[image_metadata$survey=="AA2011"] <- "CTD"
+image_metadata$gear[image_metadata$survey=="CRS"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="NBP1402"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="NBP1502"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="LMG1311"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="JR262"] <- "SUCS"
+image_metadata$gear[image_metadata$survey=="JR15005"] <- "SUCS"
+image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
+image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
+
+cell_metadata$year <- NA
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS06"] <- 1984
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS14"] <- 1989
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS18"] <- 1990
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS61"] <- 2002
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS81"] <- 2013
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS96"] <- 2015
+cell_metadata$year[cell_metadata$cover_cells_survey=="PS118"] <- 2019
+cell_metadata$year[cell_metadata$cover_cells_survey=="TAN0802"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="TAN1802"] <- 2018
+cell_metadata$year[cell_metadata$cover_cells_survey=="TAN1901"] <- 2019
+cell_metadata$year[cell_metadata$cover_cells_survey=="AA2011"] <- 2011
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- NA
+cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1402"] <- 2014
+cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1502"] <- 2015
+cell_metadata$year[cell_metadata$cover_cells_survey=="LMG1311"] <- 2013
+cell_metadata$year[cell_metadata$cover_cells_survey=="JR262"] <- 2011
+cell_metadata$year[cell_metadata$cover_cells_survey=="JR15005"] <- 2015
+cell_metadata$year[cell_metadata$cover_cells_survey=="JR17001"] <- 2017
+cell_metadata$year[cell_metadata$cover_cells_survey=="JR17003"] <- 2018
+cell_metadata$gear <- NA
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS06"] <- "FTS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS14"] <- "FTS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS18"] <- "FTS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS61"] <- "FTS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS81"] <- "OFOS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS96"] <- "OFOS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="PS118"] <- "OFOBS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="TAN0802"] <- "DTIS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="TAN1802"] <- "DTIS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="TAN1901"] <- "DTIS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="AA2011"] <- "CTD"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="CRS"] <- "YOYO"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="NBP1402"] <- "YOYO"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="NBP1502"] <- "YOYO"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="LMG1311"] <- "YOYO"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="JR262"] <- "SUCS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="JR15005"] <- "SUCS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
 
 
 

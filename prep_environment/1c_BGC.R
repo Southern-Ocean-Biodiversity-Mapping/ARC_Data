@@ -52,7 +52,7 @@ depth.nc<-ncvar_get(po4_nc, "Z")
 time.nc<-ncvar_get(po4_nc, "time")
 
 
-#extract aragonite values for every time slice where value !=0 (which is land/seafloor)
+#extract BGC values for every time slice where value !=0 (which is land/seafloor)
 
 #set up array for values for each time slice
 Kbtm = array(dim=c(length(lon.nc), length(lat.nc), 84))

@@ -5,80 +5,102 @@ library(viridis)
 library(ncdf4)
 library(raadtools)
 
+## data-directories
 env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
 env.raw <- paste0(env.dir,"raw/")
 env.derived <- paste0(env.dir,"derived/")
-#data.dat <- paste0("Circumpolar_ROMS/10km_outputs/sed_test1/")
-data.dat <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/sed_test5/")
 AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
-
-
-xlim=c(250,340)
-ylim=c(100,180)
 
 ## load projected coastline for plotting
 load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 
+## ROMS-runs:
+data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test3/")
+data.dat200 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test4/")
+data.dat400 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test5/")
+# data.dat <- paste0("Circumpolar_ROMS/10km_outputs/sed_test1/")
+# data.dat <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/sed_test5/")
 
-#### load lon/lat information from ROMS-grid
+## load lon/lat information from ROMS-grid
 grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
 lon_rho <- ncvar_get(grd10k_nc, varid="lon_rho")
 lat_rho <- ncvar_get(grd10k_nc, varid="lat_rho")
 
-
-##### EVALUATE FAM - FLUX OF NPP #####
-
-#### seafloor-layer is 1, while surface-layer is 31
-
-## depth
-h <- raster(paste0(data.dat,"ocean_avg_0003.nc"), varname="h", level=1)
-
-## currents
-u <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="u", level=1)
-v <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="v", level=1)
+## load other ROMS data
+#depth
+h <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="h", level=1)
+#seafloor currents (seafloor-layer is 1)
+u <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=1)
+v <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=1)
 uv <- sqrt(u^2+v^2)
-# plot(uv[[1]])
-# u_31 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="u", level=31)
-# v_31 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="v", level=31)
-# uv_31 <- sqrt(u_31^2+v_31^2)
-# plot(uv_31[[1]])
+#seasurface currents (surface-layer is 31)
+u_31 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=31)
+v_31 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=31)
+uv_31 <- sqrt(u_31^2+v_31^2)
+#seafloor tidal currents
+tu <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
 
+## plot environmental data
+#seafloor-layer is 1, while 
+par(mfrow=c(2,2))
+plot(h, main="depth")
+plot(uv[[1]], main="seafloor currents")
+plot(uv_31[[1]], main="seasurface currents")
+plot(tu[[1]], main="currents history")
+
+##### EVALUATE FAM - LOAD MODEL RUNS #####
+### NOTE THAT CURRENTLY DIFFERENT MODEL RUNS HAVE ALL THE SAME OUTPUT APART FROM THE "ocean_flt.nc" file
 ## surface production
-surf_01 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_01", level=31)
-surf_02 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_02", level=31)
-surf_03 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_03", level=31)
-surf_04 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_04", level=31)
-surf_05 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_05", level=31)
-surf_06 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_06", level=31)
-surf_07 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_07", level=31)
-surf_08 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_08", level=31)
-
+surf_01 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_01", level=31)
+surf_02 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_02", level=31)
+surf_03 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_03", level=31)
+surf_04 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_04", level=31)
+surf_05 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_05", level=31)
+surf_06 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_06", level=31)
+surf_07 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_07", level=31)
+surf_08 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_08", level=31)
 ## bottom ocean layer
-susp_01 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_01", level=1)
-susp_02 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_02", level=1)
-susp_03 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_03", level=1)
-susp_04 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_04", level=1)
-susp_05 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_05", level=1)
-susp_06 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_06", level=1)
-susp_07 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_07", level=1)
-susp_08 <- brick(paste0(data.dat,"ocean_avg_0003.nc"), varname="sand_08", level=1)
-
+susp_01 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_01", level=1)
+susp_02 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_02", level=1)
+susp_03 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_03", level=1)
+susp_04 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_04", level=1)
+susp_05 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_05", level=1)
+susp_06 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_06", level=1)
+susp_07 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_07", level=1)
+susp_08 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="sand_08", level=1)
 ## settled particles
-settle_01 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_01", level=1)
-settle_02 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_02", level=1)
-settle_03 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_03", level=1)
-settle_04 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_04", level=1)
-settle_05 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_05", level=1)
-settle_06 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_06", level=1)
-settle_07 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_07", level=1)
-settle_08 <- brick(paste0(data.dat,"ocean_his_0003.nc"), varname="sandfrac_08", level=1)
+settle_01 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_01", level=1)
+settle_02 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_02", level=1)
+settle_03 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_03", level=1)
+settle_04 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_04", level=1)
+settle_05 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_05", level=1)
+settle_06 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_06", level=1)
+settle_07 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_07", level=1)
+settle_08 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="sandfrac_08", level=1)
+## particle-tracks
+#it's being stored in a rather weird way...
+#if you read in as a raster, the rows are the time-steps
+#everything between 153-183 is NA for some reason
+flts.z100 <- brick(paste0(data.dat100,"ocean_flt.nc"), varname="depth", level=1)
+grd.x100 <- brick(paste0(data.dat100,"ocean_flt.nc"), varname="Xgrid", level=1)
+grd.y100 <- brick(paste0(data.dat100,"ocean_flt.nc"), varname="Ygrid", level=1)
+flts.z200 <- brick(paste0(data.dat200,"ocean_flt.nc"), varname="depth", level=1)
+grd.x200 <- brick(paste0(data.dat200,"ocean_flt.nc"), varname="Xgrid", level=1)
+grd.y200 <- brick(paste0(data.dat200,"ocean_flt.nc"), varname="Ygrid", level=1)
+flts.z400 <- brick(paste0(data.dat400,"ocean_flt.nc"), varname="depth", level=1)
+grd.x400 <- brick(paste0(data.dat400,"ocean_flt.nc"), varname="Xgrid", level=1)
+grd.y400 <- brick(paste0(data.dat400,"ocean_flt.nc"), varname="Ygrid", level=1)
 
-##### Overview for Ross Sea
+##### EVALUATE FAM - Plot results #####
+#### Overview for Ross Sea
+xlim=c(250,340)
+ylim=c(100,180)
 breaks <- seq(-0.000025,0.000025,length.out=99)
 breaks.susp <- seq(0,0.000025, length.out=256)
 breaks.settle <- seq(0.1245,0.1255, length.out=256)
 #ticks.susp <- c(0,0.00001,0.00002)
 
+### NPP, currents and FAM
 par(mfrow=c(2,2))
 plot(surf_01[[6]], xlim=xlim, ylim=ylim, main="NPP-avg", breaks=breaks.susp)
 contour(h, add=TRUE)
@@ -88,7 +110,127 @@ plot(settle_01[[6]], xlim=xlim, ylim=ylim, main="FAM-his-settled", breaks=breaks
 contour(h, add=TRUE)
 plot(uv[[6]], xlim=xlim, ylim=ylim, main="currents_avg")
 contour(h, add=TRUE)
+
+### particle trajectories (only use a subset of 500 traces)
+set.seed(1)
+s <- sample(1:length(which(!is.na(grd.x100[151,]))), 500)
+
+## trajectories of 500 floats
+par(mfrow=c(2,3), mar=c(3,0,4,0), oma=c(0,2,0,3))
+plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="trajectories - 100m/day")
+points(cbind(grd.x100[152,s], grd.y100[152,s]), pch=16, col="blue")
+points(cbind(grd.x100[1:151,s], grd.y100[1:151,s]), pch=16, col="blue", cex=0.2)
+plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="trajectories - 200m/day")
+points(cbind(grd.x200[152,s], grd.y200[152,s]), pch=16, col="blue")
+points(cbind(grd.x200[1:151,s], grd.y200[1:151,s]), pch=16, col="blue", cex=0.2)
+plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="trajectories - 400m/day")
+points(cbind(grd.x400[152,s], grd.y400[152,s]), pch=16, col="blue")
+points(cbind(grd.x400[1:151,s], grd.y400[1:151,s]), pch=16, col="blue", cex=0.2)
+
+## end-points of all floats after 2 months
+plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 100m/day")
+points(cbind(grd.x100[121,], grd.y100[121,]), pch=16, col="blue", cex=0.2)
+plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 200m/day")
+points(cbind(grd.x200[121,], grd.y200[121,]), pch=16, col="blue", cex=0.2)
+plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 400m/day")
+points(cbind(grd.x400[121,], grd.y400[121,]), pch=16, col="blue", cex=0.2)
+
+# ## end-points of all floats after 6 months
+# plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 100m/day")
+# points(cbind(grd.x100[1,], grd.y100[1,]), pch=16, col="blue", cex=0.2)
+# plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 200m/day")
+# points(cbind(grd.x200[1,], grd.y200[1,]), pch=16, col="blue", cex=0.2)
+# plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 400m/day")
+# points(cbind(grd.x400[1,], grd.y400[1,]), pch=16, col="blue", cex=0.2)
 # 
+# ## end-points of all floats after 1 month (essentially the starting point)
+# plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 100m/day")
+# points(cbind(grd.x100[152,], grd.y100[152,]), pch=16, col="blue", cex=0.2)
+# plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 200m/day")
+# points(cbind(grd.x200[152,], grd.y200[152,]), pch=16, col="blue", cex=0.2)
+# plot(uv[[6]], xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)), main="end-points - 400m/day")
+# points(cbind(grd.x400[152,], grd.y400[152,]), pch=16, col="blue", cex=0.2)
+
+
+#### Particles move indefinitely... Stop when they reach the seafloor and have low current speeds
+## speed of particles
+
+## plot a single float through time:
+par(mfrow=c(3,3))
+plot(flts.z100[1:152,s[1]])
+plot(flts.z100[1:152,s[2]])
+plot(flts.z100[1:152,s[3]])
+plot(flts.z100[1:152,s[4]])
+plot(flts.z100[1:152,s[5]])
+plot(flts.z100[1:152,s[6]])
+plot(flts.z100[1:152,s[7]])
+plot(flts.z100[1:152,s[8]])
+plot(flts.z100[1:152,s[9]])
+
+## change particle locations to projected values
+
+## calculate movement speed using changes in m in grid.x and grid.y per day
+
+## plot depth against movement speed
+
+
+#### 3D plot of particle subset
+
+
+
+
+
+
+
+
+
+
+
+
+#### start with a simple 2D plot
+
+## plot depth vs index
+par(mfrow=c(1,1))
+plot(flts.z[1:152,s])
+
+
+
+## Mertz Glacier end-points
+# plot(uv$X662904000, xlim=c(430,480), ylim=c(70,110), col=rev(magma(99)))
+plot(h$bathymetry.at.RHO.points, xlim=c(430,480), ylim=c(70,110), col=rev(magma(99)))
+points(cbind(grd.x[1,], grd.y[1,]), pch=16, col="blue", cex=0.2)
+
+s2 <- sample(1:ncol(flts.z),9)
+## plot a single float through time:
+par(mfrow=c(3,3))
+plot(flts.z[1:152,s2[1]])
+plot(flts.z[1:152,s2[2]])
+plot(flts.z[1:152,s2[3]])
+plot(flts.z[1:152,s2[4]])
+plot(flts.z[1:152,s2[5]])
+plot(flts.z[1:152,s2[6]])
+plot(flts.z[1:152,s2[7]])
+plot(flts.z[1:152,s2[8]])
+plot(flts.z[1:152,s2[9]])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # par(mfrow=c(2,2))
 # plot(surf_01[[6]], xlim=xlim, ylim=ylim, main="NPP", breaks=breaks.susp)
 # contour(h, add=TRUE)
@@ -177,40 +319,8 @@ flts.s6 <- brick(paste0(data.flts,"ocean_flt.nc"), varname="sand_06", level=1)
 flts.s7 <- brick(paste0(data.flts,"ocean_flt.nc"), varname="sand_07", level=1)
 flts.s8 <- brick(paste0(data.flts,"ocean_flt.nc"), varname="sand_08", level=1)
 
-#### start with a simple 2D plot
-## only use a subset of 500 traces
-set.seed(1)
-s <- sample(1:length(which(!is.na(grd.x[151,]))), 500)
 
-## plot depth vs index
-par(mfrow=c(1,1))
-plot(flts.z[1:152,s])
 
-## trajectories:
-plot(uv$X662904000, xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)))
-points(cbind(grd.x[152,s], grd.y[152,s]), pch=16, col="blue")
-points(cbind(grd.x[1:151,s], grd.y[1:151,s]), pch=16, col="blue", cex=0.2)
-## end-points
-plot(uv$X662904000, xlim=c(200,350), ylim=c(50,200), col=rev(magma(99)))
-points(cbind(grd.x[1,], grd.y[1,]), pch=16, col="blue", cex=0.2)
-
-## Mertz Glacier end-points
-# plot(uv$X662904000, xlim=c(430,480), ylim=c(70,110), col=rev(magma(99)))
-plot(h$bathymetry.at.RHO.points, xlim=c(430,480), ylim=c(70,110), col=rev(magma(99)))
-points(cbind(grd.x[1,], grd.y[1,]), pch=16, col="blue", cex=0.2)
-
-s2 <- sample(1:ncol(flts.z),9)
-## plot a single float through time:
-par(mfrow=c(3,3))
-plot(flts.z[1:152,s2[1]])
-plot(flts.z[1:152,s2[2]])
-plot(flts.z[1:152,s2[3]])
-plot(flts.z[1:152,s2[4]])
-plot(flts.z[1:152,s2[5]])
-plot(flts.z[1:152,s2[6]])
-plot(flts.z[1:152,s2[7]])
-plot(flts.z[1:152,s2[8]])
-plot(flts.z[1:152,s2[9]])
 
 
 

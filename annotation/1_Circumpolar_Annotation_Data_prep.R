@@ -90,7 +90,9 @@ image_metadata$Filename.standardised <- gsub(".tif",".jpg",image_metadata$Filena
 image_metadata$proj_coord_x <- project(image_metadata[,2:3], proj=crs(r2))$x
 image_metadata$proj_coord_y <- project(image_metadata[,2:3], proj=crs(r2))$y
 image_metadata$cellID <- extract(r2, image_metadata[,5:6], cellnumbers=TRUE)[,1]
+
 ids <- unique(image_metadata$cellID)
+
 #
 image_metadata$area <- NA
 # find matching filenames for area estimates
@@ -121,6 +123,48 @@ df_image_quality_score <- read.csv(image.quality.path)
 # Add column to image_metadata by matching filename columns
 image_metadata$image_quality_score <- df_image_quality_score$image_quality_score[match(image_metadata$Filename.standardised, df_image_quality_score$filename)]
 
+### add survey/year/gear information based on filename
+image_metadata$survey <- str_split(image_metadata$Filename.standardised,"_", simplify=T)[,1]
+image_metadata$year <- NA
+image_metadata$year[image_metadata$survey=="PS06"] <- 1984
+image_metadata$year[image_metadata$survey=="PS14"] <- 1989
+image_metadata$year[image_metadata$survey=="PS18"] <- 1990
+image_metadata$year[image_metadata$survey=="PS61"] <- 2002
+image_metadata$year[image_metadata$survey=="PS81"] <- 2013
+image_metadata$year[image_metadata$survey=="PS96"] <- 2015
+image_metadata$year[image_metadata$survey=="PS118"] <- 2019
+image_metadata$year[image_metadata$survey=="tan0802"] <- 2008
+image_metadata$year[image_metadata$survey=="TAN1802"] <- 2018
+image_metadata$year[image_metadata$survey=="tan1901"] <- 2019
+image_metadata$year[image_metadata$survey=="AA2011"] <- 2011
+image_metadata$year[image_metadata$survey=="CRS"] <- NA
+image_metadata$year[image_metadata$survey=="NBP1402"] <- 2014
+image_metadata$year[image_metadata$survey=="NBP1502"] <- 2015
+image_metadata$year[image_metadata$survey=="LMG1311"] <- 2013
+image_metadata$year[image_metadata$survey=="JR262"] <- 2011
+image_metadata$year[image_metadata$survey=="JR15005"] <- 2015
+image_metadata$year[image_metadata$survey=="JR17001"] <- 2017
+image_metadata$year[image_metadata$survey=="JR17003"] <- 2018
+image_metadata$gear <- NA
+image_metadata$gear[image_metadata$survey=="PS06"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS14"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS18"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS61"] <- "FTS"
+image_metadata$gear[image_metadata$survey=="PS81"] <- "OFOS"
+image_metadata$gear[image_metadata$survey=="PS96"] <- "OFOS"
+image_metadata$gear[image_metadata$survey=="PS118"] <- "OFOBS"
+image_metadata$gear[image_metadata$survey=="tan0802"] <- "DTIS"
+image_metadata$gear[image_metadata$survey=="TAN1802"] <- "DTIS"
+image_metadata$gear[image_metadata$survey=="tan1901"] <- "DTIS"
+image_metadata$gear[image_metadata$survey=="AA2011"] <- "CTD"
+image_metadata$gear[image_metadata$survey=="CRS"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="NBP1402"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="NBP1502"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="LMG1311"] <- "YOYO"
+image_metadata$gear[image_metadata$survey=="JR262"] <- "SUCS"
+image_metadata$gear[image_metadata$survey=="JR15005"] <- "SUCS"
+image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
+image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
 
 ### 3) Generate Counts data  ----
 
@@ -138,7 +182,6 @@ for(i in 1:length(nams.counts)){
     dat_counts_image_by_species[i,j] <- length(sel.c)
   }
 }
-
 
 ### 3b) site(cell)-by-species matrix
 
@@ -235,50 +278,7 @@ names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y"
                           "cover_cells_survey", "cover_cells_transect1", "cover_cells_transect2", "cover_cells_transect3", 
                           "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3")
 
-
-### add survey/year/gear information based on filename
-image_metadata$survey <- str_split(image_metadata$Filename.standardised,"_", simplify=T)[,1]
-image_metadata$year <- NA
-image_metadata$year[image_metadata$survey=="PS06"] <- 1984
-image_metadata$year[image_metadata$survey=="PS14"] <- 1989
-image_metadata$year[image_metadata$survey=="PS18"] <- 1990
-image_metadata$year[image_metadata$survey=="PS61"] <- 2002
-image_metadata$year[image_metadata$survey=="PS81"] <- 2013
-image_metadata$year[image_metadata$survey=="PS96"] <- 2015
-image_metadata$year[image_metadata$survey=="PS118"] <- 2019
-image_metadata$year[image_metadata$survey=="TAN0802"] <- 2008
-image_metadata$year[image_metadata$survey=="TAN1802"] <- 2018
-image_metadata$year[image_metadata$survey=="TAN1901"] <- 2019
-image_metadata$year[image_metadata$survey=="AA2011"] <- 2011
-image_metadata$year[image_metadata$survey=="CRS"] <- NA
-image_metadata$year[image_metadata$survey=="NBP1402"] <- 2014
-image_metadata$year[image_metadata$survey=="NBP1502"] <- 2015
-image_metadata$year[image_metadata$survey=="LMG1311"] <- 2013
-image_metadata$year[image_metadata$survey=="JR262"] <- 2011
-image_metadata$year[image_metadata$survey=="JR15005"] <- 2015
-image_metadata$year[image_metadata$survey=="JR17001"] <- 2017
-image_metadata$year[image_metadata$survey=="JR17003"] <- 2018
-image_metadata$gear <- NA
-image_metadata$gear[image_metadata$survey=="PS06"] <- "FTS"
-image_metadata$gear[image_metadata$survey=="PS14"] <- "FTS"
-image_metadata$gear[image_metadata$survey=="PS18"] <- "FTS"
-image_metadata$gear[image_metadata$survey=="PS61"] <- "FTS"
-image_metadata$gear[image_metadata$survey=="PS81"] <- "OFOS"
-image_metadata$gear[image_metadata$survey=="PS96"] <- "OFOS"
-image_metadata$gear[image_metadata$survey=="PS118"] <- "OFOBS"
-image_metadata$gear[image_metadata$survey=="TAN0802"] <- "DTIS"
-image_metadata$gear[image_metadata$survey=="TAN1802"] <- "DTIS"
-image_metadata$gear[image_metadata$survey=="TAN1901"] <- "DTIS"
-image_metadata$gear[image_metadata$survey=="AA2011"] <- "CTD"
-image_metadata$gear[image_metadata$survey=="CRS"] <- "YOYO"
-image_metadata$gear[image_metadata$survey=="NBP1402"] <- "YOYO"
-image_metadata$gear[image_metadata$survey=="NBP1502"] <- "YOYO"
-image_metadata$gear[image_metadata$survey=="LMG1311"] <- "YOYO"
-image_metadata$gear[image_metadata$survey=="JR262"] <- "SUCS"
-image_metadata$gear[image_metadata$survey=="JR15005"] <- "SUCS"
-image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
-image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
-
+### add survey/year/gear information to cell metadata
 cell_metadata$year <- NA
 cell_metadata$year[cell_metadata$cover_cells_survey=="PS06"] <- 1984
 cell_metadata$year[cell_metadata$cover_cells_survey=="PS14"] <- 1989
@@ -319,8 +319,6 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR262"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR15005"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
-
-
 
 ### 5) save output----
 cover_cells <- dat_cover_cell_by_species[-which(is.na(rowSums(dat_cover_cell_by_species))),]

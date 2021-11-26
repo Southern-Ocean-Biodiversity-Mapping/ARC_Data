@@ -59,7 +59,7 @@ env.derived <-  paste0(sci.dir,"data_environmental/derived/")
 ## common paths (after "sci.dir")
 tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
 ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
-image.dir <-      paste0(ARC_Data.dir,"ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/")
+image.dir <-      paste0(ARC_Data.dir,"prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/")
 
 ## polar stereographic projection:
 stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
@@ -642,29 +642,49 @@ total.t.length.list.clean$TAN0802 <- total.t.length.list$TAN0802[-c(18:53)]
 total.t.length.list.clean$TAN1802 <- total.t.length.list$TAN1802[-c(16:31)]
 total.t.length.list.clean$TAN1901 <- total.t.length.list$TAN1901[-34]
 
+# "CRS",'Date'
+# "PS06",'time_start'
+# "PS14",'time_start'
+# "PS18",'time_start'
+# "PS61",'time_start'
+# "PS81",'Date.Time'
+# "PS96",'Date.Time'
+# "PS118",'Date.Time'
+# "TAN0802",'time'
+# "TAN1802",'time'
+# "TAN1901",'time'
+# "NBP1402",'time'
+# "NBP1502",'Date'
+# "AA2011",'DateTime'
+# "JR262",'time'
+# "JR15005",'time'
+# "JR17001",'time'
+# "JR17003",'time'
+# "LMG1311",'DateTime'
+
 ##### create selector lookup for each dataframe
-col.select.list <- list(c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
-                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
-                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
-                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
-                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select"),
-                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
-                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
-                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
-                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
-                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","Filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","filename","image.select"),
-                        c("lon","lat","Filename.standardised","transectID","filename","image.select"))
+col.select.list <- list(c("lon","lat","Filename.standardised","transectID","Filename","image.select","Date"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select","Date"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select","DateTime"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select","DateTime"))
 #####                        
-col.select2 <- c("lon","lat","Filename.standardised","transectID","Filename","image.select")
+col.select2 <- c("lon","lat","Filename.standardised","transectID","Filename","image.select","DateTime")
 polar.dat.subset.list <- list()
 dat.subset.list <- list()
 for(i in 1:length(dat.list.clean)){

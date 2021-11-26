@@ -175,9 +175,19 @@ for(i in 1:length(levels(dat$transectID))){
   samp.v.list[[i]] <- samp.v
 }
 
+## add dates:
+library(lubridate)
+dat$Date <- as.Date(NA)
+unique(dat$transectID)
+dat$Date[dat$transectID=="BC1"] <- ymd("2015:01:27")
+dat$Date[dat$transectID=="KC3"] <- ymd("2015:02:03")
+dat$Date[dat$transectID=="KC5"] <- ymd("2015:02:03")
+dat$Date[dat$transectID=="KC6"] <- ymd("2015:02:10")
+dat$Date[dat$transectID=="KC12"] <- ymd("2015:02:17")
+
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-#save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/Desktop/science/data_biological/NBP1502_dat.Rdata")
-#load(file="C:/Users/jjansen/OneDrive - University of Tasmania/Desktop/science/data_biological/NBP1502_dat.Rdata")
+#save(dat,total.t.length.v, t.l, file="C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/NBP1502_dat.Rdata")
+#load(file="C:/Users/jjansen//Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/NBP1502_dat.Rdata")
 
 t.images <- ceiling(total.t.length.v/100)
 t.images.full <- ceiling(t.l/100)

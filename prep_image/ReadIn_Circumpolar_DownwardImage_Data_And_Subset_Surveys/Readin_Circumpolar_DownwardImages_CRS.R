@@ -333,9 +333,52 @@ for(i in 1:length(levels(dat$transectID))){
 ##
 dat$image.select[is.na(dat$image.select)] <- 9999
 
+#### CRS survey information 
+## Anvord, Flanders and Barilla in 2010 during NBP10-01 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5214585/)
+library(lubridate)
+dat$Date <- as.Date(NA)
+unique(dat$transectID)
+dat$Date[dat$transectID=="1289"] <- ymd("2010:01:20")
+dat$Date[dat$transectID=="1290"] <- ymd("2010:01:20")
+dat$Date[dat$transectID=="1283"] <- ymd("2010:01:18")
+dat$Date[dat$transectID=="1284"] <- ymd("2010:01:19")
+dat$Date[dat$transectID=="1337"] <- ymd("2010:02:20")
+dat$Date[dat$transectID=="1338"] <- ymd("2010:02:20")
+dat$Date[dat$transectID=="1285"] <- ymd("2010:01:19")
+dat$Date[dat$transectID=="1286"] <- ymd("2010:01:19")
+dat$Date[dat$transectID=="1281"] <- ymd("2010:01:18")
+dat$Date[dat$transectID=="1282"] <- ymd("2010:01:18")
+dat$Date[dat$transectID=="1279"] <- ymd("2010:01:17")
+dat$Date[dat$transectID=="1280"] <- ymd("2010:01:17")
+dat$Date[dat$transectID=="1276"] <- ymd("2010:01:14")
+dat$Date[dat$transectID=="1278"] <- ymd("2010:01:17")
+dat$Date[dat$transectID=="1300"] <- ymd("2010:01:27")
+dat$Date[dat$transectID=="1295"] <- ymd("2010:01:24")
+dat$Date[dat$transectID=="1297"] <- ymd("2010:01:26")
+## LMG0902: https://www.marine-geo.org/tools/entry/LMG0902
+dat$Date[dat$transectID=="1207"] <- ymd("2009:02:27")
+dat$Date[dat$transectID=="1208"] <- ymd("2009:02:27")
+dat$Date[dat$transectID=="1217"] <- ymd("2009:02:28")
+dat$Date[dat$transectID=="1219"] <- ymd("2009:02:28")
+dat$Date[dat$transectID=="1255"] <- ymd("2009:03:05")
+dat$Date[dat$transectID=="1267"] <- ymd("2009:03:06")
+
+## still missing:
+# 1069
+# 1072
+# 1091
+# 1103
+# 1130
+# 1132
+# 1315
+# 1320
+# 1323
+# 1324
+# 1325
+
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
-# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/data_biological/CRS_dat.Rdata")
-#load(file="C:/Users/jjansen/Desktop/science/data_biological/CRS_dat.Rdata")
+# save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/CRS_dat.Rdata")
+#load(file="C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/CRS_dat.Rdata")
 
 ## how many images from each transect, if we select on average 1 every 50m?
 t.images <- ceiling(total.t.length.v/100)

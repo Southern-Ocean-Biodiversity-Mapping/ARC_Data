@@ -291,7 +291,7 @@ cell_metadata$year[cell_metadata$cover_cells_survey=="TAN0802"] <- 2008
 cell_metadata$year[cell_metadata$cover_cells_survey=="TAN1802"] <- 2018
 cell_metadata$year[cell_metadata$cover_cells_survey=="TAN1901"] <- 2019
 cell_metadata$year[cell_metadata$cover_cells_survey=="AA2011"] <- 2011
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- NA
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- 2010
 cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1402"] <- 2014
 cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1502"] <- 2015
 cell_metadata$year[cell_metadata$cover_cells_survey=="LMG1311"] <- 2013

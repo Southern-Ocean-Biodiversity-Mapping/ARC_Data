@@ -72,6 +72,7 @@ string.res <- "500m_"
 # bathy data as template for projected rasters
 #bathy<-raster(VM_path2, "Circumpolar_EnvData_500m_bathy_gebco_depth")
 bathy_shelf<-raster(paste0(VM_path2, "Circumpolar_EnvData_500m_shelf_bathy_gebco_depth"))
+#bathy_shelf<-raster("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\derived\\Circumpolar_EnvData_500m_shelf_bathy_gebco_depth")
 
 
 ## 2) Extract Optimally Interpolated SST (OISST) ----
@@ -292,14 +293,19 @@ writeRaster(ice_stack_500m_shelf, filename=paste0(VM_path2, string.chr, string.r
 #remove intermediate rasters
 rm(monthly_ice, ice_mean, ice_max, ice_sd, ice_sp_mean, ice_sp_max, ice_sp_sd, ice_su_mean, ice_su_max, ice_su_sd)
 
-## 4) 2012 geomorphology from Alix Post
+######################################################
+#### 4) 2012 geomorphology from Alix Post ---
 #library(sf)
 #library(fasterize)
 library(rasterDT)
-ogrListLayers("/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb")
-geomorph<-readOGR("/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb", layer="AntarcticGeomorphology")
+library(rgdal)
+#ogrListLayers("/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb")
+ogrListLayers("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb")
+#geomorph<-readOGR("/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb", layer="AntarcticGeomorphology")
+geomorph<-readOGR("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb", layer="AntarcticGeomorphology")
 
 #geomorph<-st_read( "/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb", layer="AntarcticGeomorphology")
-geomorph_rast<-fasterizeDT(geomorph, bathy_shelf, field="Feature")
+#geomorph_rast<-fasterizeDT(geomorph, bathy_shelf, field="Feature")
+geomorph_rast<-rasterize(geomorph, bathy_shelf, field=3)
 plot(geomorph_rast)
 writeRaster(geomorph_rast, filename = paste0(VM_path2, string.chr, "geomorphology"))

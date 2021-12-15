@@ -132,7 +132,35 @@ for (survey_current in unique(image_metadata$survey)) {
     # Iterate through transects
     lst_transect <- unique(image_metadata[image_metadata$survey == survey_current, ]$transectID)
     for (transect_current in lst_transect) {
-      
+      area_transect_cur <- image_metadata[(image_metadata$survey == survey_current) 
+                                          & (image_metadata$transectID == transect_current), ]$area
+      if (sum(is.na(area_transect_cur)) & (sum(is.na(area_transect_cur)) != length(area_transect_cur))) {
+        # Get indexes
+        idx_NA_values <- which(is.na(image_metadata[(image_metadata$survey == survey_current) 
+                                                    & (image_metadata$transectID == transect_current), ]$area))
+        idx_nonNA_values <- which(!is.na(image_metadata[(image_metadata$survey == survey_current) 
+                                                        & (image_metadata$transectID == transect_current), ]$area))
+        # Compute average value of non NA images
+        avg_value <- mean(image_metadata[(image_metadata$survey == survey_current) 
+                                         & (image_metadata$transectID == transect_current), ]$area[idx_nonNA_values])
+        # Assign this value to images with NA area
+        image_metadata[(image_metadata$survey == survey_current) 
+                       & (image_metadata$transectID == transect_current), ]$area[idx_NA_values] <- avg_value
+        image_metadata[(image_metadata$survey == survey_current) 
+                       & (image_metadata$transectID == transect_current), ]$area_source[idx_NA_values] <- "averaged_across_transect"
+      }
+    }
+    area_survey_cur <- image_metadata[(image_metadata$survey == survey_current), ]$area
+    if (sum(is.na(area_survey_cur)) & (sum(is.na(area_survey_cur)) != length(area_survey_cur))) {
+      # Get indexes
+      idx_NA_values <- which(is.na(image_metadata[(image_metadata$survey == survey_current), ]$area))
+      idx_nonNA_values <- which(!is.na(image_metadata[(image_metadata$survey == survey_current), ]$area))
+      # Compute average value of non NA images
+      avg_value <- mean(image_metadata[(image_metadata$survey == survey_current), ]$area[idx_nonNA_values])
+      # Assign this value to images with NA area
+      image_metadata[(image_metadata$survey == survey_current), ]$area[idx_NA_values] <- avg_value
+      print(avg_value)
+      image_metadata[(image_metadata$survey == survey_current), ]$area_source[idx_NA_values] <- "averaged_across_survey"
     }
   }
 }

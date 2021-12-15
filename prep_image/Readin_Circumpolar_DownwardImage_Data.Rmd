@@ -712,40 +712,79 @@ for(i in 1:length(dat.list.clean)){
 }
 names(polar.dat.subset.list) <- names(dat.subset.list) <- names(dat.list)
 
+# ## if available, add image area to data
+# for(i in 1:length(dat.subset.list)){
+#   dat.subset.list[[i]]$area <- NA
+#   ## fill if there is a standard area for the survey
+#   if(names(dat.subset.list)[i]=="PS14"){
+#     dat.subset.list[[i]]$area <- 0.56
+#   }
+#   if(names(dat.subset.list)[i]=="PS18"){
+#     dat.subset.list[[i]]$area <- 0.9
+#   }
+#   if(names(dat.subset.list)[i]=="PS61"){
+#     dat.subset.list[[i]]$area <- 1
+#   }
+#   if(names(dat.subset.list)[i]=="WAP"){
+#     dat.subset.list[[i]]$area <- 3
+#   }
+#   if(names(dat.subset.list)[i]=="NBP1402"){
+#     dat.subset.list[[i]]$area <- 4.8
+#   }
+#   if(names(dat.subset.list)[i]%in%c("JR262","JR15005","JR17001","JR17003")){
+#     dat.subset.list[[i]]$area <- 0.51
+#   }
+#   ## first find for which images some area estimates exist (and then select only the first appearance of that image)
+#   area.sel.raw <- which(area.raw$`image filename`%in%dat.subset.list[[i]]$Filename.standardised)
+#   if(length(area.sel.raw>0)){
+#     area.sel <- area.sel.raw[seq(1,length(area.sel.raw),by=2)]
+#     area.raw$`image filename`[area.sel]
+#     ## then find  matches between data and area
+#     dat.sel <- match(area.raw$`image filename`[area.sel], dat.subset.list[[i]]$Filename.standardised)
+#     ## then fill if available
+#     dat.subset.list[[i]]$area[dat.sel] <- area.raw$`image area in m²`[area.sel]
+#   }
+# }
+```
+
+
+```{r}
 ## if available, add image area to data
-for(i in 1:length(dat.subset.list)){
-  dat.subset.list[[i]]$area <- NA
+for(i in 1:length(dat.list.clean)){
+  dat.list.clean[[i]]$area <- NA
   ## fill if there is a standard area for the survey
-  if(names(dat.subset.list)[i]=="PS14"){
-    dat.subset.list[[i]]$area <- 0.56
+  if(names(dat.list.clean)[i]=="PS14"){
+    dat.list.clean[[i]]$area <- 0.56
   }
-  if(names(dat.subset.list)[i]=="PS18"){
-    dat.subset.list[[i]]$area <- 0.9
+  if(names(dat.list.clean)[i]=="PS18"){
+    dat.list.clean[[i]]$area <- 0.9
   }
-  if(names(dat.subset.list)[i]=="PS61"){
-    dat.subset.list[[i]]$area <- 1
+  if(names(dat.list.clean)[i]=="PS61"){
+    dat.list.clean[[i]]$area <- 1
   }
-  if(names(dat.subset.list)[i]=="WAP"){
-    dat.subset.list[[i]]$area <- 3
+  if(names(dat.list.clean)[i]=="WAP"){
+    dat.list.clean[[i]]$area <- 3
   }
-  if(names(dat.subset.list)[i]=="NBP1402"){
-    dat.subset.list[[i]]$area <- 4.8
+  if(names(dat.list.clean)[i]=="NBP1402"){
+    dat.list.clean[[i]]$area <- 4.8
   }
-  if(names(dat.subset.list)[i]%in%c("JR262","JR15005","JR17001","JR17003")){
-    dat.subset.list[[i]]$area <- 0.51
+  if(names(dat.list.clean)[i]%in%c("JR262","JR15005","JR17001","JR17003")){
+    dat.list.clean[[i]]$area <- 0.51
   }
   ## first find for which images some area estimates exist (and then select only the first appearance of that image)
-  area.sel.raw <- which(area.raw$`image filename`%in%dat.subset.list[[i]]$Filename.standardised)
+  area.sel.raw <- which(area.raw$`image filename`%in%dat.list.clean[[i]]$Filename.standardised)
   if(length(area.sel.raw>0)){
     area.sel <- area.sel.raw[seq(1,length(area.sel.raw),by=2)]
     area.raw$`image filename`[area.sel]
     ## then find  matches between data and area
-    dat.sel <- match(area.raw$`image filename`[area.sel], dat.subset.list[[i]]$Filename.standardised)
+    dat.sel <- match(area.raw$`image filename`[area.sel], dat.list.clean[[i]]$Filename.standardised)
     ## then fill if available
-    dat.subset.list[[i]]$area[dat.sel] <- area.raw$`image area in m²`[area.sel]
+    dat.list.clean[[i]]$area[dat.sel] <- area.raw$`image area in m²`[area.sel]
   }
 }
+
 ```
+
 
 ### save output for analysis
 
@@ -784,6 +823,7 @@ save(polar.dat.0802,
 ```
 
 ### standardise image metadata for csv-files
+### (SHOULD DO THIS IN annotation/1_Circumpolar_Annotation_Data_prep.R TO INCLUDE LASER POINTS)
 
 We need:
 * SurveyID  

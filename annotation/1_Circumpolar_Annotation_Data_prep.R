@@ -1,10 +1,3 @@
-
-#title: "Circumpolar Data - Prepare Analysis"
-#author: "Jan Jansen"
-#date: "20/07/2021"
-
- 
- 
 ### 1) ### Setting up----
 library(raster)
 library(readxl)
@@ -14,17 +7,28 @@ library(data.table)
 library(proj4)
 library(stringr)
 
-## Jan's local machine:
-sci.dir <-      "C:/Users/jjansen/Desktop/science/"
-env.derived <-  paste0(sci.dir,"data_environmental/derived/")
-#bio.dir <-      paste0(sci.dir,"data_biological/")
+user = "Jan"
+#user = "charley"
 
-## remote repository (DOESN'T WORK YET):
-# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
-
-## common paths (after "sci.dir")
-tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
-ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+if (user == "Jan") {
+  
+  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+  #bio.dir <-      paste0(sci.dir,"data_biological/")
+  
+  ## remote repository (DOESN'T WORK YET):
+  # env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+  
+  ## common paths (after "sci.dir")
+  tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+  ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+  
+} else if (user == "charley") {
+  
+  sci.dir <- "C:/Users/cgros/code/IMAS"
+  ARC_Data.dir <- paste0(sci.dir,"IMAS/ARC_Data/")
+  
+}
 
 ## R-drive paths
 RS.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
@@ -93,7 +97,7 @@ image_metadata$cellID <- extract(r2, image_metadata[,5:6], cellnumbers=TRUE)[,1]
 
 ids <- unique(image_metadata$cellID)
 
-#
+# Init 
 image_metadata$area <- NA
 image_metadata$source_area <- NA
 # find matching filenames for area estimates

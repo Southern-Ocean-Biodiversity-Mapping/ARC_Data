@@ -8,7 +8,8 @@ library(proj4)
 library(stringr)
 
 #user = "Jan"
-user = "charley"
+#user = "charley"
+user="nicole"
 
 if (user == "Jan") {
   
@@ -23,10 +24,19 @@ if (user == "Jan") {
   tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
   ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
   
-} else if (user == "charley") {
+} 
+if (user == "charley") {
   
   sci.dir <- "C:/Users/cgros/code/"
   ARC_Data.dir <- paste0(sci.dir,"IMAS/ARC_Data/")
+  
+}
+if (user == "nicole") {
+  
+  sci.dir <-    "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
+  ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
+  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+  tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
   
 }
 
@@ -118,7 +128,7 @@ for (survey_current in unique(image_metadata$survey)) {
 idx <- match(image_metadata$Filename.standardised,dat_area_subset$`image filename`)
 fill.idx <- which(!is.na(idx))
 search.idx <- idx[fill.idx]
-image_metadata$area[fill.idx] <- dat_area_subset$`image area in m²`[search.idx] # replace area values where filenames match
+image_metadata$area[fill.idx] <- dat_area_subset$`image area in m?`[search.idx] # replace area values where filenames match
 image_metadata$area <- as.numeric(image_metadata$area)
 image_metadata$area_source[fill.idx] <- "laser_points"
 # When area data is not available, assign transect (or survey average?)

@@ -16,14 +16,31 @@ library(rasterDT)     ##Faster version of rasterize
 library(stars)
 library(rgeos)
 
-#VM directory
-VM_path2<-"/perm_storage/shared_space/BioMAS/environmental_data/"
+#user = "Nicole"
+user = "charley"
 
-#Nic local directory
-sci.dir <-      "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
-env.derived <-  paste0(sci.dir,"data_environmental/derived/")
-tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
-ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
+SHOW_PLOT = FALSE
+
+if (user == "Nicole") {
+  #VM directory
+  VM_path2<-"/perm_storage/shared_space/BioMAS/environmental_data/"
+  
+  #Nic local directory
+  sci.dir <-      "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
+  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+  tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
+  ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
+  path_geomorphology_gdb <- "C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb"
+} else if (user == "charley") {
+  sci.dir <- "C:/Users/cgros/code/IMAS/"
+  ARC_Data.dir <- paste0(sci.dir,"ARC_Data/")
+  env.folder <- "C:/Users/cgros/data/SO_env_layers/"
+  env.raw <- paste0(env.folder, "raw/")
+  env.derived <- paste0(env.folder, "derived/")
+  tools.dir <- paste0(sci.dir,"Useful_Functions_Tools/")
+  path_geomorphology_gdb <- paste0(env.raw,"Geomorphology.gdb")
+}
+path_r_depth <- paste0(env.derived, "Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd")
 
 ### 1) set up details for conversion ----
 # polar stereographic projection:
@@ -42,34 +59,24 @@ load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 
 ### 2) read in (as sf object) and rasterise geomporhology ----
 #ogrListLayers("/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb")
-ogrListLayers("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb")
+ogrListLayers(path_geomorphology_gdb)
 
 #geomorph<-st_read( "/perm_storage/shared_space/BioMAS/environmental_data/Geomorphology.gdb", layer="AntarcticGeomorphology")
-geomorph<-st_read( "C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb", layer="AntarcticGeomorphology")
+geomorph<-st_read(path_geomorphology_gdb, layer="AntarcticGeomorphology")
 
 geomorph_pro<-st_transform(geomorph, CRS(stereo)) #both stereographic, but slightly different projection
 geomorph_rast<-fasterizeDT(geomorph_pro, bathy_shelf, field="Feature")
 
-plot(geomorph_rast)
-plot(coast.proj, add=TRUE) #looks right
+if (SHOW_PLOT) {
+  plot(geomorph_rast)
+  plot(coast.proj, add=TRUE) #looks right
+}
 
 #writeRaster(geomorph_rast, filename = paste0(VM_path2, string.chr, "geomorphology"))
 writeRaster(geomorph_rast, filename = paste0(env.derived, string.chr, "geomorphology"), overwrite=TRUE)
 
+
 ## 3) Distance to canyonheads (for canyons above 3000 m)
-# charley's Paths to data
-## Raster of bathymetry
-path_r_depth <- "C:/Users/cgros/data/distance_to_canyon/Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"
-## Polygons of geomorphology
-#path_geomorphology <- "C:/Users/cgros/data/distance_to_canyon/Geomorphology.gdb/Geomorphology.gdb"
-path_geomorphology<-"C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb"
-
-
-## Path output raster
-path_output <- "distance_to_canyons_20211210.Rdata"
-
-
-SHOW_PLOT = FALSE
 
 # Load coastline
 if (SHOW_PLOT) {
@@ -80,29 +87,15 @@ if (SHOW_PLOT) {
 }
 
 # Load bathymetry raster
-#r_depth <- raster(path_r_depth)
-r_depth<-bathy_shelf
+r_depth <- raster(path_r_depth)
 
-# Load polygons of geomorphology
-#ogrListLayers(path_geomorphology)
-layer_name <- "AntarcticGeomorphology"
-p_geomorphology <- readOGR(path_geomorphology, layer_name)
-## Select canyons
-p_canyon <- p_geomorphology[p_geomorphology$Feature == "Canyon", ]
+# Load polygons of canyons
+p_canyon <- as_Spatial(geomorph_pro[geomorph_pro$Feature == "Canyon", ])
 
-
-# Enforce the same CRS between objects
-####### NIC COMMENTS: if you have been working from the original geomorphology.gbd then the CRS are actually NOT the same. 
-###This is what caused the alignment issue when I converted to a raster initally.
-# crs(r_depth)
-#CRS arguments:
-#  +proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs 
-#crs(p_geomorphology)
-#CRS arguments:
-#  +proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs 
-#you will need to transform to the r_depth CRS..
-
-#crs(p_canyon) <- crs(r_depth)
+# Check identical CRS
+is_same_crs <- identical(sort(unlist(str_split(crs(r_depth), ' '))), 
+                         sort(unlist(str_split(crs(p_canyon), ' '))))
+stopifnot(is_same_crs)
 
 # Create list to store the canyon heads
 lst_heads <- c()
@@ -111,7 +104,7 @@ if (SHOW_PLOT) {
   par(mar=c(0,0,0,0))
 }
 # Iterate through all canyons
-for (idx_canyon in 1:length(p_canyon)) {
+for (idx_canyon in 1:nrow(p_canyon)) {
   print(idx_canyon)
   # Select current canyon
   p_canyon_cur <- p_canyon[idx_canyon, ]
@@ -137,11 +130,8 @@ for (idx_canyon in 1:length(p_canyon)) {
     # Assign NA to raster cells under the cut off value
     values(r_canyon_cur)[values(r_depth) < thr_depth] <- NA
     
-    #crs(r_canyon_cur) <- crs(r_depth)
-    
     # Convert the non-NA cells to polygons
     # Each polygon represents a canyon head
-    #grd_canyon_cur <- as(r_canyon_cur, 'SpatialGridDataFrame')
     p_heads <- sf::as_Spatial(sf::st_as_sf(stars::st_as_stars(r_canyon_cur),
                                            as_points = FALSE, merge = TRUE))
     
@@ -175,12 +165,11 @@ distance_to_canyon <- distanceFromPoints(r_depth, p_centroids_cleaned)
 distance_to_canyon[is.na(r_depth)] <- NA
 
 # Save result
-#save(distance_to_canyon, file=path_output)
-writeRaster(distance_to_canyon, file="distance_to_canyons_20211210")
+writeRaster(distance_to_canyon, filename = paste0(env.derived, string.chr, "distance2canyons"), overwrite=TRUE)
 
 if (SHOW_PLOT) {
   par(mar=c(0,0,0,0))
-  plot(distance_to_canyon, col=brewer.pal(n = 10, name = "RdBu"))
+  plot(distance_to_canyon)
   plot(coast.proj, col="green", add=TRUE)
 }
 

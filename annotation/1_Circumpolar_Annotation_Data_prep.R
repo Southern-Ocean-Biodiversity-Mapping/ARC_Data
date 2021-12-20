@@ -8,8 +8,8 @@ library(proj4)
 library(stringr)
 
 #user = "Jan"
-#user = "charley"
-user="nicole"
+user = "charley"
+#user="nicole"
 
 if (user == "Jan") {
   
@@ -27,8 +27,10 @@ if (user == "Jan") {
 } 
 if (user == "charley") {
   
-  sci.dir <- "C:/Users/cgros/code/"
-  ARC_Data.dir <- paste0(sci.dir,"IMAS/ARC_Data/")
+  sci.dir <- "C:/Users/cgros/code/IMAS/"
+  ARC_Data.dir <- paste0(sci.dir,"ARC_Data/")
+  env.derived <-  "C:/Users/cgros/data/SO_env_layers/derived/"
+  tools.dir <-    paste0(sci.dir,"Useful_Functions_Tools/")
   
 }
 if (user == "nicole") {
@@ -46,7 +48,6 @@ ann.dir <- paste0(RS.dir,"AnnotationLibrary_AllFinishedSurveys/")
 
 # Image quality path
 image.quality.path <- "R:/IMAS/Antarctic_Seafloor/image_quality_analysis/image_quality_score.csv"
-
 
 ##### load still and diatom sample locations and bathymetry:
 

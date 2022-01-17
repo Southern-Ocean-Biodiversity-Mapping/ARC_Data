@@ -834,15 +834,35 @@ load(paste0(env.derived,file.npp,"_filled_climatology.Rdata"))
 # lon.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lon_rho")
 # lat.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lat_rho")
 h.ra <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="h")
-lon.ra <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="lon_rho")
-lat.ra <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="lat_rho")
+lon.ra.raw <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="lon_rho")
+lat.ra.raw <- raster(paste0(env.raw,"waom4extend_grd.nc"), varname="lat_rho")
 r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
 
 plot(h.ra)
-plot(lon.ra)
-plot(lat.ra)
+plot(lon.ra.raw)
+plot(lat.ra.raw)
 
 crs(h.ra) <- crs(r2)
+
+#### DON'T REDUCE THE NUMBER OF POINTS:
+# lon.ra <- lon.ra.raw
+# lat.ra <- lat.ra.raw
+#### REDUCE NUMBER OF POINTS BY A FACTOR OF 4
+lon.ra <- lon.ra.raw
+lat.ra <- lat.ra.raw
+lon.ra[seq(2,length(lon.ra[]),by=2)] <- NA
+sr <- seq(1,nrow(lon.ra), by=2)
+s <- 1:ncol(lon.ra)
+for(i in 1:length(sr)){
+  lon.ra[s+ncol(lon.ra)*sr[i]] <- NA
+}
+lat.ra[seq(2,length(lat.ra[]),by=2)] <- NA
+sr <- seq(1,nrow(lat.ra), by=2)
+s <- 1:ncol(lat.ra)
+for(i in 1:length(sr)){
+  lat.ra[s+ncol(lat.ra)*sr[i]] <- NA
+}
+#plot(lon.ra, xlim=c(0,200), ylim=c(1200,1400))
 
 # waom.file <- brick(paste0(env.derived,"waom10extend_nudge_climatology20022019_shelf.nc"), varname="sand_01_sflux")
 # crs(waom.file) <- crs(r2)
@@ -889,7 +909,9 @@ m[,6] <- dat$x[sel]
 m[,7] <- dat$y[sel]
 
 ## then write table
-write.table(m, file=paste0(env.derived,file.npp,"_4kFloatsRelease_idx.txt"),row.names=FALSE, quote=FALSE)
+# write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease4k_idx.txt"),row.names=FALSE, quote=FALSE)
+## then write table
+write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease4k_reduced4times_idx.txt"),row.names=FALSE, quote=FALSE)
 ```
 
 ##### from yearly files:

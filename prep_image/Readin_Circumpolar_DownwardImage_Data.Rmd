@@ -819,7 +819,7 @@ save(polar.dat.0802,
      total.t.length.list,
      total.t.length.list.clean,
      stereo,
-     file=paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
+     file=paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
 ```
 
 ### standardise image metadata for csv-files

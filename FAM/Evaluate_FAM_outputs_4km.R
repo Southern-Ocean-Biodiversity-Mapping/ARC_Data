@@ -31,11 +31,21 @@ lat_rho <- ncvar_get(grd4k_nc, varid="lat_rho")
 #depth
 h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
 #seafloor currents (seafloor-layer is 1)
-u <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
-v <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)
+u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
+v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)
 #seasurface currents (surface-layer is 31)
-u_31 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="u", level=31)
-v_31 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="v", level=31)
+u_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="u", level=31)
+v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="v", level=31)
+
+## bring all data to same size, extent and resolution:
+## extract current speeds at rho-points where depth is defined
+
+
+h2 <- h
+h2[is.na(u[[1]][])] <- NA
+
+
+# seasurface current speeds
 uv_31 <- sqrt(sum(u_31)^2+sum(v_31)^2)
 
 #temporal mean seafloor current speed
@@ -57,6 +67,21 @@ res.uv <- abs.uv-mean.uv
 # mean.uv2 <- sqrt(mean.u^2+mean.v^2)
 # abs.uv2 <- sqrt(abs.u^2+abs.v^2)
 # res.uv2 <- abs.uv2-mean.uv2
+
+
+## plot ocean current data
+#seafloor-layer is 1, while 
+par(mfrow=c(2,2))
+plot(mean.uv, main="seafloor currents - mean")
+plot(abs.uv, main="seafloor currents - absolute speed")
+plot(res.uv, main="seafloor currents - residual")
+
+#seafloor-layer is 1, while 
+par(mfrow=c(2,2))
+plot(mean.uv, main="seafloor currents - mean", xlim=c(900,1100), ylim=c(190,280))
+plot(abs.uv, main="seafloor currents - absolute speed", xlim=c(900,1100), ylim=c(190,280))
+plot(res.uv, main="seafloor currents - residual", xlim=c(900,1100), ylim=c(190,280))
+plot(h2, main="depth", xlim=c(900,1100), ylim=c(190,280))
 
 ## plot environmental data
 #seafloor-layer is 1, while 

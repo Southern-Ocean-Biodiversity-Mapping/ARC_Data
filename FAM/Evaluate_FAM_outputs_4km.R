@@ -10,9 +10,14 @@ env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
 env.raw <- paste0(env.dir,"raw/")
 env.derived <- paste0(env.dir,"derived/")
 AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
+ARC_data_dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/"
 
 ## load projected coastline for plotting
 load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
+
+## load projected Diatom data for analysis
+load(paste0(ARC_data_dir,"FAM/Circumpolar_Diatom_metadata.Rdata"))
 
 ## ROMS-runs:
 data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test1/")
@@ -27,6 +32,16 @@ grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
 lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
 lat_rho <- ncvar_get(grd4k_nc, varid="lat_rho")
 
+#### Prepare empty rasters to assign correct projected values to
+ant.proj <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+roms.coords.proj <- project(cbind(c(lon_rho), c(lat_rho)), proj=ant.proj)
+x.range <- c(min(roms.coords.proj[,1])-2000,max(roms.coords.proj[,1])+2000)
+y.range <- c(min(roms.coords.proj[,2])-2000,max(roms.coords.proj[,2])+2000)
+empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=4000)
+surf_01 <- surf_02 <- surf_03 <- surf_04 <- surf_05 <- surf_06 <- surf_07 <- surf_08 <- brick(empty.roms.ra,nl=6)
+susp_01 <- susp_02 <- susp_03 <- susp_04 <- susp_05 <- susp_06 <- susp_07 <- susp_08 <- brick(empty.roms.ra,nl=6)
+settle_01 <- settle_02 <- settle_03 <- settle_04 <- settle_05 <- settle_06 <- settle_07 <- settle_08 <- brick(empty.roms.ra,nl=7)
+
 ## load other ROMS data
 #depth
 h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
@@ -39,21 +54,41 @@ v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="v", level=31
 
 ## bring all data to same size, extent and resolution:
 ## extract current speeds at rho-points where depth is defined
+## (in ROMS they are all at different locations):
+## u has one less column than the grid, so all coordinates need to be moved half a cell to the right for the grids to match up
+coord.grd.u <- coordinates(h)
+coord.grd.u[,1] <- coordinates(h)[,1]-0.5
+## v has one less row than the grid, so all coordinates need to be moved half a cell up for the grids to match up
+coord.grd.v <- coordinates(h)
+coord.grd.v[,2] <- coordinates(h)[,2]-0.5
+## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
+u.sum <- sum(u.raw)
+v.sum <- sum(v.raw)
+u.sum.abs <- sum(abs(u.raw))
+v.sum.abs <- sum(abs(v.raw))
+u31.sum <- sum(u_31.raw)
+v31.sum <- sum(v_31.raw)
+## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
+u <- v <- u.abs <- v.abs <- u31 <- v31 <- empty.roms.ra
+u[] <- extract(u.sum, coord.grd.u, method="bilinear")
+v[] <- extract(v.sum, coord.grd.v, method="bilinear")
+u.abs[] <- extract(u.sum.abs, coord.grd.u, method="bilinear")
+v.abs[] <- extract(v.sum.abs, coord.grd.v, method="bilinear")
+u31[] <- extract(u31.sum, coord.grd.u, method="bilinear")
+v31[] <- extract(v31.sum, coord.grd.v, method="bilinear")
 
-
-h2 <- h
-h2[is.na(u[[1]][])] <- NA
-
-
-# seasurface current speeds
-uv_31 <- sqrt(sum(u_31)^2+sum(v_31)^2)
-
+#seasurface current speeds
+uv_31 <- sqrt(u31^2+v31^2)
 #temporal mean seafloor current speed
-mean.uv <- sqrt(sum(u)^2+sum(v)^2)
+mean.uv <- sqrt(u^2+v^2)
 #absolute mean seafloor current speed
-abs.uv <- sqrt(sum(abs(u))^2+sum(abs(v))^2)
+abs.uv <- sqrt(u.abs^2+v.abs^2)
 #residual seafloor current speed
 res.uv <- abs.uv-mean.uv
+
+h2 <- empty.roms.ra
+h2[] <- h[]
+h2[is.na(mean.uv)] <- NA
 
 # #temporal mean seafloor current speed
 # mean.u <- sum(u)
@@ -68,62 +103,89 @@ res.uv <- abs.uv-mean.uv
 # abs.uv2 <- sqrt(abs.u^2+abs.v^2)
 # res.uv2 <- abs.uv2-mean.uv2
 
-
 ## plot ocean current data
-#seafloor-layer is 1, while 
+#seafloor-layer is 1, while  seasurface is 31
 par(mfrow=c(2,2))
 plot(mean.uv, main="seafloor currents - mean")
 plot(abs.uv, main="seafloor currents - absolute speed")
 plot(res.uv, main="seafloor currents - residual")
-
-#seafloor-layer is 1, while 
-par(mfrow=c(2,2))
-plot(mean.uv, main="seafloor currents - mean", xlim=c(900,1100), ylim=c(190,280))
-plot(abs.uv, main="seafloor currents - absolute speed", xlim=c(900,1100), ylim=c(190,280))
-plot(res.uv, main="seafloor currents - residual", xlim=c(900,1100), ylim=c(190,280))
-plot(h2, main="depth", xlim=c(900,1100), ylim=c(190,280))
-
-## plot environmental data
-#seafloor-layer is 1, while 
-par(mfrow=c(2,2))
-plot(h, main="depth")
-plot(mean.uv, main="seafloor currents - mean")
 plot(uv_31, main="seasurface currents")
-plot(res.uv, main="seafloor currents - residual")
+
+## plot ocean current data in the Mertz region
+xlim <- c(1300000,1900000)
+ylim <- c(-2300000,-1900000)
+par(mfrow=c(2,2))
+plot(mean.uv, main="seafloor currents - mean", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+plot(abs.uv, main="seafloor currents - absolute speed", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+plot(res.uv, main="seafloor currents - residual", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+plot(h2, main="depth", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
 
 ##### EVALUATE FAM #####
 ### NOTE THAT CURRENTLY DIFFERENT MODEL RUNS HAVE ALL THE SAME OUTPUT APART FROM THE "ocean_flt.nc" file
 ## surface production
-surf_01 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_01", level=31)
-surf_02 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_02", level=31)
-surf_03 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_03", level=31)
-surf_04 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_04", level=31)
-surf_05 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_05", level=31)
-surf_06 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=31)
-surf_07 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_07", level=31)
-surf_08 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_08", level=31)
+surf_01[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_01", level=31)[]
+surf_02[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_02", level=31)[]
+surf_03[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_03", level=31)[]
+surf_04[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_04", level=31)[]
+surf_05[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_05", level=31)[]
+surf_06[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=31)[]
+surf_07[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_07", level=31)[]
+surf_08[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_08", level=31)[]
 ## bottom ocean layer
-susp_01 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_01", level=1)
-susp_02 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_02", level=1)
-susp_03 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_03", level=1)
-susp_04 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_04", level=1)
-susp_05 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_05", level=1)
-susp_06 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=1)
-susp_07 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_07", level=1)
-susp_08 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_08", level=1)
+susp_01[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_01", level=1)[]
+susp_02[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_02", level=1)[]
+susp_03[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_03", level=1)[]
+susp_04[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_04", level=1)[]
+susp_05[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_05", level=1)[]
+susp_06[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=1)[]
+susp_07[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_07", level=1)[]
+susp_08[] <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_08", level=1)[]
 ## settled particles
-settle_01 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_01", level=1)
-settle_02 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_02", level=1)
-settle_03 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_03", level=1)
-settle_04 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_04", level=1)
-settle_05 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_05", level=1)
-settle_06 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_06", level=1)
-settle_07 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_07", level=1)
-settle_08 <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)
+settle_01[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_01", level=1)[]
+settle_02[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_02", level=1)[]
+settle_03[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_03", level=1)[]
+settle_04[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_04", level=1)[]
+settle_05[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_05", level=1)[]
+settle_06[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_06", level=1)[]
+settle_07[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_07", level=1)[]
+settle_08[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)[]
 
-plot(surf_08, breaks=seq(0,0.0000026,length.out=256))
-plot(susp_08, breaks=seq(0,0.0000026,length.out=256))
-plot(settle_08, breaks=seq(0.12497,0.12508,length.out=256))
+#### overview
+## surface productivity (originally in kg/m2/s -> change to kg/m2/day (*86400))
+plot(surf_08*86400, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)))
+#plot(susp_08*86400, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)))
+plot(susp_08*86400, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))))
+plot(settle_08*86400, breaks=c(10780,seq(10795,10810,length.out=25),10935), col=c("green",rev(heat.colors(24)),"black"))
+
+#### comparisons
+par(mfrow=c(3,3))
+plot(surf_08[[2]]*86400, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)), main=paste0("surf_08 ",names(surf_08)[2]))
+plot(surf_08[[3]]*86400, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)), main=paste0("surf_08 ",names(surf_08)[3]))
+plot(surf_08[[4]]*86400, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)), main=paste0("surf_08 ",names(surf_08)[4]))
+plot(susp_08[[2]]*86400, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))), main=paste0("susp_08 ",names(susp_08)[2]))
+plot(susp_08[[3]]*86400, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))), main=paste0("susp_08 ",names(susp_08)[3]))
+plot(susp_08[[4]]*86400, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))), main=paste0("susp_08 ",names(susp_08)[4]))
+plot(settle_08[[2]]*86400, breaks=c(10780,seq(10795,10810,length.out=25),10935), col=c("green",rev(heat.colors(24)),"black"), main=paste0("settle_08 ",names(settle_08)[2]))
+plot(settle_08[[3]]*86400, breaks=c(10780,seq(10795,10810,length.out=25),10935), col=c("green",rev(heat.colors(24)),"black"), main=paste0("settle_08 ",names(settle_08)[3]))
+plot(settle_08[[4]]*86400, breaks=c(10780,seq(10795,10810,length.out=25),10935), col=c("green",rev(heat.colors(24)),"black"), main=paste0("settle_08 ",names(settle_08)[4]))
+
+#### comparisons Mertz
+par(mfrow=c(3,3))
+plot(surf_08[[2]]*86400, xlim=xlim, ylim=ylim, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)), main=paste0("surf_08 ",names(surf_08)[2]))
+plot(surf_08[[3]]*86400, xlim=xlim, ylim=ylim, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)), main=paste0("surf_08 ",names(surf_08)[3]))
+plot(surf_08[[4]]*86400, xlim=xlim, ylim=ylim, breaks=seq(0,0.24,length.out=25), col=rev(heat.colors(25)), main=paste0("surf_08 ",names(surf_08)[4]))
+plot(susp_08[[2]]*86400, xlim=xlim, ylim=ylim, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))), main=paste0("susp_08 ",names(susp_08)[2]))
+plot(susp_08[[3]]*86400, xlim=xlim, ylim=ylim, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))), main=paste0("susp_08 ",names(susp_08)[3]))
+plot(susp_08[[4]]*86400, xlim=xlim, ylim=ylim, breaks=round(seq(-0.1,0.24,length.out=35),3), col=c(rev(blues9),rev(heat.colors(25))), main=paste0("susp_08 ",names(susp_08)[4]))
+plot(settle_08[[2]]*86400, xlim=xlim, ylim=ylim, breaks=seq(10795,10810,length.out=25), col=rev(heat.colors(24)), main=paste0("settle_08 ",names(settle_08)[2]))
+plot(settle_08[[3]]*86400, xlim=xlim, ylim=ylim, breaks=seq(10795,10810,length.out=25), col=rev(heat.colors(24)), main=paste0("settle_08 ",names(settle_08)[3]))
+plot(settle_08[[4]]*86400, xlim=xlim, ylim=ylim, breaks=seq(10795,10810,length.out=25), col=rev(heat.colors(24)), main=paste0("settle_08 ",names(settle_08)[4]))
+
+
 
 
 ## particle-tracks

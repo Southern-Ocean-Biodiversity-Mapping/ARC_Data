@@ -165,7 +165,7 @@ distance_to_canyon <- distanceFromPoints(r_depth, p_centroids_cleaned)
 distance_to_canyon[is.na(r_depth)] <- NA
 
 # Save result
-writeRaster(distance_to_canyon, filename = paste0(env.derived, string.chr, "distance2canyons"), overwrite=TRUE)
+writeRaster(distance_to_canyon, filename = paste0(env.derived, string.chr, "500m_shelf_distance2canyons"), overwrite=TRUE)
 
 if (SHOW_PLOT) {
   par(mar=c(0,0,0,0))

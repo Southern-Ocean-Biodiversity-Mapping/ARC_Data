@@ -34,22 +34,29 @@ env_stack<-stack(env_list)
 names(env_stack)
 names(env_stack)[1:5]<-env_names[1:5]
 names(env_stack)[14:22]<-paste(rep(c("CARS_NO3", "CARS_O2", "CARS_PO4"),each=3),c("mean", "seas_range", "std_dev"), sep="_")
-names(env_stack)[33]<-"NPP_su_mean"
-names(env_stack)[46:47]<-env_names[17:18]
+names(env_stack)[23] <-"distance2canyons"
+names(env_stack)[34]<-"NPP_su_mean"
+names(env_stack)[47:48]<-env_names[18:19]
 
 
 #add environmental data with non-conformant names- 
 #### remember to update column index if changes!!!
 env_stack<-stack( env_stack,
                   raster(paste0(env.derived, "Circumpolar_EnvData_geomorphology")))
-names(env_stack)[48]<-"geomorph"
+names(env_stack)[49]<-"geomorph"
 
-geomorph_cat<-levels(env_stack[[48]])[[1]]
+geomorph_cat<-levels(env_stack[[49]])[[1]]
 
 
 ## 3) Match environmental data to image data (at cell level) ----
 #can run a image level too if needed
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
+#for some reason nearly every column of cell_metadata are now character strings
+cell_metadata<- cell_metadata %>% 
+  mutate(across(cellID:counts_area, as.numeric))%>%
+  mutate(across(cover_cells_transect1:cover_cells_transect3, as.numeric))%>%
+  mutate(across(counts_cells_transect1:counts_cells_transect3, as.numeric))
+
 
 # subset to only cells that have scored images
 cell_metadata_env<- cell_metadata %>%

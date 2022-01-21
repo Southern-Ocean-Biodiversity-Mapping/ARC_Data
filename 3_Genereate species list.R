@@ -9,6 +9,7 @@
 
 # 1) libraries and paths 
 library(tidyverse)
+library(writexl)
 
 sci.dir <-      "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
 env.derived <-  paste0(sci.dir,"data_environmental/derived/")
@@ -22,11 +23,13 @@ load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
 
 ## 2) COVER ----
 ## 2a) Prevalence
-
 cover_prev<-data.frame(count=colSums(cover_cells>0)) %>%
   mutate(., prev= round(count/950, 3 )) %>%
   rownames_to_column(., var="Label") %>%
-  arrange(., desc(count))
+  arrange(., desc(count))%>%
+  add_column(Exclude= "",
+             Merge_With= "",
+             Other_Notes="")
 
 
 ##2b) Percent cover
@@ -56,10 +59,23 @@ rownames_to_column(., var="Taxa") %>%
 count_prev<-data.frame(count=colSums(count_cells>0)) %>%
   mutate(., prev= round(count/891, 3 )) %>%
   rownames_to_column(., var="Label") %>%
-  arrange(., desc(count))
+  arrange(., desc(count)) %>%
+#add extra columns for notes
+  add_column(Exclude= "",
+             Merge_With= "",
+             Other_Notes="")
 
 ## 3b) Overall abundance
 
 count_ab_overall<-data.frame(total_count=colSums(count_cells))%>%
   rownames_to_column(., var="Taxa") %>%
   arrange(., desc(total_count))
+
+
+## 4) Save to excel to comments and notes on aggregation etc.
+
+write_xlsx(x= list(COVER_prevalence=cover_prev,
+          COVER_overall=cover_pc_overall,
+          COUNT_prevalence= count_prev,
+          COUNT_totAb= count_ab_overall),
+          path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"))

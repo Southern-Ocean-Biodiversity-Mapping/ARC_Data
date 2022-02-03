@@ -1,0 +1,342 @@
+---
+title: "ROMS FAM 10km floats"
+author: "Jan Jansen"
+date: "20/01/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+## Evaluate ROMS outputs
+library(raster)
+library(colorspace)
+library(viridis)
+library(ncdf4)
+library(raadtools)
+library(rgdal)
+
+## data-directories
+env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+env.raw <- paste0(env.dir,"raw/")
+env.derived <- paste0(env.dir,"derived/")
+AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
+ARC_data_dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/"
+ant.proj <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+```
+
+```{r, results="hide"}
+## load projected coastline for plotting
+load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+
+## ROMS-runs:
+data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test3/")
+# data.dat <- paste0("Circumpolar_ROMS/10km_outputs/sed_test1/")
+# data.dat <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/sed_test5/")
+
+## load lon/lat information from ROMS-grid
+grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
+lon_rho <- ncvar_get(grd10k_nc, varid="lon_rho")
+lat_rho <- ncvar_get(grd10k_nc, varid="lat_rho")
+
+#### Prepare empty rasters to assign correct projected values to
+roms.coords.proj <- project(cbind(c(lon_rho), c(lat_rho)), proj=ant.proj)
+x.range <- c(min(roms.coords.proj[,1])-5000,max(roms.coords.proj[,1])+5000)
+y.range <- c(min(roms.coords.proj[,2])-5000,max(roms.coords.proj[,2])+5000)
+empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=10000)
+
+#### load other ROMS data (currents & depth)
+#depth
+h <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="h", level=1)
+#seafloor currents (seafloor-layer is 1)
+u.raw <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
+v.raw <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="v", level=1)
+#seasurface currents (surface-layer is 31)
+u_31.raw <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=31)
+v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=31)
+## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
+u.sum <- sum(u.raw)
+v.sum <- sum(v.raw)
+u.sum.abs <- sum(abs(u.raw))
+v.sum.abs <- sum(abs(v.raw))
+u31.sum <- sum(u_31.raw)
+v31.sum <- sum(v_31.raw)
+## extract current speeds at rho-points where depth is defined
+## (in ROMS they are all at different locations):
+## u has one less column than the grid, so all coordinates need to be moved half a cell to the right for the grids to match up
+coord.grd.u <- coordinates(h)
+coord.grd.u[,1] <- coordinates(h)[,1]-0.5
+## v has one less row than the grid, so all coordinates need to be moved half a cell up for the grids to match up
+coord.grd.v <- coordinates(h)
+coord.grd.v[,2] <- coordinates(h)[,2]-0.5
+## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
+u <- v <- u.abs <- v.abs <- u31 <- v31 <- empty.roms.ra
+u[] <- extract(u.sum, coord.grd.u, method="bilinear")
+v[] <- extract(v.sum, coord.grd.v, method="bilinear")
+u.abs[] <- extract(u.sum.abs, coord.grd.u, method="bilinear")
+v.abs[] <- extract(v.sum.abs, coord.grd.v, method="bilinear")
+u31[] <- extract(u31.sum, coord.grd.u, method="bilinear")
+v31[] <- extract(v31.sum, coord.grd.v, method="bilinear")
+#seasurface current speeds
+uv_31 <- sqrt(u31^2+v31^2)
+#temporal mean seafloor current speed
+mean.uv <- sqrt(u^2+v^2)
+#absolute mean seafloor current speed
+abs.uv <- sqrt(u.abs^2+v.abs^2)
+#residual seafloor current speed
+res.uv <- abs.uv-mean.uv
+## remove inland values for depth
+h2 <- empty.roms.ra
+h2[] <- h[]
+h2[is.na(mean.uv)] <- NA
+```
+
+########## Overview plots - Ocean currents ##########
+
+```{r, fig.width=10, fig.height=10}
+## ocean current data
+#cols <- rev(terrain.colors(96))
+cols <- rev(magma(96)) #12, 24, 48, 96
+breaks <- seq(0,6,length.out=97)
+par(mfrow=c(2,2))
+plot(mean.uv, breaks=breaks, col=cols, main="seafloor currents - mean")
+plot(abs.uv, breaks=breaks, col=cols, main="seafloor currents - absolute speed")
+plot(res.uv, breaks=breaks, col=cols, main="seafloor currents - residual")
+plot(uv_31, breaks=breaks, col=cols, main="seasurface currents")
+## ocean current data in the Mertz region
+cols <- rev(magma(84)) #12, 24, 48, 96
+breaks <- seq(0,2.1,length.out=85)
+xlim <- c(1300000,1900000)
+ylim <- c(-2300000,-1900000)
+par(mfrow=c(2,2))
+plot(mean.uv, breaks=breaks, col=cols, main="seafloor currents - mean", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+plot(abs.uv, breaks=breaks, col=cols, main="seafloor currents - absolute speed", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+plot(res.uv, breaks=breaks, col=cols, main="seafloor currents - residual", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+plot(h2, col=cols, main="depth", xlim=xlim, ylim=ylim)
+#plot(coast.proj, add=TRUE)
+```
+
+########## EVALUATE particle-tracks ##########
+
+```{r, results="hide"}
+## load trajectories
+#it's being stored in a rather weird way...
+#if you read in as a raster, the rows are the time-steps
+#everything between 153-183 is NA for some reason
+flts.z100 <- brick(paste0(data.dat100,"ocean_flt.nc"), varname="depth", level=1)
+#### translate grid points into projected lon/lats
+## one cell is 10000m and the grid starts at -3000000/-3000000, so need to start from there and multiply by 10000
+grd.x100 <- -3000000+brick(paste0(data.dat100,"ocean_flt.nc"), varname="Xgrid", level=1)*10000
+grd.y100 <- -3000000+brick(paste0(data.dat100,"ocean_flt.nc"), varname="Ygrid", level=1)*10000
+# flts.z200 <- brick(paste0(data.dat200,"ocean_flt.nc"), varname="depth", level=1)
+# grd.x200 <- brick(paste0(data.dat200,"ocean_flt.nc"), varname="Xgrid", level=1)
+# grd.y200 <- brick(paste0(data.dat200,"ocean_flt.nc"), varname="Ygrid", level=1)
+# flts.z400 <- brick(paste0(data.dat400,"ocean_flt.nc"), varname="depth", level=1)
+# grd.x400 <- brick(paste0(data.dat400,"ocean_flt.nc"), varname="Xgrid", level=1)
+# grd.y400 <- brick(paste0(data.dat400,"ocean_flt.nc"), varname="Ygrid", level=1)
+
+#### particle trajectories (only use a subset of 1000 traces)
+set.seed(1)
+s <- sample(1:length(which(!is.na(grd.x100[151,]))), 1000)
+
+start.vals <- cbind(grd.x100[152,s], grd.y100[152,s])
+traj.vals <- cbind(grd.x100[1:151,s], grd.y100[1:151,s])
+traj.depthvals <- flts.z100[1:151,s]
+
+traj.1 <- which(traj.depthvals>=-500)
+traj.2 <- which(traj.depthvals<(-500))
+traj.3 <- which(traj.depthvals<(-1000))
+traj.4 <- which(traj.depthvals<(-2000))
+col1 <- "purple"
+col2 <- "lightskyblue"
+col3 <- "blue"
+col4 <- "black"
+```
+
+```{r, fig.width=8, fig.height=10}
+## trajectories of 1000 floats (MERTZ)
+xlim <- c(1300000,1900000)
+ylim <- c(-2300000,-1900000)
+cols <- rev(magma(74))
+breaks <- seq(0,3.7,length.out=75)
+par(mfrow=c(2,1), mar=c(2,3,3,1), oma=c(0,0,0,0))
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - seafloor currents")
+# points(start.vals, pch=16, col="blue")
+# points(traj.vals, pch=16, col="blue", cex=0.2)
+points(start.vals, pch=16, col=col1)
+points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
+points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
+points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
+points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+
+plot(uv_31, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - surface currents")
+# points(start.vals, pch=16, col="blue")
+# points(traj.vals, pch=16, col="blue", cex=0.2)
+points(start.vals, pch=16, col=col1)
+points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
+points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
+points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
+points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+```
+
+```{r, fig.width=6, fig.height=10}
+## trajectories of 1000 floats (Ross Sea)
+xlim <- c(-1000000,600000)
+ylim <- c(-2300000,-1000000)
+par(mfrow=c(2,1), mar=c(2,3,3,1), oma=c(0,0,0,0))
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - seafloor currents")
+# points(start.vals, pch=16, col="blue")
+# points(traj.vals, pch=16, col="blue", cex=0.2)
+points(start.vals, pch=16, col=col1)
+points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
+points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
+points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
+points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+plot(uv_31, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - surface currents")
+# points(start.vals, pch=16, col="blue")
+# points(traj.vals, pch=16, col="blue", cex=0.2)
+points(start.vals, pch=16, col=col1)
+points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
+points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
+points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
+points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+```
+
+```{r, fig.width=15, fig.height=15}
+par(mfrow=c(1,1), mar=c(2,1,3,0), oma=c(0,0,0,0))
+plot(mean.uv, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+```
+
+```{r, fig.width=15, fig.height=15, eval=FALSE}
+par(mfrow=c(3,3), mar=c(2,1,3,0), oma=c(0,0,0,0))
+xlim <- c(-3000000,-1000000)
+ylim <- c(1000000,3000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+xlim <- c(-1000000,1000000)
+ylim <- c(1000000,3000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+xlim <- c(1000000,3000000)
+ylim <- c(1000000,3000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+xlim <- c(-3000000,-1000000)
+ylim <- c(-1000000,1000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+plot.new()
+xlim <- c(1000000,3000000)
+ylim <- c(-1000000,1000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+xlim <- c(-3000000,-1000000)
+ylim <- c(-3000000,-1000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+xlim <- c(-1000000,1000000)
+ylim <- c(-3000000,-1000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+xlim <- c(1000000,3000000)
+ylim <- c(-3000000,-1000000)
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks)
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+```
+
+```{r, fig.width=10, fig.height=9}
+## end-points of all floats
+par(mfrow=c(2,2), mar=c(2,1,3,0), oma=c(0,0,0,0))
+#after 1 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
+points(cbind(grd.x100[121,], grd.y100[121,]), pch=16, col="blue", cex=0.2)
+#after 2 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 2 month  - 100m/day")
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+#after 3 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 3 month  - 100m/day")
+points(cbind(grd.x100[61,], grd.y100[61,]), pch=16, col="blue", cex=0.2)
+#after 4 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 4 month  - 100m/day")
+points(cbind(grd.x100[31,], grd.y100[31,]), pch=16, col="blue", cex=0.2)
+```
+
+
+## endpoints coloured by how far they travelled in a month
+
+```{r, fig.width=12, fig.height=12}
+## should be able to just substract positions from another at different points in time and calculate the distance
+## but, some values are off, why? (thousands of kilometers travelled in 1 day...?) -. some boundary effects happening
+weird <- which(sqrt((grd.x100[121,]-grd.x100[122,])^2+(grd.y100[121,]-grd.y100[122,])^2)>200000)
+# par(mfrow=c(2,1))
+# plot(mean.uv, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
+# points(cbind(grd.x100[122,weird], grd.y100[122,weird]), pch=16, col="blue", cex=1)
+# plot(mean.uv, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
+# points(cbind(grd.x100[121,weird], grd.y100[121,weird]), pch=16, col="blue", cex=1)
+
+## best approach is to just disregard the boundary one in the plotting
+## movement since start:
+move.s.1st <- sqrt((grd.x100[121,]-grd.x100[151,])^2+(grd.y100[121,]-grd.y100[151,])^2)
+move.s.2nd <- sqrt((grd.x100[91,]-grd.x100[151,])^2+(grd.y100[91,]-grd.y100[151,])^2)
+move.s.3rd <- sqrt((grd.x100[61,]-grd.x100[151,])^2+(grd.y100[61,]-grd.y100[151,])^2)
+move.s.4th <- sqrt((grd.x100[31,]-grd.x100[151,])^2+(grd.y100[31,]-grd.y100[151,])^2)
+
+ms1.1 <- which(move.s.1st >= 0)
+ms1.2 <- which(move.s.1st >= 10000)
+ms1.3 <- which(move.s.1st >= 100000)
+ms1.4 <- which(move.s.1st >= 1000000)
+
+## movement in 1 month:
+move.m.1st <- sqrt((grd.x100[121,]-grd.x100[151,])^2+(grd.y100[121,]-grd.y100[151,])^2)
+move.m.2nd <- sqrt((grd.x100[91,]-grd.x100[121,])^2+(grd.y100[91,]-grd.y100[121,])^2)
+move.m.3rd <- sqrt((grd.x100[61,]-grd.x100[91,])^2+(grd.y100[61,]-grd.y100[91,])^2)
+move.m.4th <- sqrt((grd.x100[31,]-grd.x100[61,])^2+(grd.y100[31,]-grd.y100[61,])^2)
+
+mm1.1 <- which(move.m.1st >= 0)
+mm1.2 <- which(move.m.1st >= 5000)
+mm1.3 <- which(move.m.1st >= 10000)
+mm1.4 <- which(move.m.1st >= 50000)
+
+par(mfrow=c(1,1), mar=c(2,1,3,0), oma=c(0,0,0,0))
+#after 1 months
+plot(mean.uv, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
+points(cbind(grd.x100[121,mm1.1], grd.y100[121,mm1.1]), pch=16, col=col1, cex=0.2)
+points(cbind(grd.x100[121,mm1.2], grd.y100[121,mm1.2]), pch=16, col=col2, cex=0.2)
+points(cbind(grd.x100[121,mm1.3], grd.y100[121,mm1.3]), pch=16, col=col3, cex=0.2)
+points(cbind(grd.x100[121,mm1.4], grd.y100[121,mm1.4]), pch=16, col=col4, cex=0.2)
+```
+
+```{r, fig.width=10, fig.height=9, eval=FALSE}
+## end-points of all floats
+par(mfrow=c(2,2), mar=c(2,1,3,0), oma=c(0,0,0,0))
+#after 1 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
+points(cbind(grd.x100[121,mm1.1], grd.y100[121,mm1.1]), pch=16, col=col1, cex=0.2)
+points(cbind(grd.x100[121,mm1.2], grd.y100[121,mm1.2]), pch=16, col=col2, cex=0.2)
+points(cbind(grd.x100[121,mm1.3], grd.y100[121,mm1.3]), pch=16, col=col3, cex=0.2)
+points(cbind(grd.x100[121,mm1.4], grd.y100[121,mm1.4]), pch=16, col=col4, cex=0.2)
+
+
+
+#after 2 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 2 month  - 100m/day")
+points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
+#after 3 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 3 month  - 100m/day")
+points(cbind(grd.x100[61,], grd.y100[61,]), pch=16, col="blue", cex=0.2)
+#after 4 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 4 month  - 100m/day")
+points(cbind(grd.x100[31,], grd.y100[31,]), pch=16, col="blue", cex=0.2)
+```
+
+```{r}
+########## TODO: 
+## calculate movement speed using changes in m in grid.x and grid.y per day
+
+## plot depth against movement speed
+
+## 3D plot of particle subset
+
+```

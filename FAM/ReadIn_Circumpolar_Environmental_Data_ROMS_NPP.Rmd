@@ -594,6 +594,8 @@ a2 <- list()
 for(i in 1:length(a)){
   a2[[i]] <- rast(a[[i]])
   a2[[i]][dist.new>=750000] <- NA
+  # a2[[i]][dist.new>=500000] <- NA
+  # a2[[i]][dist.new>=250000] <- NA
   a2[[i]] <- brick(a2[[i]])
 }
 a <- a2
@@ -621,6 +623,8 @@ clim.12 <- mean(stack(list.12), na.rm=TRUE)
 clim.all <- mean(clim.01, clim.02, clim.03, clim.10, clim.11, clim.12, na.rm=TRUE)
 
 save(clim.all, file=paste0(env.derived,file.npp,"_filled_climatology.Rdata"))
+# save(clim.all, file=paste0(env.derived,file.npp,"_filled_climatology_500kmcontour.Rdata"))
+# save(clim.all, file=paste0(env.derived,file.npp,"_filled_climatology_250kmcontour.Rdata"))
 
 ###########################
 
@@ -829,6 +833,8 @@ A table of active cells/coordinates for each monthly file
 
 ```{r}
 load(paste0(env.derived,file.npp,"_filled_climatology.Rdata"))
+# load(paste0(env.derived,file.npp,"_filled_climatology_500kmcontour.Rdata"))
+# load(paste0(env.derived,file.npp,"_filled_climatology_250kmcontour.Rdata"))
 
 # h.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="h")
 # lon.ra <- raster(paste0(env.raw,"waom10extend_grd.nc"), varname="lon_rho")
@@ -912,7 +918,11 @@ m[,7] <- dat$y[sel]
 # write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease4k_idx.txt"),row.names=FALSE, quote=FALSE)
 ## then write table
 write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease4k_reduced4times_idx.txt"),row.names=FALSE, quote=FALSE)
+# write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease4k_reduced4times_500kmcontour_idx.txt"),row.names=FALSE, quote=FALSE)
+# write.table(m, file=paste0(env.derived,file.npp,"_FloatsRelease4k_reduced4times_250kmcontour_idx.txt"),row.names=FALSE, quote=FALSE)
 ```
+
+
 
 ##### from yearly files:
 

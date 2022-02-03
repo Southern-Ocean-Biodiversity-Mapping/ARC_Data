@@ -129,12 +129,21 @@ for (survey_current in names(dat.list.clean)) {
       }
     }
   }
+  if ("area" %in% names(dat.list.clean[[survey_current]])) {
+    for (fname_current in dat.list.clean[[survey_current]]$Filename.standardised) {
+      area_current <- dat.list.clean[[survey_current]][dat.list.clean[[survey_current]]$Filename.standardised == fname_current, ]$area
+      if (!is.na(area_current)) {
+        image_metadata[image_metadata$Filename.standardised == fname_current, "area"] <- area_current
+        image_metadata[image_metadata$Filename.standardised == fname_current, "area_source"] <- "metadata"
+      }
+    }
+  }
 }
 # Pulling area info from laser points
 idx <- match(image_metadata$Filename.standardised,dat_area_subset$`image filename`)
 fill.idx <- which(!is.na(idx))
 search.idx <- idx[fill.idx]
-image_metadata$area[fill.idx] <- dat_area_subset$`image area in m?`[search.idx] # replace area values where filenames match
+image_metadata$area[fill.idx] <- dat_area_subset$`image area in m²`[search.idx] # replace area values where filenames match
 image_metadata$area <- as.numeric(image_metadata$area)
 image_metadata$area_source[fill.idx] <- "laser_points"
 # When area data is not available, assign transect (or survey average?)

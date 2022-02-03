@@ -1,0 +1,71 @@
+---
+title: "env_overlap_across_gear"
+author: "charley"
+date: "27/01/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+
+user = "charley"
+
+if (user == "charley") {
+  wrkg_dir <- "C:/Users/cgros/code/IMAS/ARC_Data/annotation"
+}
+
+setwd(wrkg_dir)
+```
+
+## Data loading
+
+```{r load}
+load("Circumpolar_Annotation_Env_Data.RData")
+
+env_layer_names <- c("depth",
+                     "slope",
+                     "tpi",
+                     "NPP_su_mean",
+                     "seafloorcurrents",
+                     "seafloortemperature",
+                     "sst_su_mean",
+                     "sst_su_sd",
+                     "ice_su_mean",
+                     "ice_su_sd",
+                     "no3_mean",
+                     "no3_sd",
+                     "o2_mean",
+                     "o2_sd",
+                     "distance2canyons")
+```
+
+## Look at distribution
+
+```{r curation}
+# Remove cells with no gear info available
+data = cell_metadata_env[!is.na(cell_metadata_env$gear), ]
+# Get sample size
+sample_size = data %>% group_by(gear) %>% summarise(num=n())
+```
+```{r violinplot, echo=FALSE, warning=FALSE}
+for (env_name in env_layer_names) {
+  print(data %>%
+          left_join(sample_size) %>%
+          mutate(myaxis = paste0(gear, "\n", "n=", num)) %>%
+          ggplot( aes(x=myaxis, y=eval(as.name(env_name)), fill=gear)) +
+          geom_violin(width=1.4) +
+          geom_boxplot(width=0.1, color="grey", alpha=0.2) +
+          scale_fill_viridis(discrete = TRUE) +
+          theme_ipsum() +
+          theme(
+            legend.position="none",
+            plot.title = element_text(size=11)
+          ) +
+          ggtitle(env_name) +
+          xlab(""))
+}
+```

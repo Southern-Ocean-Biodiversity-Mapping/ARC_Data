@@ -1,7 +1,7 @@
 ---
 title: "env_overlap_across_gear"
 author: "charley"
-date: "27/01/2022"
+date: "07/02/2022"
 output: html_document
 ---
 
@@ -43,16 +43,19 @@ env_layer_names <- c("depth",
                      "distance2canyons")
 ```
 
-## Look at distribution
+## Data curation and Sample size
 
-```{r curation}
+```{r curation, message=FALSE}
 # Remove cells with no gear info available
 data = cell_metadata_env[!is.na(cell_metadata_env$gear), ]
 # Get sample size
 sample_size = data %>% group_by(gear) %>% summarise(num=n())
 ```
-```{r violinplot, echo=FALSE, warning=FALSE}
+
+# Environmental variable distribution for each gear type {.tabset}
+```{r, results='asis', echo=FALSE, warning=FALSE, message=FALSE}
 for (env_name in env_layer_names) {
+  cat('##', env_name, ' \n')
   print(data %>%
           left_join(sample_size) %>%
           mutate(myaxis = paste0(gear, "\n", "n=", num)) %>%
@@ -67,5 +70,9 @@ for (env_name in env_layer_names) {
           ) +
           ggtitle(env_name) +
           xlab(""))
+  plot.new()
+  cat('\n\n')
 }
+
+#cat('#')
 ```

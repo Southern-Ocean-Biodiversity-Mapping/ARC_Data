@@ -12,7 +12,7 @@ library(ncdf4)
 library(raadtools)
 ## data-directories
 env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
-env.raw <- paste0(env.dir,"raw/")
+env.raw <- "E:/science/data_environmental/raw/"
 env.derived <- paste0(env.dir,"derived/")
 AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
 ARC_data_dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/"
@@ -47,9 +47,13 @@ x.range <- c(min(roms.coords.proj[,1])-2000,max(roms.coords.proj[,1])+2000)
 y.range <- c(min(roms.coords.proj[,2])-2000,max(roms.coords.proj[,2])+2000)
 empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=4000)
 
-#### load other ROMS data (currents & depth)
+#### load other ROMS data
 #depth
 h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
+#salinity
+salt <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="salt", level=1)
+#temperature
+temp <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="temp", level=1)
 #seafloor currents (seafloor-layer is 1)
 u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
 v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)

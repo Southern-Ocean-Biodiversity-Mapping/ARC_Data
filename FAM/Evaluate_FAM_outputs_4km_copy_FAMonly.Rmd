@@ -61,6 +61,10 @@ empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=400
 #### load other ROMS data (currents & depth)
 #depth
 h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
+#salinity
+salt <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="salt", level=1)
+#temperature
+temp <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="temp", level=1)
 #seafloor currents (seafloor-layer is 1)
 u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
 v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)

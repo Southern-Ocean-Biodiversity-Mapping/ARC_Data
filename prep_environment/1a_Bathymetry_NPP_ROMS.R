@@ -273,61 +273,162 @@ npp_su_shelf[is.na(r.depth)] <- NA
 writeRaster(npp_su_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
 
 
-#### 5) ROMS Currents & Temperature ----
+#### 5) ROMS Currents & Temperature & FAM ----
 
-#NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  
-#NetCDF-files are downloaded from GADI
+## 4k models for now, 2k to follow, and proper FAM to follow!!
+data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test1/")
+#### load lon/lat information from ROMS-grid
+grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
+lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
+lat_rho <- ncvar_get(grd4k_nc, varid="lat_rho")
+#### Prepare empty rasters to assign correct projected values to
+roms.coords.proj <- project(cbind(c(lon_rho), c(lat_rho)), proj=stereo)
+x.range <- c(min(roms.coords.proj[,1])-2000,max(roms.coords.proj[,1])+2000)
+y.range <- c(min(roms.coords.proj[,2])-2000,max(roms.coords.proj[,2])+2000)
+empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=stereo, resolution=4000)
 
-## file paths
-f.grd <- paste0(env.raw,"waom2_grd.nc")
-f.u <- paste0(env.raw,"ocean_avg_0538-0610_u_avg.nc")
-f.v <- paste0(env.raw,"ocean_avg_0538-0610_v_avg.nc")
-f.t <- paste0(env.raw,"ocean_avg_0538-0610_temp_avg.nc")
-
-## read as raster
-lon <- raster(f.grd, varname="lon_rho")
-lat <- raster(f.grd, varname="lat_rho")
-u <- raster(f.u, lvar=3, level=1, varname="u")
-v <- raster(f.v, lvar=3, level=1, varname="v")
-t <- raster(f.t, lvar=3, level=1, varname="temp")
-
-## bring to same extent (address one of the quirks of ROMS)
-ext <- extent(1,3149,1,2649)
-lon <- crop(lon,y=ext,snap="out")
-lat <- crop(lat,y=ext,snap="out")
-u <- crop(u,y=ext,snap="out")
-v <- crop(v,y=ext,snap="out")
-t <- crop(t,y=ext,snap="out")
-#w <- crop(w,y=ext,snap="out")
-
-## calculate a single seafloor current speed value
-uv <- sqrt(abs(u)^2+abs(v)^2)
-## projection and extent for the raster (netcdf files were already polar-projected with true south at -71S)
-crs <- stereo ##"+proj=stere +lat_ts=-71 +lat_0=-90 +datum=WGS84"
-pts <- rgdal::project(cbind(values(lon), values(lat)), crs)
-ex <- extent(pts)
-uv <- setExtent(uv, ex)
-t <- setExtent(t, ex)
-projection(uv) <- crs
-projection(t) <- crs
+#depth
+h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
+#salinity
+salt <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="salt", level=1)
+#temperature
+temp <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="temp", level=1)
+#settling FAM
+settle6 <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=1)
+#seafloor currents (seafloor-layer is 1)
+u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
+v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)
+#seasurface currents (surface-layer is 31)
+u_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="u", level=31)
+v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="v", level=31)
+## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
+u.sum <- sum(u.raw)
+v.sum <- sum(v.raw)
+u.sum.abs <- sum(abs(u.raw))
+v.sum.abs <- sum(abs(v.raw))
+u31.sum <- sum(u_31.raw)
+v31.sum <- sum(v_31.raw)
+## extract current speeds at rho-points where depth is defined
+## (in ROMS they are all at different locations):
+## u has one less column than the grid, so all coordinates need to be moved half a cell to the right for the grids to match up
+coord.grd.u <- coordinates(h)
+coord.grd.u[,1] <- coordinates(h)[,1]-0.5
+## v has one less row than the grid, so all coordinates need to be moved half a cell up for the grids to match up
+coord.grd.v <- coordinates(h)
+coord.grd.v[,2] <- coordinates(h)[,2]-0.5
+## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
+u <- v <- u.abs <- v.abs <- u31 <- v31 <- empty.roms.ra
+u[] <- extract(u.sum, coord.grd.u, method="bilinear")
+v[] <- extract(v.sum, coord.grd.v, method="bilinear")
+u.abs[] <- extract(u.sum.abs, coord.grd.u, method="bilinear")
+v.abs[] <- extract(v.sum.abs, coord.grd.v, method="bilinear")
+u31[] <- extract(u31.sum, coord.grd.u, method="bilinear")
+v31[] <- extract(v31.sum, coord.grd.v, method="bilinear")
+#seasurface current speeds
+uv_31 <- sqrt(u31^2+v31^2)
+#temporal mean seafloor current speed
+mean.uv <- sqrt(u^2+v^2)
+#absolute mean seafloor current speed
+abs.uv <- sqrt(u.abs^2+v.abs^2)
+#residual seafloor current speed
+res.uv <- abs.uv-mean.uv
+## remove inland values for depth
+h2 <- empty.roms.ra
+h2[] <- h[]
+h2[is.na(mean.uv)] <- NA
 
 ## resample to standard 500m resolution of other environmental variables
-uv_500 <- resample(uv,r)
-t_500 <- resample(t,r)
+mean.uv_500 <- resample(mean.uv,r)
+abs.uv_500 <- resample(abs.uv,r)
+res.uv_500 <- resample(res.uv,r)
+t_500 <- resample(temp,r)
+s_500 <- resample(salt,r)
+settle6_500 <- resample(settle6,r)
 
 ## shelf only
-uv_500_shelf <- uv_500
-uv_500_shelf[is.na(r.depth)] <- NA
+mean.uv_500_shelf <- mean.uv_500
+abs.uv_500_shelf <- abs.uv_500
+res.uv_500_shelf <- res.uv_500
 t_500_shelf <- t_500
+s_500_shelf <- s_500
+settle6_500_shelf <- settle6_500
+
+mean.uv_500_shelf[is.na(r.depth)] <- NA
+abs.uv_500_shelf[is.na(r.depth)] <- NA
+res.uv_500_shelf[is.na(r.depth)] <- NA
 t_500_shelf[is.na(r.depth)] <- NA
+s_500_shelf[is.na(r.depth)] <- NA
+settle6_500_shelf[is.na(r.depth)] <- NA
 
 ## write rasters to file
-writeRaster(uv,           filename=paste0(env.derived,string.chr,"waom2k_seafloorcurrents.Rdata"))
-writeRaster(uv_500,       filename=paste0(env.derived,string.chr,"500m_waom2k_seafloorcurrents.Rdata"))
-writeRaster(uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom2k_seafloorcurrents.Rdata"))
-writeRaster(t,            filename=paste0(env.derived,string.chr,"waom2k_seafloortemperature.Rdata"))
-writeRaster(t_500,        filename=paste0(env.derived,string.chr,"500m_waom2k_seafloortemperature.Rdata"))
-writeRaster(t_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom2k_seafloortemperature.Rdata"))
+writeRaster(mean.uv_500,       filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.Rdata"))
+writeRaster(mean.uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.Rdata"))
+writeRaster(abs.uv_500,       filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.Rdata"))
+writeRaster(abs.uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.Rdata"))
+writeRaster(res.uv_500,       filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.Rdata"))
+writeRaster(res.uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.Rdata"))
+writeRaster(temp,            filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.Rdata"))
+writeRaster(t_500,        filename=paste0(env.derived,string.chr,"500m_waom4k_seafloortemperature.Rdata"))
+writeRaster(t_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloortemperature.Rdata"))
+writeRaster(salt,            filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.Rdata"))
+writeRaster(s_500,        filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.Rdata"))
+writeRaster(s_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.Rdata"))
+writeRaster(settle6,            filename=paste0(env.derived,string.chr,"waom4k_settle6test.Rdata"))
+writeRaster(settle6_500,        filename=paste0(env.derived,string.chr,"500m_waom4k_settle6test.Rdata"))
+writeRaster(settle6_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_settle6test.Rdata"))
 
 
+# #NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  
+# #NetCDF-files are downloaded from GADI
+# 
+# ## file paths
+# f.grd <- paste0(env.raw,"waom2_grd.nc")
+# f.u <- paste0(env.raw,"ocean_avg_0538-0610_u_avg.nc")
+# f.v <- paste0(env.raw,"ocean_avg_0538-0610_v_avg.nc")
+# f.t <- paste0(env.raw,"ocean_avg_0538-0610_temp_avg.nc")
+# 
+# ## read as raster
+# lon <- raster(f.grd, varname="lon_rho")
+# lat <- raster(f.grd, varname="lat_rho")
+# u <- raster(f.u, lvar=3, level=1, varname="u")
+# v <- raster(f.v, lvar=3, level=1, varname="v")
+# t <- raster(f.t, lvar=3, level=1, varname="temp")
+# 
+# ## bring to same extent (address one of the quirks of ROMS)
+# ext <- extent(1,3149,1,2649)
+# lon <- crop(lon,y=ext,snap="out")
+# lat <- crop(lat,y=ext,snap="out")
+# u <- crop(u,y=ext,snap="out")
+# v <- crop(v,y=ext,snap="out")
+# t <- crop(t,y=ext,snap="out")
+# #w <- crop(w,y=ext,snap="out")
+# 
+# ## calculate a single seafloor current speed value
+# uv <- sqrt(abs(u)^2+abs(v)^2)
+# ## projection and extent for the raster (netcdf files were already polar-projected with true south at -71S)
+# crs <- stereo ##"+proj=stere +lat_ts=-71 +lat_0=-90 +datum=WGS84"
+# pts <- rgdal::project(cbind(values(lon), values(lat)), crs)
+# ex <- extent(pts)
+# uv <- setExtent(uv, ex)
+# t <- setExtent(t, ex)
+# projection(uv) <- crs
+# projection(t) <- crs
+# 
+# ## resample to standard 500m resolution of other environmental variables
+# uv_500 <- resample(uv,r)
+# t_500 <- resample(t,r)
+# 
+# ## shelf only
+# uv_500_shelf <- uv_500
+# uv_500_shelf[is.na(r.depth)] <- NA
+# t_500_shelf <- t_500
+# t_500_shelf[is.na(r.depth)] <- NA
+# 
+# ## write rasters to file
+# writeRaster(uv,           filename=paste0(env.derived,string.chr,"waom2k_seafloorcurrents.Rdata"))
+# writeRaster(uv_500,       filename=paste0(env.derived,string.chr,"500m_waom2k_seafloorcurrents.Rdata"))
+# writeRaster(uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom2k_seafloorcurrents.Rdata"))
+# writeRaster(t,            filename=paste0(env.derived,string.chr,"waom2k_seafloortemperature.Rdata"))
+# writeRaster(t_500,        filename=paste0(env.derived,string.chr,"500m_waom2k_seafloortemperature.Rdata"))
+# writeRaster(t_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom2k_seafloortemperature.Rdata"))
 

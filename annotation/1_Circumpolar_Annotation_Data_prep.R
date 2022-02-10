@@ -70,6 +70,7 @@ source(paste0(tools.dir,"bubbleplot.R"))
 ## load area estimates for each survey (?Why this comment: "no separate area-files for PS96 & PS18")
 area_xls_files <- list.files(RS.dir,full.names=TRUE,pattern=".xlsx")
 dat_area <- sapply(area_xls_files, readxl::read_excel, simplify=FALSE, skip=1) %>% bind_rows(.id="id")
+names(dat_area)[8] <- "image area in m2" ## label for area contains superscript which is annoying
 dat_area_subset <- dat_area[match(unique(dat_area$`image filename`),dat_area$`image filename`),]
 
 ## load Biigle image annotations
@@ -80,7 +81,7 @@ dat_counts$Label <- gsub(">","__",dat_counts$Label)
 dat_counts$Label <- gsub("-","_",dat_counts$Label)
 
 ## load %-cover image annotations
-dat_cover.raw <- read_csv(paste0(ann.dir,"Cover/Circumpolar_DownwardImages_PointScore_Annotations_20220107.csv"))
+dat_cover.raw <- read_csv(paste0(ann.dir,"Cover/Circumpolar_DownwardImages_PointScore_Annotations_20220210.csv"))
 #remove uncorrected labels
 dat_cover <- dat_cover.raw[,-c(4,8,11)]
 names(dat_cover)[8] <- "Label"
@@ -143,7 +144,7 @@ for (survey_current in names(dat.list.clean)) {
 idx <- match(image_metadata$Filename.standardised,dat_area_subset$`image filename`)
 fill.idx <- which(!is.na(idx))
 search.idx <- idx[fill.idx]
-image_metadata$area[fill.idx] <- dat_area_subset$`image area in m?`[search.idx] # replace area values where filenames match
+image_metadata$area[fill.idx] <- dat_area_subset$`image area in m2`[search.idx] # replace area values where filenames match
 image_metadata$area <- as.numeric(image_metadata$area)
 image_metadata$area_source[fill.idx] <- "laser_points"
 # When area data is not available, assign transect (or survey average?)
@@ -413,8 +414,8 @@ count_cells <- dat_counts_cell_by_species[-which(is.na(rowSums(dat_counts_cell_b
 cover_images <- dat_cover_image_by_species
 count_images <- dat_counts_image_by_species
 
-image_metadata
-cell_metadata
+head(image_metadata)
+head(cell_metadata)
 
 save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, count_images,
      file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data.Rdata"))

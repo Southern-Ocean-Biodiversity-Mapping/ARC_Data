@@ -25,7 +25,7 @@ env_list<-list.files(path = env.derived, pattern="gri$",  full.names=TRUE)
 #subset to  "shelf" files
 env_list<-env_list[grep(".500m_shelf", env_list)]
 
-#for the single raters layer names are missing. Extract from file name.
+#for the single rasters layer names are missing. Extract from file name.
 env_names<-gsub(".*_|\\..*","",env_list)
 
 
@@ -36,16 +36,17 @@ names(env_stack)[1:5]<-env_names[1:5]
 names(env_stack)[14:22]<-paste(rep(c("CARS_NO3", "CARS_O2", "CARS_PO4"),each=3),c("mean", "seas_range", "std_dev"), sep="_")
 names(env_stack)[23] <-"distance2canyons"
 names(env_stack)[34]<-"NPP_su_mean"
-names(env_stack)[47:48]<-env_names[18:19]
+names(env_stack)[47:54]<-c("waom2k_seafloorcurrents", "waom2k_seafloortemperature", "waom4k_seafloorcurrents_absolute", "waom4k_seafloorcurrents_mean", 
+                           "waom4k_seafloorcurrents_residual", "waom4k_seafloorsalinity", "waom4k_seafloortemperature", "waom4k_settle6test")
 
 
 #add environmental data with non-conformant names- 
 #### remember to update column index if changes!!!
 env_stack<-stack( env_stack,
                   raster(paste0(env.derived, "Circumpolar_EnvData_geomorphology")))
-names(env_stack)[49]<-"geomorph"
+names(env_stack)[55]<-"geomorph"
 
-geomorph_cat<-levels(env_stack[[49]])[[1]]
+geomorph_cat<-levels(env_stack[[55]])[[1]]
 
 
 ## 3) Match environmental data to image data (at cell level) ----

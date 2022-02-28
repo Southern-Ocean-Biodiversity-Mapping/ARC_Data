@@ -39,9 +39,9 @@ env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
 # remote repository (DOESN'T WORK YET)
 # env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
 
-env.raw <- paste0(env.dir,"raw/")
+env.raw <- "E:/science/data_environmental/raw/"
 env.derived <- paste0(env.dir,"derived/")
-AAD_dir <- paste0(env.dir,"raw/accessed_through_R")
+AAD_dir <- "E:/science/data_environmental/raw/accessed_through_R"
 
 string.chr <- "Circumpolar_EnvData_"
 string.res <- "500m_"
@@ -184,6 +184,10 @@ writeRaster(r.tpi5,  filename=paste0(save.string,"_tpi5.grd"), overwrite=TRUE)
 writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.grd"), overwrite=TRUE)
 
 
+r <- raster(paste0(env.derived,string.chr,"500m_bathy_gebco.grd"))
+r[r>=0] <- NA
+r[r<=depth.range[2]] <- NA
+
 #### 4) Net Primary Production ----
 
 #Raw NPP is being read in and manipulated using a different script as part of preparing the input for the circumpolar ocean model ("ReadIn_Circumpolar_Environmental_Data_ROMS_NPP.Rmd").    
@@ -276,7 +280,7 @@ writeRaster(npp_su_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP
 #### 5) ROMS Currents & Temperature & FAM ----
 
 ## 4k models for now, 2k to follow, and proper FAM to follow!!
-data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test1/")
+data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_float_test8b/"
 #### load lon/lat information from ROMS-grid
 grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
 lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
@@ -317,7 +321,7 @@ coord.grd.u[,1] <- coordinates(h)[,1]-0.5
 coord.grd.v <- coordinates(h)
 coord.grd.v[,2] <- coordinates(h)[,2]-0.5
 ## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
-u <- v <- u.abs <- v.abs <- u31 <- v31 <- empty.roms.ra
+u <- v <- u.abs <- v.abs <- u31 <- v31 <- sa <- te <- se <- empty.roms.ra
 u[] <- extract(u.sum, coord.grd.u, method="bilinear")
 v[] <- extract(v.sum, coord.grd.v, method="bilinear")
 u.abs[] <- extract(u.sum.abs, coord.grd.u, method="bilinear")
@@ -336,14 +340,17 @@ res.uv <- abs.uv-mean.uv
 h2 <- empty.roms.ra
 h2[] <- h[]
 h2[is.na(mean.uv)] <- NA
+sa[] <- extract(salt, coordinates(h), method="bilinear")
+te[] <- extract(temp, coordinates(h), method="bilinear")
+se[] <- extract(settle6, coordinates(h), method="bilinear")
 
 ## resample to standard 500m resolution of other environmental variables
 mean.uv_500 <- resample(mean.uv,r)
 abs.uv_500 <- resample(abs.uv,r)
 res.uv_500 <- resample(res.uv,r)
-t_500 <- resample(temp,r)
-s_500 <- resample(salt,r)
-settle6_500 <- resample(settle6,r)
+t_500 <- resample(te,r)
+s_500 <- resample(sa,r)
+settle6_500 <- resample(se,r)
 
 ## shelf only
 mean.uv_500_shelf <- mean.uv_500
@@ -353,29 +360,29 @@ t_500_shelf <- t_500
 s_500_shelf <- s_500
 settle6_500_shelf <- settle6_500
 
-mean.uv_500_shelf[is.na(r.depth)] <- NA
-abs.uv_500_shelf[is.na(r.depth)] <- NA
-res.uv_500_shelf[is.na(r.depth)] <- NA
-t_500_shelf[is.na(r.depth)] <- NA
-s_500_shelf[is.na(r.depth)] <- NA
-settle6_500_shelf[is.na(r.depth)] <- NA
+mean.uv_500_shelf[is.na(r)] <- NA
+abs.uv_500_shelf[is.na(r)] <- NA
+res.uv_500_shelf[is.na(r)] <- NA
+t_500_shelf[is.na(r)] <- NA
+s_500_shelf[is.na(r)] <- NA
+settle6_500_shelf[is.na(r)] <- NA
 
 ## write rasters to file
-writeRaster(mean.uv_500,       filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.Rdata"))
-writeRaster(mean.uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.Rdata"))
-writeRaster(abs.uv_500,       filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.Rdata"))
-writeRaster(abs.uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.Rdata"))
-writeRaster(res.uv_500,       filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.Rdata"))
-writeRaster(res.uv_500_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.Rdata"))
-writeRaster(temp,            filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.Rdata"))
-writeRaster(t_500,        filename=paste0(env.derived,string.chr,"500m_waom4k_seafloortemperature.Rdata"))
-writeRaster(t_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloortemperature.Rdata"))
-writeRaster(salt,            filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.Rdata"))
-writeRaster(s_500,        filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.Rdata"))
-writeRaster(s_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.Rdata"))
-writeRaster(settle6,            filename=paste0(env.derived,string.chr,"waom4k_settle6test.Rdata"))
-writeRaster(settle6_500,        filename=paste0(env.derived,string.chr,"500m_waom4k_settle6test.Rdata"))
-writeRaster(settle6_500_shelf,  filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_settle6test.Rdata"))
+writeRaster(mean.uv_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.Rdata"))
+writeRaster(mean.uv_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.Rdata"))
+writeRaster(abs.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.Rdata"))
+writeRaster(abs.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.Rdata"))
+writeRaster(res.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.Rdata"))
+writeRaster(res.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.Rdata"))
+writeRaster(temp,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.Rdata"))
+writeRaster(t_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloortemperature.Rdata"))
+writeRaster(t_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloortemperature.Rdata"))
+writeRaster(salt,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.Rdata"))
+writeRaster(s_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.Rdata"))
+writeRaster(s_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.Rdata"))
+writeRaster(settle6,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_settle6test.Rdata"))
+writeRaster(settle6_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_settle6test.Rdata"))
+writeRaster(settle6_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_settle6test.Rdata"))
 
 
 # #NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  

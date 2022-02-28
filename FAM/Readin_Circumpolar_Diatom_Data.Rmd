@@ -1,5 +1,5 @@
 ---
-title: "DeadIn Circumpolar Diatom Data"
+title: "DeadIn Circumpolar TOC Data"
 author: "Jan Jansen"
 date: "19/07/2021"
 output: html_document

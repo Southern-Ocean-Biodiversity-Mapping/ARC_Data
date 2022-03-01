@@ -7,8 +7,8 @@ library(data.table)
 library(proj4)
 library(stringr)
 
-#user = "Jan"
-user = "charley"
+user = "Jan"
+#user = "charley"
 #user="nicole"
 
 if (user == "Jan") {
@@ -254,6 +254,11 @@ image_metadata$gear[image_metadata$survey=="JR15005"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
 
+for(i in c(1,8,15)){
+  image_metadata[,i] <- as.factor(image_metadata[,i])
+}
+
+
 ### 3) Generate Counts data  ----
 
 ### 3a) site(image)-by-species matrix
@@ -407,6 +412,10 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR262"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR15005"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
+
+for(i in c(1,10:17,19)){
+  cell_metadata[,i] <- as.factor(cell_metadata[,i])
+}
 
 ### 5) save output----
 cover_cells <- dat_cover_cell_by_species[-which(is.na(rowSums(dat_cover_cell_by_species))),]

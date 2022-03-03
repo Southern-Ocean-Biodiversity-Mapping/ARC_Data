@@ -57,10 +57,13 @@ stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS8
 
 #This is a very large file
 ## seaice data needs login...see separate code file for sea-ice
-src <- bind_rows(sources("NSIDC SMMR-SSM/I Nasateam sea ice concentration", hemisphere = "south", time_resolutions = "day", years = c(2013)),
-                 sources("Southern Ocean summer chlorophyll-a climatology (Johnson)"),
+# src <- bind_rows(sources("NSIDC SMMR-SSM/I Nasateam sea ice concentration", hemisphere = "south", time_resolutions = "day", years = c(2013)),
+#                  sources("Southern Ocean summer chlorophyll-a climatology (Johnson)"),
+#                  sources("IBCSO bathymetry"),
+#                  bb_modify_source(sources("Oceandata MODIS Aqua Level-3 mapped daily 4km chl-a"), method = list(search = "A2014*L3m_DAY_CHL_chlor_a_4km.nc")))
+src <- bind_rows(sources("Southern Ocean summer chlorophyll-a climatology (Johnson)"),
                  sources("IBCSO bathymetry"),
-                 bb_modify_source(sources("Oceandata MODIS Aqua Level-3 mapped daily 4km chl-a"), method = list(search = "A2014*L3m_DAY_CHL_chlor_a_4km.nc")))
+                 )
 result <- bb_get(src, local_file_root = AAD_dir, clobber = 0, verbose = TRUE, confirm = NULL)                                                                 
 
 
@@ -280,7 +283,7 @@ writeRaster(npp_su_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP
 #### 5) ROMS Currents & Temperature & FAM ----
 
 ## 4k models for now, 2k to follow, and proper FAM to follow!!
-data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_float_test8b/"
+data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_float_test8/"
 #### load lon/lat information from ROMS-grid
 grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
 lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
@@ -297,8 +300,6 @@ h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
 salt <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="salt", level=1)
 #temperature
 temp <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="temp", level=1)
-#settling FAM
-settle6 <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=1)
 #seafloor currents (seafloor-layer is 1)
 u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
 v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)
@@ -321,7 +322,7 @@ coord.grd.u[,1] <- coordinates(h)[,1]-0.5
 coord.grd.v <- coordinates(h)
 coord.grd.v[,2] <- coordinates(h)[,2]-0.5
 ## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
-u <- v <- u.abs <- v.abs <- u31 <- v31 <- sa <- te <- se <- empty.roms.ra
+u <- v <- u.abs <- v.abs <- u31 <- v31 <- sa <- te <- se <- su <- fl <- empty.roms.ra
 u[] <- extract(u.sum, coord.grd.u, method="bilinear")
 v[] <- extract(v.sum, coord.grd.v, method="bilinear")
 u.abs[] <- extract(u.sum.abs, coord.grd.u, method="bilinear")
@@ -336,13 +337,32 @@ mean.uv <- sqrt(u^2+v^2)
 abs.uv <- sqrt(u.abs^2+v.abs^2)
 #residual seafloor current speed
 res.uv <- abs.uv-mean.uv
+
+#settling FAM
+susp_08_full <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_08", level=1)*86400
+settle_08_full <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)*86400
+susp_08 <- susp_08_full[[31]]
+settle_08 <- settle_08_full[[31]]-settle_08_full[[1]]
+flux_08 <- susp_08-settle_08
+
+# susp_his_08 <-  brick(empty.roms.ra,nl=nlayers(u.raw))
+# settle_08_full <- brick(empty.roms.ra,nl=nlayers(u.raw))
+# #settle6 <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="sand_06", level=1)
+# susp_his_08[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_08", level=1)[]*86400
+# settle_08_full[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)[]*86400
+# susp_08 <- susp_his_08[[31]]
+# settle_08 <- settle_08_full[[31]]-settle_08_full[[1]]
+# flux_08 <- susp_08-settle_08
+
 ## remove inland values for depth
 h2 <- empty.roms.ra
 h2[] <- h[]
 h2[is.na(mean.uv)] <- NA
 sa[] <- extract(salt, coordinates(h), method="bilinear")
 te[] <- extract(temp, coordinates(h), method="bilinear")
-se[] <- extract(settle6, coordinates(h), method="bilinear")
+se[] <- extract(settle_08, coordinates(h), method="bilinear")
+su[] <- extract(susp_08, coordinates(h), method="bilinear")
+fl[] <- extract(flux_08, coordinates(h), method="bilinear")
 
 ## resample to standard 500m resolution of other environmental variables
 mean.uv_500 <- resample(mean.uv,r)
@@ -350,7 +370,9 @@ abs.uv_500 <- resample(abs.uv,r)
 res.uv_500 <- resample(res.uv,r)
 t_500 <- resample(te,r)
 s_500 <- resample(sa,r)
-settle6_500 <- resample(se,r)
+settle_08_500 <- resample(se,r)
+susp_08_500 <- resample(su,r)
+flux_08_500 <- resample(fl,r)
 
 ## shelf only
 mean.uv_500_shelf <- mean.uv_500
@@ -358,14 +380,18 @@ abs.uv_500_shelf <- abs.uv_500
 res.uv_500_shelf <- res.uv_500
 t_500_shelf <- t_500
 s_500_shelf <- s_500
-settle6_500_shelf <- settle6_500
+settle_08_500_shelf <- settle_08_500
+susp_08_500_shelf <- susp_08_500
+flux_08_500_shelf <- flux_08_500
 
 mean.uv_500_shelf[is.na(r)] <- NA
 abs.uv_500_shelf[is.na(r)] <- NA
 res.uv_500_shelf[is.na(r)] <- NA
 t_500_shelf[is.na(r)] <- NA
 s_500_shelf[is.na(r)] <- NA
-settle6_500_shelf[is.na(r)] <- NA
+settle_08_500_shelf[is.na(r)] <- NA
+susp_08_500_shelf[is.na(r)] <- NA
+flux_08_500_shelf[is.na(r)] <- NA
 
 ## write rasters to file
 writeRaster(mean.uv_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.Rdata"))
@@ -380,9 +406,15 @@ writeRaster(t_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string
 writeRaster(salt,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.Rdata"))
 writeRaster(s_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.Rdata"))
 writeRaster(s_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.Rdata"))
-writeRaster(settle6,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_settle6test.Rdata"))
-writeRaster(settle6_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_settle6test.Rdata"))
-writeRaster(settle6_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_settle6test.Rdata"))
+writeRaster(settle_08,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_settle08.Rdata"))
+writeRaster(settle_08_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_settle08.Rdata"))
+writeRaster(settle_08_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_settle08.Rdata"))
+writeRaster(susp_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_susp08.Rdata"))
+writeRaster(susp_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_susp08.Rdata"))
+writeRaster(susp_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_susp08.Rdata"))
+writeRaster(flux_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_flux08.Rdata"))
+writeRaster(flux_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_flux08.Rdata"))
+writeRaster(flux_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_flux08.Rdata"))
 
 
 # #NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  

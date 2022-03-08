@@ -81,7 +81,7 @@ dat_counts$Label <- gsub(">","__",dat_counts$Label)
 dat_counts$Label <- gsub("-","_",dat_counts$Label)
 
 ## load %-cover image annotations
-dat_cover.raw <- read_csv(paste0(ann.dir,"Cover/Circumpolar_DownwardImages_PointScore_Annotations_20220210.csv"))
+dat_cover.raw <- read_csv(paste0(ann.dir,"Cover/Circumpolar_DownwardImages_PointScore_Annotations_20220307.csv"))
 #remove uncorrected labels
 dat_cover <- dat_cover.raw[,-c(4,8,11)]
 names(dat_cover)[8] <- "Label"

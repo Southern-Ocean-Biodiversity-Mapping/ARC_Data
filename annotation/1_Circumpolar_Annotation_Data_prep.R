@@ -254,9 +254,9 @@ image_metadata$gear[image_metadata$survey=="JR15005"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
 
-for(i in c(1,8,15)){
-  image_metadata[,i] <- as.factor(image_metadata[,i])
-}
+# for(i in c(1,8,15)){
+#   image_metadata[,i] <- as.factor(image_metadata[,i])
+# }
 
 
 ### 3) Generate Counts data  ----
@@ -284,30 +284,39 @@ rownames(dat_counts_cell_by_species) <- ids
 colnames(dat_counts_cell_by_species) <- labs.counts
 counts_N <- rep(NA, length(ids))
 counts_area <- rep(NA, length(ids))
-counts_cells_survey <- rep(NA, length(ids))
-counts_cells_transect1 <- rep(NA, length(ids))
+counts_cells_survey1 <- rep(NA, length(ids))
+counts_cells_survey2 <- rep(NA, length(ids))
+counts_cells_transect1 <- as.character(rep(NA, length(ids)))
 counts_cells_transect2 <- rep(NA, length(ids))
 counts_cells_transect3 <- rep(NA, length(ids))
 
 for(i in 1:length(ids)){
-  #print(i)
-  sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$counts=="yes") # find images that are part of that cell and annotated in biigle
-  if(length(sel.r)==0) next # if none of the images are annotated, skip to the next iteration
+  sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$counts=="yes")  # find images that are part of that cell and annotated in biigle
+  if(length(sel.r)==0){ # if none of the images are annotated, skip to the next iteration
+    #print("0")
+    next
+  }
   sel.names <- image_metadata$Filename.standardised[sel.r] # find the names of these images
   dat.temp <- dat_counts_image_by_species[which(nams.counts%in%sel.names),] # find annotations from these images from the image-dataset
-  counts_N[i] <-  nrow(dat.temp)
-  counts_area[i] <- sum(image_metadata$area[sel.r])
-  dat_counts_cell_by_species[i,] <- colSums(dat.temp)
-  ## check if all images are from the same survey and same transect
-  counts_cells_survey[i] <- unique(image_metadata$survey[sel.r])
-  counts_cells_transect1[i] <- unique(image_metadata$transectID[sel.r])[1]
-  print(length(unique(image_metadata$transectID[sel.r])))
+  counts_N[i] <-  nrow(dat.temp) # how many images are there
+  counts_area[i] <- sum(image_metadata$area[sel.r]) # total area across these images
+  dat_counts_cell_by_species[i,] <- colSums(dat.temp) # how many individuals per species
+  ## check if all images are from the same survey
+  counts_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
+  print(counts_cells_survey1[i])
+  if(length(unique(image_metadata$survey[sel.r]))>1){
+    message("Two surveys!")
+    counts_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
+  }
+  ## ... and same transect
+  counts_cells_transect1[i] <- unique(as.character(image_metadata$transectID)[sel.r])[1]
+  message(counts_cells_transect1[i])
+  # print(length(unique(as.character(image_metadata$transectID)[sel.r])))
   if(length(unique(image_metadata$transectID[sel.r]))>1){
-    counts_cells_transect2[i] <- unique(image_metadata$transectID[sel.r])[2]
+    counts_cells_transect2[i] <- unique(as.character(image_metadata$transectID)[sel.r])[2]
     if(length(unique(image_metadata$transectID[sel.r]))>2){
-      counts_cells_transect3[i] <- unique(image_metadata$transectID[sel.r])[3]
+      counts_cells_transect3[i] <- unique(as.character(image_metadata$transectID)[sel.r])[3]
     }}
-  
 }
 
 ### 4) %-cover ----
@@ -336,7 +345,8 @@ rownames(dat_cover_cell_by_species) <- ids
 colnames(dat_cover_cell_by_species) <- labs.cov
 cover_N <- rep(NA, length(ids))
 cover_area <- rep(NA, length(ids))
-cover_cells_survey <- rep(NA, length(ids))
+cover_cells_survey1 <- rep(NA, length(ids))
+cover_cells_survey2 <- rep(NA, length(ids))
 cover_cells_transect1 <- rep(NA, length(ids))
 cover_cells_transect2 <- rep(NA, length(ids))
 cover_cells_transect3 <- rep(NA, length(ids))
@@ -349,13 +359,20 @@ for(i in 1:length(ids)){
   cover_N[i] <-  nrow(dat.temp)
   cover_area[i] <- sum(image_metadata$area[sel.r])
   dat_cover_cell_by_species[i,] <- colSums(dat.temp)
-  ## check if all images are from the same survey and same transect
-  cover_cells_survey[i] <- unique(image_metadata$survey[sel.r])
-  cover_cells_transect1[i] <- unique(image_metadata$transectID[sel.r])[1]
+  ## check if all images are from the same survey
+  
+  ## check if all images are from the same survey
+  cover_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
+  if(length(unique(image_metadata$survey[sel.r]))>1){
+    message("Two surveys!")
+    cover_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
+  }
+  ## ... and same transect
+  cover_cells_transect1[i] <- unique(as.character(image_metadata$transectID)[sel.r])[1]
   if(length(unique(image_metadata$transectID[sel.r]))>1){
-    cover_cells_transect2[i] <- unique(image_metadata$transectID[sel.r])[2]
+    cover_cells_transect2[i] <- unique(as.character(image_metadata$transectID)[sel.r])[2]
     if(length(unique(image_metadata$transectID[sel.r]))>2){
-      cover_cells_transect3[i] <- unique(image_metadata$transectID[sel.r])[3]
+      cover_cells_transect3[i] <- unique(as.character(image_metadata$transectID)[sel.r])[3]
     }}
 }
 
@@ -365,8 +382,8 @@ cell.coords <- xyFromCell(r2, ids)
 cell.lonlat <- project(cell.coords, proj=crs(r2), inverse=TRUE) 
 
 cell_metadata <- data.frame(cbind(ids,cell.lonlat,cell.coords,cover_N, counts_N, cover_area, counts_area, 
-                                  cover_cells_survey, cover_cells_transect1, cover_cells_transect2, cover_cells_transect3, 
-                                  counts_cells_survey, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3))
+                                  cover_cells_survey1, cover_cells_transect1, cover_cells_transect2, cover_cells_transect3, 
+                                  counts_cells_survey1, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3))
 names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y", "cover_N", "counts_N", "cover_area", "counts_area",
                           "cover_cells_survey", "cover_cells_transect1", "cover_cells_transect2", "cover_cells_transect3", 
                           "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3")
@@ -413,8 +430,12 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR15005"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
 
+## change character data to factors
 for(i in c(1,10:17,19)){
   cell_metadata[,i] <- as.factor(cell_metadata[,i])
+}
+for(i in c(1,8,15)){
+  image_metadata[,i] <- as.factor(image_metadata[,i])
 }
 
 ### 5) save output----

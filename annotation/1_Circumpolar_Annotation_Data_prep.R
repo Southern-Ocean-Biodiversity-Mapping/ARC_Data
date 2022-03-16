@@ -437,6 +437,10 @@ for(i in c(1,10:17,19)){
 for(i in c(1,8,15)){
   image_metadata[,i] <- as.factor(image_metadata[,i])
 }
+## change character data to numeric
+for(i in c(2:9)){
+  cell_metadata[,i] <- as.numeric(cell_metadata[,i])
+}
 
 ### 5) save output----
 cover_cells <- dat_cover_cell_by_species[-which(is.na(rowSums(dat_cover_cell_by_species))),]

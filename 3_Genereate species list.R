@@ -2,6 +2,7 @@
 #### This code converts removes 'unscorable' points and calculates prevalence on overall cover  ###
 ### This forms initial species list to make decisions about which species to keep/merge/exclude ###
 ###                                                                                             ###
+### file with comments is read back in and exclusions/ aggregations made to form final datafile ###
 ### N.Hill- Modified Jan 2022                                                                   ###
 ###################################################################################################
 
@@ -10,6 +11,7 @@
 # 1) libraries and paths 
 library(tidyverse)
 library(writexl)
+library(readxl)
 
 sci.dir <-      "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
 env.derived <-  paste0(sci.dir,"data_environmental/derived/")
@@ -18,7 +20,6 @@ ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
 
 
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
-#load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
 
 
 ## 2) COVER ----
@@ -79,3 +80,64 @@ write_xlsx(x= list(COVER_prevalence=cover_prev,
           COUNT_prevalence= count_prev,
           COUNT_totAb= count_ab_overall),
           path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"))
+
+
+#######################################################################
+
+## 5) Read commented file back in and make exclusions and aggregations
+# blanks read in as NAs
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
+
+
+## 5a) cover data
+mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"),
+sheet=1)
+names(mod_cover_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
+
+
+#reformat to long, merge, change names and convert back to wide
+cover_cells_long<-cover_cells %>%
+  mutate(cellID=as.numeric(rownames(cover_cells)))  %>% #add cellID
+  pivot_longer( cols=`1Sub_Fine`:Echinoderms_Crinoids_Stalked, 
+                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join( mod_cover_list[,c("Label", "Merge_2pc")])
+
+cover_cells_long$new<-  ifelse(!is.na(cover_cells_long$Merge_2pc), cover_cells_long$Merge_2pc, cover_cells_long$Label)
+
+cover_cells_renamed<-pivot_wider(cover_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+
+#remove species to exclude
+cover_mod<-cover_cells_renamed %>%
+  select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
+
+#join back to cell metadata and environmental data
+cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
+
+
+## 5b) count data
+mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"),
+                          sheet=3)
+names(mod_count_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
+
+#reformat to long, merge, change names and convert back to wide
+count_cells_long<-count_cells %>%
+  mutate(cellID=as.numeric(rownames(count_cells)))  %>% #add cellID
+  pivot_longer( cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+                        names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join( mod_count_list[,c("Label", "Merge_2pc")])
+
+count_cells_long$new<-  ifelse(!is.na(count_cells_long$Merge_2pc), count_cells_long$Merge_2pc, count_cells_long$Label)
+
+count_cells_renamed<-pivot_wider(count_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+
+#remove species to exclude
+count_mod<-count_cells_renamed %>%
+  select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
+
+#join back to cell metadata and environmental data
+count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
+
+
+
+# save outputs
+save(cover_mod, cover_cells_env, count_mod, count_cells_env, file=paste0(ARC_Data.dir,"Cell_level_bioenv_2pc.RData"))

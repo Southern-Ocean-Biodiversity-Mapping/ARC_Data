@@ -98,14 +98,39 @@ for(i in 2:length(dat.list.clean)){
   names(dat.temp) <- c("Filename.standardised","lon","lat","transectID")
   image_metadata <- rbind(image_metadata,dat.temp)
 }
-image_metadata$Filename.standardised <- gsub(".tif",".jpg",image_metadata$Filename.standardised)
+# image_metadata$Filename.standardised <- gsub(".tif",".jpg",image_metadata$Filename.standardised)
 image_metadata$proj_coord_x <- project(image_metadata[,2:3], proj=crs(r2))$x
 image_metadata$proj_coord_y <- project(image_metadata[,2:3], proj=crs(r2))$y
 image_metadata$cellID <- extract(r2, image_metadata[,5:6], cellnumbers=TRUE)[,1]
 
-image_metadata$survey <- str_split(image_metadata$Filename.standardised,"_", simplify=T)[,1]
+name_split <- str_split(image_metadata$Filename.standardised,"_", simplify=T)
+image_metadata$survey <- name_split[,1]
+image_metadata$transectID_full <- paste0(name_split[,1],"_",name_split[,2])
+image_metadata$transectID_full <- as.factor(image_metadata$transectID_full)
 
 ids <- unique(image_metadata$cellID)
+
+# ## checking if raster cells match up with transects
+# r3 <- r2
+# r3[setdiff(seq_len(ncell(r3)), ids)] <- NA
+# r3[!is.na(r3)] <- 1
+# cell_outlines <- rasterToPolygons(r3, dissolve=TRUE)
+# 
+# plot(r2,xlim=c(-2480000,-2460000),ylim=c(1260000,1280000))
+# plot(cell_outlines, add=TRUE, border='red', lwd=2)
+# points(image_metadata[which(image_metadata$survey=="CRS"),5:6])
+# points(image_metadata[which(image_metadata$survey=="CRS"&image_metadata$cover=="yes"),5:6],col="blue")
+# 
+# plot(r2,xlim=c(-2475000,-2473000),ylim=c(1273000,1276000))
+# plot(cell_outlines, add=TRUE, border='red', lwd=2)
+# points(image_metadata[which(image_metadata$survey=="CRS"),5:6])
+# points(image_metadata[which(image_metadata$survey=="CRS"&image_metadata$cover=="yes"),5:6],col="blue", pch=15)
+# 
+# plot(r2,xlim=c(-2478000,-2476000),ylim=c(1267500,1270500))
+# plot(cell_outlines, add=TRUE, border='red', lwd=2)
+# points(image_metadata[which(image_metadata$survey=="CRS"),5:6])
+# points(image_metadata[which(image_metadata$survey=="CRS"&image_metadata$cover=="yes"),5:6],col="blue", pch=15)
+# text(image_metadata[which(image_metadata$survey=="CRS"),5:6], labels=image_metadata$transectID[which(image_metadata$survey=="CRS")])
 
 # Init area and area_source
 image_metadata$area <- NA
@@ -309,13 +334,13 @@ for(i in 1:length(ids)){
     counts_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
   }
   ## ... and same transect
-  counts_cells_transect1[i] <- unique(as.character(image_metadata$transectID)[sel.r])[1]
+  counts_cells_transect1[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[1]
   message(counts_cells_transect1[i])
-  # print(length(unique(as.character(image_metadata$transectID)[sel.r])))
-  if(length(unique(image_metadata$transectID[sel.r]))>1){
-    counts_cells_transect2[i] <- unique(as.character(image_metadata$transectID)[sel.r])[2]
-    if(length(unique(image_metadata$transectID[sel.r]))>2){
-      counts_cells_transect3[i] <- unique(as.character(image_metadata$transectID)[sel.r])[3]
+  # print(length(unique(as.character(image_metadata$transectID_full)[sel.r])))
+  if(length(unique(image_metadata$transectID_full[sel.r]))>1){
+    counts_cells_transect2[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[2]
+    if(length(unique(image_metadata$transectID_full[sel.r]))>2){
+      counts_cells_transect3[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[3]
     }}
 }
 
@@ -368,11 +393,11 @@ for(i in 1:length(ids)){
     cover_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
   }
   ## ... and same transect
-  cover_cells_transect1[i] <- unique(as.character(image_metadata$transectID)[sel.r])[1]
-  if(length(unique(image_metadata$transectID[sel.r]))>1){
-    cover_cells_transect2[i] <- unique(as.character(image_metadata$transectID)[sel.r])[2]
-    if(length(unique(image_metadata$transectID[sel.r]))>2){
-      cover_cells_transect3[i] <- unique(as.character(image_metadata$transectID)[sel.r])[3]
+  cover_cells_transect1[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[1]
+  if(length(unique(image_metadata$transectID_full[sel.r]))>1){
+    cover_cells_transect2[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[2]
+    if(length(unique(image_metadata$transectID_full[sel.r]))>2){
+      cover_cells_transect3[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[3]
     }}
 }
 

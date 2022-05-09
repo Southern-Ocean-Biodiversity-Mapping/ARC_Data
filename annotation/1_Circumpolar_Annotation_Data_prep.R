@@ -42,6 +42,8 @@ if (user == "nicole") {
   
 }
 
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
 ## R-drive paths
 RS.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
 ann.dir <- paste0(RS.dir,"AnnotationLibrary_AllFinishedSurveys/")
@@ -65,7 +67,7 @@ source(paste0(tools.dir,"bubbleplot.R"))
 
 
 
-### 2) Data Preparation - Cover is a corrected file, but counts is still BASED ON UNCORRECTED INDIVIDUAL SURVEY FILES ----
+### 2) Data Preparation
 
 ## load area estimates for each survey (?Why this comment: "no separate area-files for PS96 & PS18")
 area_xls_files <- list.files(RS.dir,full.names=TRUE,pattern=".xlsx")
@@ -216,20 +218,39 @@ for (survey_current in unique(image_metadata$survey)) {
 }
 
 #
+# which images have been annotated by which platform?
 image_metadata$cover <- "no"
 image_metadata$counts <- "no"
-# find matching filenames for cover
+
+# find matching filenames for cover (simple: all images in coralnet)
 idx <- match(image_metadata$Filename.standardised,unique(dat_cover$Name))
 fill.idx <- which(!is.na(idx))
 search.idx <- idx[fill.idx]
 image_metadata$cover[fill.idx] <- "yes" # replace area values where filenames match
-# find matching filenames for counts
-idx <- match(image_metadata$Filename.standardised,unique(dat_counts$filename))
-fill.idx <- which(!is.na(idx))
-search.idx <- idx[fill.idx]
-image_metadata$counts[fill.idx] <- "yes" # replace area values where filenames match
-# check:
-image_metadata[which(image_metadata$cover=="yes"),]
+
+## check if we selected all CoralNet images:
+not.sel <- which(unique(dat_cover$Name)%!in%image_metadata$Filename.standardised)
+unique(dat_cover$Name)[not.sel] ## some transects show up that have been disregarded but still uploaeded to coralnet
+
+# find matching filenames for counts (not simple, images might have been annotated but no animals found, therefore no annotations...!)
+# idx <- match(image_metadata$Filename.standardised,unique(dat_counts$filename))
+# fill.idx <- which(!is.na(idx))
+# search.idx <- idx[fill.idx]
+# image_metadata$counts[fill.idx] <- "yes" # replace area values where filenames match
+t.lvl <- levels(image_metadata$transectID_full)
+for(i in 1:length(t.lvl)){
+  print(i)
+  sel <- which(image_metadata$transectID_full==t.lvl[i]) # select the transect
+  sel.cov <- which(image_metadata$cover[sel]=="yes") # only images annotated in cover
+  cts.img.sel <- order(image_metadata$Filename.standardised[sel[sel.cov]]) # order them by filename
+  cts.length <- 1:ceiling(length(sel.cov)/2) # calculate how many images have been annotated in Biigle
+  cts.files <- image_metadata$Filename.standardised[sel[sel.cov]][cts.img.sel][cts.length] # check filenames
+  #print(cts.files)
+  image_metadata$counts[sel[sel.cov]][cts.img.sel][cts.length] <- "yes"
+}
+## check if we selected all Biigle images:
+not.sel <- which(unique(dat_counts$filename)%!in%image_metadata$Filename.standardised)
+unique(dat_counts$filename)[not.sel]  ## some transects show up that have been disregarded but still uploaeded to coralnet
 
 # Add image quality score
 # Read csv file
@@ -385,19 +406,21 @@ for(i in 1:length(ids)){
   cover_area[i] <- sum(image_metadata$area[sel.r])
   dat_cover_cell_by_species[i,] <- colSums(dat.temp)
   ## check if all images are from the same survey
-  
-  ## check if all images are from the same survey
   cover_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
   if(length(unique(image_metadata$survey[sel.r]))>1){
     message("Two surveys!")
     cover_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
   }
   ## ... and same transect
-  cover_cells_transect1[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[1]
-  if(length(unique(image_metadata$transectID_full[sel.r]))>1){
-    cover_cells_transect2[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[2]
-    if(length(unique(image_metadata$transectID_full[sel.r]))>2){
-      cover_cells_transect3[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[3]
+  cell.transects <- unique(as.character(image_metadata$transectID_full)[sel.r])
+  cover_cells_transect1[i] <- cell.transects[1]
+  t.per.cell <- length(cell.transects)
+  if(t.per.cell>1){
+    cover_cells_transect2[i] <- cell.transects[2]
+    if(t.per.cell>2){
+      message("Three transects!")
+      message(t.per.cell)
+      cover_cells_transect3[i] <- cell.transects[3]
     }}
 }
 
@@ -497,6 +520,44 @@ points(image_metadata[,5:6])
 points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
 points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
 text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
+
+### 6c) transects that were faulty before: (e.g. CRS 1207, 1217)
+sel <- which(image_metadata$transectID_full=="CRS_1207")
+sel.cov <- which(image_metadata$cover[sel]=="yes")
+sel.cts <- which(image_metadata$counts[sel]=="yes")
+plot(r2, xlim=c(-2378000,-2374000), ylim=c(876000,880000))
+points(image_metadata[sel,5:6])
+points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
+points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
+#text(image_metadata[sel[sel.cov],5:6], labels=image_metadata[sel[sel.cov],1], adj=-0.2)
+
+sel <- which(image_metadata$transectID_full=="CRS_1217")
+sel.cov <- which(image_metadata$cover[sel]=="yes")
+sel.cts <- which(image_metadata$counts[sel]=="yes")
+plot(r2, xlim=c(-2443000,-2441000), ylim=c(1021000,1023000))
+points(image_metadata[sel,5:6])
+points(image_metadata[sel,5:6])
+points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
+points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
+## add other transects
+points(image_metadata[,5:6])
+points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
+points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
+#text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
+
+sel <- which(image_metadata$transectID_full=="LMG1311_3")
+sel.cov <- which(image_metadata$cover[sel]=="yes")
+sel.cts <- which(image_metadata$counts[sel]=="yes")
+plot(r2, xlim=c(-2492000,-2487000), ylim=c(1268000,1273000))
+points(image_metadata[sel,5:6])
+points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
+points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
+## add other transects
+points(image_metadata[,5:6])
+points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
+points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
+#text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
+
 
 
 #### aggregated cover of some living things on a single transect

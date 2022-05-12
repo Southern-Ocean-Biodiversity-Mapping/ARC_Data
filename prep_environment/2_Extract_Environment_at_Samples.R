@@ -84,11 +84,13 @@ geomorph_cat<-levels(env_stack[[57]])[[1]]
 ## 3) Match environmental data to image data (at cell level) ----
 #can run a image level too if needed
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
-# #for some reason nearly every column of cell_metadata are now character strings
- cell_metadata<- cell_metadata %>% 
-   mutate(across(cellID:counts_area, as.numeric))%>%
-   mutate(across(cover_cells_transect1:cover_cells_transect3, as.numeric))%>%
-   mutate(across(counts_cells_transect1:counts_cells_transect3, as.numeric))
+
+
+ #for some reason nearly every column of cell_metadata are now character strings
+ #cell_metadata<- cell_metadata %>% 
+#   mutate(across(cellID:counts_area, as.numeric))%>%
+#   mutate(across(cover_cells_transect1:cover_cells_transect3, as.numeric))%>%
+#   mutate(across(counts_cells_transect1:counts_cells_transect3, as.numeric))
 
 
 # subset to only cells that have scored images
@@ -108,14 +110,14 @@ cell_metadata_env<- rename(cell_metadata_env, geomorph_cat=VALUE)
 ## 4) Merge annotation save combined Annotation and environmental data as RData file
 cover_cells_env<- left_join(cell_metadata_env,
                             cover_cells %>%
-                                      #mutate(cellID=as.factor(rownames(cover_cells))),  
-                              mutate(cellID=as.numeric(rownames(cover_cells))),
+                              mutate(cellID=as.factor(rownames(cover_cells))),  
+                              #mutate(cellID=as.numeric(rownames(cover_cells))),
                             by='cellID')
 
 count_cells_env<- right_join(cell_metadata_env,
                             count_cells %>%
-                                    #mutate(cellID=as.factor(rownames(count_cells))),
-                            mutate(cellID=as.numeric(rownames(count_cells))),
+                            mutate(cellID=as.factor(rownames(count_cells))),
+                            #mutate(cellID=as.numeric(rownames(count_cells))),
                             by='cellID')
 
 

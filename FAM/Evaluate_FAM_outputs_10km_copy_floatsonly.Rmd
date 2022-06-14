@@ -1,8 +1,8 @@
 ---
 title: "ROMS FAM 10km floats"
 author: "Jan Jansen"
-date: "20/01/2022"
 output: html_document
+keep_md: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -16,6 +16,7 @@ library(rgdal)
 
 ## data-directories
 env.raw <- "E:/science/data_environmental/raw/"
+env.dir <- "E:/science/data_environmental/"
 env.derived <- "C:/Users/jjansen/Desktop/science/data_environmental/derived/"
 AAD_dir <- paste0(env.raw,"accessed_through_R")
 ARC_data_dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/"
@@ -100,6 +101,10 @@ plot(mean.uv, breaks=breaks, col=cols, main="seafloor currents - mean")
 plot(abs.uv, breaks=breaks, col=cols, main="seafloor currents - absolute speed")
 plot(res.uv, breaks=breaks, col=cols, main="seafloor currents - residual")
 plot(uv_31, breaks=breaks, col=cols, main="seasurface currents")
+```
+
+
+```{r, fig.width=10, fig.height=8}
 ## ocean current data in the Mertz region
 cols <- rev(magma(84)) #12, 24, 48, 96
 breaks <- seq(0,2.1,length.out=85)
@@ -147,39 +152,39 @@ traj.1 <- which(traj.depthvals>=-500)
 traj.2 <- which(traj.depthvals<(-500))
 traj.3 <- which(traj.depthvals<(-1000))
 traj.4 <- which(traj.depthvals<(-2000))
-col1 <- "purple"
-col2 <- "lightskyblue"
-col3 <- "blue"
-col4 <- "black"
+col <- c("purple","lightskyblue","blue","black")
 ```
 
 ```{r, fig.width=8, fig.height=10}
 ## trajectories of 1000 floats (MERTZ)
 xlim <- c(1300000,1900000)
 ylim <- c(-2300000,-1900000)
+cex=0.2
+pch=16
 cols <- rev(magma(74))
 breaks <- seq(0,3.7,length.out=75)
 par(mfrow=c(2,1), mar=c(2,3,3,1), oma=c(0,0,0,0))
 plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - seafloor currents")
 # points(start.vals, pch=16, col="blue")
 # points(traj.vals, pch=16, col="blue", cex=0.2)
-points(start.vals, pch=16, col=col1)
-points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
-points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
-points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
-points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+points(start.vals, pch=pch, col=col[1])
+points(traj.vals[traj.1,], pch=pch, cex=cex, col=col[1])
+points(traj.vals[traj.2,], pch=pch, cex=cex, col=col[2])
+points(traj.vals[traj.3,], pch=pch, cex=cex, col=col[3])
+points(traj.vals[traj.4,], pch=pch, cex=cex, col=col[4])
+legend("topleft", legend=c("0 to 500m","500 to 1000m","1000 to 2000m",">2000m"), col=col, pch =15, bty="n")
 
 plot(uv_31, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - surface currents")
 # points(start.vals, pch=16, col="blue")
 # points(traj.vals, pch=16, col="blue", cex=0.2)
-points(start.vals, pch=16, col=col1)
-points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
-points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
-points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
-points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+points(start.vals, pch=pch, col=col[1])
+points(traj.vals[traj.1,], pch=pch, cex=cex, col=col[1])
+points(traj.vals[traj.2,], pch=pch, cex=cex, col=col[2])
+points(traj.vals[traj.3,], pch=pch, cex=cex, col=col[3])
+points(traj.vals[traj.4,], pch=pch, cex=cex, col=col[4])
 ```
 
-```{r, fig.width=6, fig.height=10}
+```{r, fig.width=7, fig.height=10}
 ## trajectories of 1000 floats (Ross Sea)
 xlim <- c(-1000000,600000)
 ylim <- c(-2300000,-1000000)
@@ -187,28 +192,28 @@ par(mfrow=c(2,1), mar=c(2,3,3,1), oma=c(0,0,0,0))
 plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - seafloor currents")
 # points(start.vals, pch=16, col="blue")
 # points(traj.vals, pch=16, col="blue", cex=0.2)
-points(start.vals, pch=16, col=col1)
-points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
-points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
-points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
-points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+points(start.vals, pch=16, col=col[1])
+points(traj.vals[traj.1,], pch=16, cex=0.2, col=col[1])
+points(traj.vals[traj.2,], pch=16, cex=0.2, col=col[2])
+points(traj.vals[traj.3,], pch=16, cex=0.2, col=col[3])
+points(traj.vals[traj.4,], pch=16, cex=0.2, col=col[4])
 plot(uv_31, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="trajectories - 100m/day - surface currents")
 # points(start.vals, pch=16, col="blue")
 # points(traj.vals, pch=16, col="blue", cex=0.2)
-points(start.vals, pch=16, col=col1)
-points(traj.vals[traj.1,], pch=16, cex=0.2, col=col1)
-points(traj.vals[traj.2,], pch=16, cex=0.2, col=col2)
-points(traj.vals[traj.3,], pch=16, cex=0.2, col=col3)
-points(traj.vals[traj.4,], pch=16, cex=0.2, col=col4)
+points(start.vals, pch=16, col=col[1])
+points(traj.vals[traj.1,], pch=16, cex=0.2, col=col[1])
+points(traj.vals[traj.2,], pch=16, cex=0.2, col=col[2])
+points(traj.vals[traj.3,], pch=16, cex=0.2, col=col[3])
+points(traj.vals[traj.4,], pch=16, cex=0.2, col=col[4])
 ```
 
-```{r, fig.width=15, fig.height=13.4}
+```{r, fig.width=10, fig.height=9}
 par(mfrow=c(1,1), mar=c(2,1,3,0), oma=c(0,0,0,0))
 plot(mean.uv, col=cols, breaks=breaks)
 points(cbind(grd.x100[91,], grd.y100[91,]), pch=16, col="blue", cex=0.2)
 ```
 
-```{r, fig.width=15, fig.height=15, eval=FALSE}
+```{r, fig.width=10, fig.height=10, eval=FALSE}
 par(mfrow=c(3,3), mar=c(2,1,3,0), oma=c(0,0,0,0))
 xlim <- c(-3000000,-1000000)
 ylim <- c(1000000,3000000)
@@ -262,10 +267,9 @@ plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 
 points(cbind(grd.x100[31,], grd.y100[31,]), pch=16, col="blue", cex=0.2)
 ```
 
+## how far have particles travelled?
 
-## endpoints coloured by how far they travelled in a month
-
-```{r, fig.width=12, fig.height=12}
+```{r}
 ## should be able to just substract positions from another at different points in time and calculate the distance
 ## but, some values are off, why? (thousands of kilometers travelled in 1 day...?) -. some boundary effects happening
 weird <- which(sqrt((grd.x100[121,]-grd.x100[122,])^2+(grd.y100[121,]-grd.y100[122,])^2)>200000)
@@ -287,6 +291,16 @@ ms1.2 <- which(move.s.1st >= 10000)
 ms1.3 <- which(move.s.1st >= 100000)
 ms1.4 <- which(move.s.1st >= 1000000)
 
+ms2.1 <- which(move.s.2nd >= 0)
+ms2.2 <- which(move.s.2nd >= 10000)
+ms2.3 <- which(move.s.2nd >= 100000)
+ms2.4 <- which(move.s.2nd >= 1000000)
+
+ms4.1 <- which(move.s.4th >= 0)
+ms4.2 <- which(move.s.4th >= 10000)
+ms4.3 <- which(move.s.4th >= 100000)
+ms4.4 <- which(move.s.4th >= 1000000)
+
 ## movement in 1 month:
 move.m.1st <- sqrt((grd.x100[121,]-grd.x100[151,])^2+(grd.y100[121,]-grd.y100[151,])^2)
 move.m.2nd <- sqrt((grd.x100[91,]-grd.x100[121,])^2+(grd.y100[91,]-grd.y100[121,])^2)
@@ -298,26 +312,182 @@ mm1.2 <- which(move.m.1st >= 5000)
 mm1.3 <- which(move.m.1st >= 10000)
 mm1.4 <- which(move.m.1st >= 50000)
 
+```
+
+## endpoints coloured by how far they travelled since the start
+
+```{r, fig.width=10, fig.height=9}
+## after how many months?
+x <- 121 ## 1 month
+y <- list(ms1.1, ms1.2, ms1.3, ms1.4)
+
+col <- c("black", "grey40", "grey60","grey80")
 par(mfrow=c(1,1), mar=c(2,1,3,0), oma=c(0,0,0,0))
 #after 1 months
 plot(mean.uv, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
-points(cbind(grd.x100[121,mm1.1], grd.y100[121,mm1.1]), pch=16, col=col1, cex=0.2)
-points(cbind(grd.x100[121,mm1.2], grd.y100[121,mm1.2]), pch=16, col=col2, cex=0.2)
-points(cbind(grd.x100[121,mm1.3], grd.y100[121,mm1.3]), pch=16, col=col3, cex=0.2)
-points(cbind(grd.x100[121,mm1.4], grd.y100[121,mm1.4]), pch=16, col=col4, cex=0.2)
+points(cbind(grd.x100[x,y[[1]]], grd.y100[x,y[[1]]]), pch=16, col=col[1], cex=0.2) ## less than 10km
+points(cbind(grd.x100[x,y[[2]]], grd.y100[x,y[[2]]]), pch=16, col=col[2], cex=0.2) ## less than 100km
+points(cbind(grd.x100[x,y[[3]]], grd.y100[x,y[[3]]]), pch=16, col=col[3], cex=0.2) ## less than 1000km
+points(cbind(grd.x100[x,y[[4]]], grd.y100[x,y[[4]]]), pch=16, col=col[4], cex=0.2) ## more than 1000km
+legend("center", legend=c("0 to 10km","10 to 100km","100 to 1000km",">1000km"), col=col, pch =15, bty="n")
 ```
+
+```{r, fig.width=10, fig.height=9}
+## after how many months?
+# x <- 121 ## 1 month
+# y <- list(ms1.1, ms1.2, ms1.3, ms1.4)
+# x <- 91 ## 2 month
+# y <- list(ms2.1,ms2.2,ms2.3,ms2.4)
+# x <- 61 ## 3 month
+x <- 31 ## 4 month
+y <- list(ms4.1,ms4.2,ms4.3,ms4.4)
+
+col <- c("black", "grey40", "grey60","grey80")
+par(mfrow=c(1,1), mar=c(2,1,3,0), oma=c(0,0,0,0))
+#after 1 months
+plot(mean.uv, col=cols, breaks=breaks, main="end-points - 4 month - 100m/day")
+points(cbind(grd.x100[x,y[[1]]], grd.y100[x,y[[1]]]), pch=16, col=col[1], cex=0.2) ## less than 10km
+points(cbind(grd.x100[x,y[[2]]], grd.y100[x,y[[2]]]), pch=16, col=col[2], cex=0.2) ## less than 100km
+points(cbind(grd.x100[x,y[[3]]], grd.y100[x,y[[3]]]), pch=16, col=col[3], cex=0.2) ## less than 1000km
+points(cbind(grd.x100[x,y[[4]]], grd.y100[x,y[[4]]]), pch=16, col=col[4], cex=0.2) ## more than 1000km
+legend("center", legend=c("0 to 10km","10 to 100km","100 to 1000km",">1000km"), col=col, pch =15, bty="n")
+```
+
+```{r, fig.width=10, fig.height=9.5}
+xlim=c(-500000,500000)
+ylim=c(-2100000,-1150000)
+
+col <- c("black", "grey40", "grey60","grey80")
+par(mfrow=c(1,1), mar=c(2,1,3,0), oma=c(0,0,0,0))
+#after 1 months
+plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 4 month - 100m/day")
+points(cbind(grd.x100[x,y[[1]]], grd.y100[x,y[[1]]]), pch=16, col=col[1], cex=1) ## less than 10km
+points(cbind(grd.x100[x,y[[2]]], grd.y100[x,y[[2]]]), pch=16, col=col[2], cex=1) ## less than 100km
+points(cbind(grd.x100[x,y[[3]]], grd.y100[x,y[[3]]]), pch=16, col=col[3], cex=1) ## less than 1000km
+points(cbind(grd.x100[x,y[[4]]], grd.y100[x,y[[4]]]), pch=16, col=col[4], cex=1) ## more than 1000km
+legend("top", legend=c("0 to 10km","10 to 100km","100 to 1000km",">1000km"), col=col, pch =15)
+```
+
+## endpoints coloured by how far they travelled in a month
+
+### number and distances travelled TO EACH CELL:
+
+```{r}
+## create a dataframe with coordinates and distance traveled, one row for each point
+dat.month1 <- data.frame(cbind(grd.x100[121,], grd.y100[121,], move.s.1st))
+names(dat.month1) <- c("x","y","distance")
+
+## identify into which cell each particle belongs
+dat.month1$cellID <- extract(mean.uv,cbind(dat.month1$x,dat.month1$y), cellnumbers=TRUE)[,1]
+
+## NAs and unique IDs
+cellID_nas <- which(is.na(dat.month1$cellID))
+cellID_unique <- unique(dat.month1$cellID[-cellID_nas][order(dat.month1$cellID[-cellID_nas])])
+
+## number of particles in each cell
+tab.count <- table(dat.month1$cellID)
+
+## summed distances travelled for all particles in each cell
+#xtabs(distance~cellID, data=dat.month1)
+tab.sum <- with(dat.month1, tapply(distance, list(cellID), FUN=sum))
+
+dat.m1 <- data.frame(cbind(cellID_unique, tab.count, tab.sum))
+
+## set NAs to zero
+count.ra <- dist.ra <- dist.ave.ra <- raster(mean.uv)
+count.ra[!is.na(mean.uv)] <- 0
+dist.ra[!is.na(mean.uv)] <- 0
+dist.ave.ra[!is.na(mean.uv)] <- 0
+
+## counts per cell
+count.ra[cellID_unique] <- dat.m1$tab.count
+## total distance per cell
+dist.ra[cellID_unique] <- dat.m1$tab.sum/1000
+## mean distance per cell
+dist.ave.ra[cellID_unique] <- (dat.m1$tab.sum/1000)/dat.m1$tab.count
+
+```
+
+### number and distances travelled FROM EACH CELL
+
+```{r}
+dat.month0 <- data.frame(cbind(grd.x100[151,], grd.y100[151,], move.s.1st))
+names(dat.month0) <- c("x","y","distance")
+
+## identify into which cell each particle belongs
+dat.month0$cellID <- extract(mean.uv,cbind(dat.month0$x,dat.month0$y), cellnumbers=TRUE)[,1]
+
+## NAs and unique IDs
+cellID_nas <- which(is.na(dat.month0$cellID))
+cellID_unique <- unique(dat.month0$cellID[-cellID_nas][order(dat.month0$cellID[-cellID_nas])])
+
+## number of particles in each cell
+tab.count <- table(dat.month0$cellID)
+
+## summed distances travelled for all particles in each cell
+#xtabs(distance~cellID, data=dat.month1)
+tab.sum <- with(dat.month0, tapply(distance, list(cellID), FUN=sum))
+
+dat.m0 <- data.frame(cbind(cellID_unique, tab.count, tab.sum))
+
+## set NAs to zero
+count0.ra <- dist0.ra <- dist0.ave.ra <- raster(mean.uv)
+count0.ra[!is.na(mean.uv)] <- 0
+dist0.ra[!is.na(mean.uv)] <- 0
+dist0.ave.ra[!is.na(mean.uv)] <- 0
+
+## counts per cell
+count0.ra[cellID_unique] <- dat.m0$tab.count
+## total distance per cell
+dist0.ra[cellID_unique] <- dat.m0$tab.sum/1000
+## mean distance per cell
+dist0.ave.ra[cellID_unique] <- (dat.m0$tab.sum/1000)/dat.m0$tab.count
+```
+
+### Ross Sea only:
+
+```{r, fig.height=7}
+xlim=c(-500000,500000)
+ylim=c(-2100000,-1150000)
+par(mfrow=c(2,2), mar=c(4,3,3,2))
+plot(count.ra, xlim=xlim, ylim=ylim, main="counts per cell")
+plot(dist.ra, xlim=xlim, ylim=ylim, main="total distance per cell")
+plot(dist.ave.ra, xlim=xlim, ylim=ylim, main="sink: average distance to each cell (seafloor)")
+plot(dist0.ave.ra, xlim=xlim, ylim=ylim, main="source: average distance from each cell (surface)")
+```
+
+```{r, fig.height=6}
+par(mfrow=c(1,1), mar=c(4,3,3,2))
+plot(dist0.ave.ra-dist.ave.ra, xlim=xlim, ylim=ylim, main="source minus sink")
+```
+
+### Mertz only:
+
+```{r, fig.height=6}
+xlim <- c(1300000,1900000)
+ylim <- c(-2300000,-1900000)
+par(mfrow=c(2,2), mar=c(4,3,3,2))
+plot(count.ra, xlim=xlim, ylim=ylim, main="counts per cell")
+plot(dist.ra, xlim=xlim, ylim=ylim, main="total distance per cell")
+plot(dist.ave.ra, xlim=xlim, ylim=ylim, main="sink: average distance to each cell (seafloor)")
+plot(dist0.ave.ra, xlim=xlim, ylim=ylim, main="source: average distance from each cell (surface)")
+```
+
+```{r, fig.height=5}
+par(mfrow=c(1,1), mar=c(4,3,3,2))
+plot(dist0.ave.ra-dist.ave.ra, xlim=xlim, ylim=ylim, main="source minus sink")
+```
+
 
 ```{r, fig.width=10, fig.height=9, eval=FALSE}
 ## end-points of all floats
 par(mfrow=c(2,2), mar=c(2,1,3,0), oma=c(0,0,0,0))
 #after 1 months
 plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 1 month - 100m/day")
-points(cbind(grd.x100[121,mm1.1], grd.y100[121,mm1.1]), pch=16, col=col1, cex=0.2)
-points(cbind(grd.x100[121,mm1.2], grd.y100[121,mm1.2]), pch=16, col=col2, cex=0.2)
-points(cbind(grd.x100[121,mm1.3], grd.y100[121,mm1.3]), pch=16, col=col3, cex=0.2)
-points(cbind(grd.x100[121,mm1.4], grd.y100[121,mm1.4]), pch=16, col=col4, cex=0.2)
-
-
+points(cbind(grd.x100[121,mm1.1], grd.y100[121,mm1.1]), pch=16, col=col[1], cex=0.2)
+points(cbind(grd.x100[121,mm1.2], grd.y100[121,mm1.2]), pch=16, col=col[2], cex=0.2)
+points(cbind(grd.x100[121,mm1.3], grd.y100[121,mm1.3]), pch=16, col=col[3], cex=0.2)
+points(cbind(grd.x100[121,mm1.4], grd.y100[121,mm1.4]), pch=16, col=col[4], cex=0.2)
 
 #after 2 months
 plot(mean.uv, xlim=xlim, ylim=ylim, col=cols, breaks=breaks, main="end-points - 2 month  - 100m/day")
@@ -339,3 +509,404 @@ points(cbind(grd.x100[31,], grd.y100[31,]), pch=16, col="blue", cex=0.2)
 ## 3D plot of particle subset
 
 ```
+
+
+# Analysing particle pathways (This chunk takes about 20min to run)
+
+```{r, eval=FALSE}
+## x and y locations are stored in "grd.x" and "grd.y" as time-steps (rows) and individual particles (columns), and their depths in "flts.z"
+x.raw1 <- matrix(NA, nrow=152, ncol=ncol(grd.x100))
+y.raw1 <- x.raw1
+z.raw1 <- x.raw1
+for(i in 1:152){
+  x.raw1[i,] <- grd.x100[i,,]
+  y.raw1[i,] <- grd.y100[i,,]
+  z.raw1[i,] <- flts.z100[i,,]
+}
+
+## set points that move into the bottom corner to NA!!! (x.raw=-3000000, y.raw=-3000000)
+#all(which(x.raw1==-3000000)==which(y.raw1==-3000000))
+sel <- which(x.raw1==-3000000)
+x.raw1[sel] <- NA
+y.raw1[sel] <- NA
+z.raw1[sel] <- NA
+
+x.raw2 <- data.frame(x.raw1)
+y.raw2 <- data.frame(y.raw1)
+z.raw2 <- data.frame(z.raw1)
+
+## remove particles that only have NAs
+sel.x <- which(sapply(x.raw2, function(x)all(is.na(x))))
+sel.y <- which(sapply(y.raw2, function(x)all(is.na(x))))
+#all(sel.y==sel.x)
+x.raw <- x.raw2[,-sel.x]
+y.raw <- y.raw2[,-sel.x]
+z.raw <- z.raw2[,-sel.x]
+
+## calculate ocean depth at each particle location (this takes about 15min)
+z.h <- data.frame(matrix(NA, nrow=nrow(z.raw), ncol=ncol(z.raw)))
+for(i in 1:ncol(x.raw)){
+  z.h[,i] <- extract(h2, cbind(x.raw[,i],y.raw[,i]))
+}
+
+## calculate distance to seafloor at each particle location
+z.diff <- z.h+z.raw
+
+dim(x.raw)
+dim(y.raw)
+dim(z.raw)
+dim(z.diff)
+dim(z.h)
+
+## save output
+save(x.raw,y.raw,z.raw,z.h,z.diff, file=paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test.Rdata"))
+```
+
+```{r, eval=FALSE}
+#######################
+## CREATE LINES FOR 6-MONTHS OF TRAVELLING TIME
+
+load(paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test.Rdata"))
+##########################
+
+## subset first
+# set.seed(1)
+# s <- sample(1:ncol(x.raw), 10000)
+s <- 1:ncol(x.raw)
+
+## split points into (1) in the water column and (2) on the bottom
+
+## prepare data objects and translate particle coordinates into lines
+line_list_s <- vector(mode="list", length=length(s))
+line_list_b <- vector(mode="list", length=length(s))
+xyz_list <- vector(mode="list", length=length(s))
+xyz_spatial <- vector(mode="list", length=length(s))
+names(line_list_s) <- names(line_list_b) <- s
+
+for(i in 1:length(s)){
+  # message(i)
+  ## coordinates etc for each particle
+  xyz.raw <- data.frame(cbind(x.raw[,s[i]],y.raw[,s[i]],z.diff[,s[i]],z.raw[,s[i]],z.h[,s[i]],1:152,NA))
+  names(xyz.raw) <- c("x","y","z_diff","z_particle","z_cell","time","bottom")
+  ## identify any NA locations for that particle
+  na.sel <- which(is.na(rowSums(xyz.raw[,1:2])))
+  ## remove single NA locations
+  if(length(na.sel)>0) {
+    xyz <- xyz.raw[-na.sel,]
+  }else
+    xyz <- xyz.raw
+  ## find first instance of where the particle is within 100m of the seafloor
+  sel.first <- tail(which(xyz[,3]<100),1)
+  ## select between surface and seafloor
+  if(length(sel.first)>0){
+    sel.surface <- (sel.first+1):nrow(xyz)
+    sel.bottom <- 1:sel.first
+    if(sel.first==nrow(xyz)){
+      #message(paste0("Particles close to seafloor here: ",i))
+      line_list_b[[i]] <- Lines(list(Line(xyz[,1:2])), ID=s[i])
+    } else{
+      xyz$bottom[sel.surface] <- "no"
+      xyz$bottom[sel.bottom] <- "yes"
+      line_list_s[[i]] <- Lines(list(Line(xyz[which(xyz$bottom=="no"),1:2])), ID=s[i])
+      line_list_b[[i]] <- Lines(list(Line(xyz[which(xyz$bottom=="yes"),1:2])), ID=s[i])
+    }   
+  }else {
+    xyz$bottom <- "no"
+    line_list_s[[i]] <- Lines(list(Line(xyz[which(xyz$bottom=="no"),1:2])), ID=s[i])
+  }
+  ## create line from the locations of each particle
+  # if(length(sel.not.bottom)==152){
+  #   line_list_s[[i]] <- Lines(list(Line(xyz[,1:2])), ID=s[i])
+  # }else{
+  xyz_list[[i]] <- xyz
+  xyz_spatial[[i]] <- SpatialPointsDataFrame(xyz[,1:2],xyz[,3:7])
+  # }
+}
+
+# ## remove particles which only have NA locations
+line_list_s2 <- line_list_s[-which(sapply(line_list_s, is.null))]
+line_list_b2 <- line_list_b[-which(sapply(line_list_b, is.null))]
+
+## make SpatialLines from Lines
+track_lines_s <- SpatialLines(line_list_s2)
+track_lines_b <- SpatialLines(line_list_b2)
+
+save(track_lines_s, track_lines_b, xyz_spatial, xyz_list, file=paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test_lines.Rdata"))
+```
+
+
+```{r, eval=FALSE}
+#######################
+## CREATE LINES FOR 1-MONTH OF TRAVELLING TIME
+load(paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test.Rdata"))
+
+m <- 122:152
+##########################
+
+## subset first
+# set.seed(1)
+# s <- sample(1:ncol(x.raw), 1000)
+s <- 1:ncol(x.raw)
+
+## split points into (1) in the water column and (2) on the bottom
+
+## prepare data objects and translate particle coordinates into lines
+line_list_s <- vector(mode="list", length=length(s))
+line_list_b <- vector(mode="list", length=length(s))
+xyz_list <- vector(mode="list", length=length(s))
+xyz_spatial <- vector(mode="list", length=length(s))
+names(line_list_s) <- names(line_list_b) <- s
+
+for(i in 1:length(s)){
+  # message(i)
+  ## coordinates etc for each particle
+  xyz.raw <- data.frame(cbind(x.raw[m,s[i]],y.raw[m,s[i]],z.diff[m,s[i]],z.raw[m,s[i]],z.h[m,s[i]],m,NA))
+  names(xyz.raw) <- c("x","y","z_diff","z_particle","z_cell","time","bottom")
+  ## identify any NA locations for that particle
+  na.sel <- which(is.na(rowSums(xyz.raw[,1:2])))
+  ## remove single NA locations
+  if(length(na.sel)>0) {
+    xyz <- xyz.raw[-na.sel,]
+  }else
+    xyz <- xyz.raw
+  ## find first instance of where the particle is within 100m of the seafloor
+  sel.first <- tail(which(xyz[,3]<100),1)
+  ## select between surface and seafloor
+  if(length(sel.first)>0){
+    sel.surface <- (sel.first+1):nrow(xyz)
+    sel.bottom <- 1:sel.first
+    if(sel.first==nrow(xyz)){
+      #message(paste0("Particles close to seafloor here: ",i))
+      line_list_b[[i]] <- Lines(list(Line(xyz[,1:2])), ID=s[i])
+    } else{
+      xyz$bottom[sel.surface] <- "no"
+      xyz$bottom[sel.bottom] <- "yes"
+      line_list_s[[i]] <- Lines(list(Line(xyz[which(xyz$bottom=="no"),1:2])), ID=s[i])
+      line_list_b[[i]] <- Lines(list(Line(xyz[which(xyz$bottom=="yes"),1:2])), ID=s[i])
+    }   
+  }else {
+    xyz$bottom <- "no"
+    line_list_s[[i]] <- Lines(list(Line(xyz[which(xyz$bottom=="no"),1:2])), ID=s[i])
+  }
+  ## create line from the locations of each particle
+  # if(length(sel.not.bottom)==152){
+  #   line_list_s[[i]] <- Lines(list(Line(xyz[,1:2])), ID=s[i])
+  # }else{
+  xyz_list[[i]] <- xyz
+  xyz_spatial[[i]] <- SpatialPointsDataFrame(xyz[,1:2],xyz[,3:7])
+  # }
+}
+
+# ## remove particles which only have NA locations
+line_list_s2 <- line_list_s[-which(sapply(line_list_s, is.null))]
+line_list_b2 <- line_list_b[-which(sapply(line_list_b, is.null))]
+
+## make SpatialLines from Lines
+track_lines_s <- SpatialLines(line_list_s2)
+track_lines_b <- SpatialLines(line_list_b2)
+
+save(track_lines_s, track_lines_b, xyz_spatial, xyz_list, file=paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test_lines_1month.Rdata"))
+```
+
+```{r}
+load(paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test_lines.Rdata"))
+#load(paste0(ARC_data_dir,"FAM/Floats_10km_100mday_test_lines.Rdata_1month"))
+```
+
+
+# PAPER OUTPUTS:
+
+1. seafloor connectivity map
+- which areas are connected to each other
+- maybe a contour plot?
+
+1. under-ice particles
+
+
+## full particle trajectories
+
+### Mertz Area
+
+```{r, fig.height=7.5, fig.width=10}
+xlim <- c(1300000,1900000)
+ylim <- c(-2300000,-1900000)
+## plot sinking only:
+plot(uv_31, xlim=xlim, ylim=ylim, main="sinking movements", breaks=breaks, col=cols)
+# plot(track_lines_s, add=TRUE)
+plot(track_lines_s[seq(1,length(track_lines_s), by=2)], add=TRUE)
+scalebar(100000, xy=c(1350000,-1930000), type="bar", label=c(0,50,100), below="km")
+```
+
+```{r, fig.height=7.5, fig.width=10}
+## plot bottom only:
+plot(mean.uv, xlim=xlim, ylim=ylim, main="seafloor movements", breaks=breaks, col=cols)
+# plot(track_lines_b, add=TRUE)
+plot(track_lines_b[seq(1,length(track_lines_b), by=2)], add=TRUE)
+scalebar(100000, xy=c(1350000,-1930000), type="bar", label=c(0,50,100), below="km")
+```
+
+
+### Ross Sea
+
+```{r, fig.height=8, fig.width=9}
+xlim=c(-500000,500000)
+ylim=c(-2100000,-1150000)
+## plot sinking only:
+plot(uv_31, xlim=xlim, ylim=ylim, main="sinking movements", breaks=breaks, col=cols)
+# plot(track_lines_s, add=TRUE)
+plot(track_lines_s[seq(1,length(track_lines_s), by=2)], add=TRUE)
+scalebar(100000, xy=c(0,-1200000), type="bar", label=c(0,50,100), below="km")
+```
+
+```{r, fig.height=8, fig.width=9}
+## plot bottom only:
+plot(mean.uv, xlim=xlim, ylim=ylim, main="seafloor movements", breaks=breaks, col=cols)
+# plot(track_lines_b, add=TRUE)
+plot(track_lines_b, add=TRUE)
+scalebar(100000, xy=c(0,-1200000), type="bar", label=c(0,50,100), below="km")
+```
+
+```{r, fig.height=8, fig.width=9}
+## plot bottom only:
+plot(mean.uv, xlim=xlim, ylim=ylim, main="seafloor movements", breaks=breaks, col=cols)
+# plot(track_lines_b, add=TRUE)
+plot(track_lines_b[seq(1,length(track_lines_b), by=2)], add=TRUE)
+scalebar(100000, xy=c(0,-1200000), type="bar", label=c(0,50,100), below="km")
+```
+
+```{r, fig.height=8, fig.width=9}
+## plot bottom only:
+plot(mean.uv, xlim=xlim, ylim=ylim, main="seafloor movements", breaks=breaks, col=cols)
+# plot(track_lines_b, add=TRUE)
+plot(track_lines_b[seq(1,length(track_lines_b), by=4)], add=TRUE)
+scalebar(100000, xy=c(0,-1200000), type="bar", label=c(0,50,100), below="km")
+```
+
+### Weddell Sea
+
+```{r, fig.height=9, fig.width=10}
+xlim=c(-2000000,-500000)
+ylim=c(200000,1500000)
+## plot bottom only:
+plot(uv_31, xlim=xlim, ylim=ylim, main="sinking movements", breaks=breaks, col=cols)
+# plot(track_lines_s, add=TRUE)
+plot(track_lines_s[seq(1,length(track_lines_s), by=2)], add=TRUE)
+scalebar(100000, xy=c(-800000,300000), type="bar", label=c(0,50,100), below="km")
+```
+
+```{r, fig.height=9, fig.width=10}
+## plot bottom only:
+plot(mean.uv, xlim=xlim, ylim=ylim, main="seafloor movements", breaks=breaks, col=cols)
+# plot(track_lines_b, add=TRUE)
+plot(track_lines_b[seq(1,length(track_lines_b), by=2)], add=TRUE)
+scalebar(100000, xy=c(-800000,300000), type="bar", label=c(0,50,100), below="km")
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r, eval=FALSE, echo=FALSE}
+## x and y locations are stored in "grd.x" and "grd.y" as time-steps (rows) and individual particles (columns)
+x.raw <- matrix(NA, nrow=152, ncol=ncol(grd.x100))
+y.raw <- x.raw
+for(i in 1:152){
+  x.raw[i,] <- grd.x100[i,,]
+  y.raw[i,] <- grd.y100[i,,]
+}
+## remove points that move into the bottom corner!!! (x.raw=-3000000, y.raw=-3000000)
+x.raw[which(x.raw==-3000000)] <- NA
+y.raw[which(y.raw==-3000000)] <- NA
+
+## remove NAs
+# all(which(is.na(colSums(x)))==which(is.na(colSums(y))))
+x <- x.raw[,-which(is.na(colSums(x.raw)))]
+y <- y.raw[,-which(is.na(colSums(x.raw)))]
+
+#### particle trajectories (only use a subset of 100 traces)
+set.seed(1)
+s <- sample(1:ncol(x), 100)
+line_list_s <- list()
+for(i in 1:length(s)){
+  line_list_s[[i]] <- Lines(list(Line(cbind(x[,s[i]],y[,s[i]]))), ID=s[i])
+}
+names(line_list_s) <- s
+track_lines_s <- SpatialLines(line_list_s)
+plot(track_lines_s)
+
+#### particle trajectories (all traces)
+line_list <- list()
+for(i in 1:ncol(x)){
+  line_list[[i]] <- Lines(list(Line(cbind(x[,i],y[,i]))), ID=i)
+}
+names(line_list) <- 1:ncol(x)
+track_lines <- SpatialLines(line_list)
+
+
+## density of lines per raster-cell
+
+
+## first remove points at the sea-surface:
+
+
+
+###############################
+# ## plot floating traces
+# ## not near the bottom
+# plot(track_lines_s, xlim=xlim, ylim=ylim)
+# ## near the bottom
+# plot(track_lines_b, col="green", add=TRUE)
+# ## add individual particle locations
+# for(i in 1:length(s)){
+#   ## all individual particle locations
+#   points(xyz_spatial[[i]], col="grey")
+#   ## particle locations of bottom particles only
+#   points(xyz_spatial[[i]][xyz_spatial[[i]]$bottom=="yes",], col="brown")
+# }
+# #points(cbind(unlist(c(x.raw[,s])),unlist(c(y.raw[,s])))) ## all particles
+
+# #################
+# ## this works below:
+# 
+# ## prepare data objects and translate particle coordinates into lines
+# line_list_n <- vector(mode="list", length=length(s))
+# names(line_list_n) <- s
+# for(i in 1:length(s)){
+#   print(i)
+#   ## coordinates and depth
+#   xyz.raw <- cbind(x.raw[,s[i]],y.raw[,s[i]],z.raw[,s[i]]) 
+#   ## identify particles with NA locations
+#   na.sel <- which(is.na(rowSums(xyz.raw[,1:2])))
+#   ## remove single NA locations
+#   if(length(na.sel)>0) {
+#     xyz <- xyz.raw[-na.sel,] 
+#   }else xyz <- xyz.raw
+#   ## identify if the particle is near the seafloor or not
+#   
+#   
+#   ## set particles to NULL which only have NA locations
+#   if(nrow(xyz)==0){
+#       line_list_n[[i]] <- NULL 
+#   }else
+#     ## create line from the locations of each particle
+#     line_list_n[[i]] <- Lines(list(Line(xyz[,1:2])), ID=s[i])
+# }
+# ## remove particles which only have NA locations
+# line_list_n2 <- line_list_s[-which(sapply(line_list_s, is.null))]
+# ## make SpatialLines from Lines
+# track_lines_n <- SpatialLines(line_list_n2)
+# 
+# ## plot
+# plot(track_lines_n)
+```
+
+
+
+
+

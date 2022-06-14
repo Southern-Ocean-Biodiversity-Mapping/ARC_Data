@@ -41,11 +41,14 @@ mertz.diatom.dat <- read.csv("C:/Users/jjansen/Desktop/science/PhD/1 bentho-pela
 mertz.diatom.locs <- project(as.matrix(mertz.diatom.dat[,c(4,3)]),proj=ant.proj)
 
 ## load TOC data
-mertz.toc.dat <- read.csv("C:/Users/jjansen/Desktop/science/data_biological/Circumpolar_TOC_data_CEAMARC_sediment_isotopes.csv")
+sed.dir <- "C:/Users/jjansen/Desktop/science/data_biological/sediment_data/"
+mertz.toc.dat <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_CEAMARC_sediment_isotopes.csv"))
 mertz.toc.locs <- project(as.matrix(mertz.toc.dat[,2:3]),proj=ant.proj)
-ross.toc.dat <- read.csv("C:/Users/jjansen/Desktop/science/data_biological/Circumpolar_TOC_data_villinski_2008.csv")
+ross.toc.dat <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_villinski_2008.csv"))
 ross.toc.locs <- project(as.matrix(ross.toc.dat[,c(3,2)]),proj=ant.proj)
-
+ant.toc.dat <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_Leventer.csv"), skip=4)[-c(90,95),] ## rows 90 and 95 have no coordinated
+ant.toc.locs.raw <- read.csv(paste0(sed.dir,"Circumpolar_TOC_coords_Leventer.csv"))
+ant.toc.locs <- project(as.matrix(ant.toc.locs.raw[-c(90,95),c(5,4)]),proj=ant.proj)
 
 #### load ROMS-runs:
 # data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_float_test_6/")
@@ -207,13 +210,13 @@ susp_his_04[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_04
 # susp_his_07[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_07", level=1)[]*86400
 susp_his_08[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_08", level=1)[]*86400
 ## settled particles
-# settle_01[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_01", level=1)[]*86400
-# settle_02[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_02", level=1)[]*86400
-# settle_03[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_03", level=1)[]*86400
+settle_01[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_01", level=1)[]*86400
+settle_02[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_02", level=1)[]*86400
+settle_03[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_03", level=1)[]*86400
 settle_04[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_04", level=1)[]*86400
-# settle_05[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_05", level=1)[]*86400
-# settle_06[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_06", level=1)[]*86400
-# settle_07[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_07", level=1)[]*86400
+settle_05[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_05", level=1)[]*86400
+settle_06[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_06", level=1)[]*86400
+settle_07[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_07", level=1)[]*86400
 settle_08[] <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)[]*86400
 ## bedload u
 #bedu_01 <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="bedload_Usand_01", level=31)
@@ -333,7 +336,12 @@ plot(susp.mertz[]~settled.mertz[])
 plot(h.mertz[]~settled.mertz[])
 ```
 
-########## Comparison to Diatom values ##########
+## Comparison to Diatom values ##########
+
+```{r, fig.height=8.5, fig.width=10}
+plot(h2)
+plot(polar.dat.diatom, add=TRUE)
+```
 
 ```{r, fig.width=10, fig.height=6}
 #### Extract flux values at Diatom locations
@@ -349,14 +357,21 @@ settle.vals.m <- extract(settle_08,mertz.diatom.locs)
 diatom.vals.m <- mertz.diatom.dat$Abundance_NO_benthics__valves_g_dry_weight_
 
 #### circumpolar relationship
+na.sel <- c(62,75,80,81,105,108,181)
 par(mfrow=c(2,3))
 plot(surf.vals[,3], diatom.vals)
+legend("topleft", legend=paste0("cor=",round(cor(diatom.vals[-na.sel],surf.vals[-na.sel,3]),3)))
 plot(susp.vals[,3], diatom.vals)
+legend("topleft", legend=paste0("cor=",round(cor(diatom.vals[-na.sel],susp.vals[-na.sel,3]),3)))
 plot(settle.vals[,30], diatom.vals)
+legend("topleft", legend=paste0("cor=",round(cor(diatom.vals[-na.sel],settle.vals[-na.sel,30]),3)))
 #### compare to Mertz data:
 plot(surf.vals.m[,3], diatom.vals.m)
+legend("topleft", legend=paste0("cor=",round(cor(diatom.vals.m,surf.vals.m[,3]),3)))
 plot(susp.vals.m[,3], diatom.vals.m)
+legend("topleft", legend=paste0("cor=",round(cor(diatom.vals.m,susp.vals.m[,3]),3)))
 plot(settle.vals.m[,30], diatom.vals.m)
+legend("topleft", legend=paste0("cor=",round(cor(diatom.vals.m,settle.vals.m[,30]),3)))
 
 # #### circumpolar relationship
 # library(modEvA)
@@ -379,57 +394,680 @@ plot(settle.vals.m[,30], diatom.vals.m)
 # Dsquared(glm.nb(diatom.vals~settle.vals))
 ```
 
-```{r, fig.width=10, fig.height=4}
-#### Extract flux values at Diatom locations
-## Mertz region
-surf.vals.m <- extract(surf_08,mertz.toc.locs)
-susp.vals.m <- extract(susp_08,mertz.toc.locs)
-settle.vals.m <- extract(settle_08,mertz.toc.locs)
-toc.vals.m <- mertz.toc.dat[,7]
-
-par(mfrow=c(1,3))
-plot(surf.vals.m[,3], toc.vals.m)
-plot(susp.vals.m[,3], toc.vals.m)
-plot(settle.vals.m[,30], toc.vals.m)
-```
+## Comparison to TOC values ##########
 
 ```{r}
-sel <- match(substr(mertz.toc.dat$ï..Station,1,6),substr(mertz.diatom.dat$Sample,1,6))
+## all locations
+polar.dat.toc <- SpatialPoints(rbind(mertz.toc.locs, ross.toc.locs, ant.toc.locs), proj4string = crs(polar.dat.diatom))
+## all values
+toc.vals <- c(mertz.toc.dat[,7],ross.toc.dat[,5],ant.toc.dat[,8])
+depth.vals <- extract(h2, polar.dat.toc)
+curr.vals <- extract(mean.uv, polar.dat.toc)
+surf.vals.list <- list()
+susp.vals.list <- list()
+settle.vals.list <- list()
+for(i in 1:8){
+  surf.vals.list[[i]] <- extract(get(paste0("surf_0",i)),polar.dat.toc)[,3]
+  susp.vals.list[[i]] <- extract(get(paste0("susp_0",i)),polar.dat.toc)[,3]
+  settle.vals.list[[i]] <- extract(get(paste0("settle_0",i)),polar.dat.toc)[,30]-extract(get(paste0("settle_0",i)),polar.dat.toc)[,1]
+}
+```
+
+### overview of sampling locations
+
+```{r, fig.height=8.5, fig.width=10}
+## plot overview
+plot(h2)
+plot(polar.dat.toc, add=TRUE)
+```
+
+### relationship with depth & curr
+
+```{r}
+par(mfrow=c(1,2), mar=c(5,4,4,1))
+plot(depth.vals, toc.vals, main="toc vs depth")
+plot(curr.vals, toc.vals, main="toc vs mean current speed")
+```
+
+
+### relationship with surf, susp & settle
+
+```{r, fig.width=10, fig.height=8}
+o <- toc.vals
+par(mfrow=c(3,5), mar=c(3,2,2,1))
+for(i in 4:8){
+  p <- surf.vals.list[[i]]
+  m <- "surf"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 4:8){
+  p <- susp.vals.list[[i]]
+  m <- "susp"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 4:8){
+  p <- settle.vals.list[[i]]
+  m <- "settle"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+```
+
+### relationship with surf, susp & settle - by region - settling speed 5
+
+East Antarctica
+Mertz
+Ross Sea
+Amundsen Sea
+Antarctic Peninsula
+
+```{r, fig.width=10, fig.height=8}
+reg.east <- which(polar.dat.toc@coords[,1]>2000000)
+reg.mertz <- which(polar.dat.toc@coords[,1]>1000000 & polar.dat.toc@coords[,1]<2000000)
+reg.ross <- which(polar.dat.toc@coords[,1]>(-1000000) & polar.dat.toc@coords[,1]<1000000)
+reg.amund <- which(polar.dat.toc@coords[,1]>(-2000000) & polar.dat.toc@coords[,1]<(-1000000))
+reg.ap <- which(polar.dat.toc@coords[,1]<(-2100000))
+reg.list <- list(reg.east, reg.mertz, reg.ross, reg.amund, reg.ap)
+names(reg.list) <- c("East Antarctica", "Mertz", "Ross Sea", "Amundsen", "AP")
+
+par(mfrow=c(3,5), mar=c(3,2,2,1))
+for(i in 1:5){
+  p <- surf.vals.list[[5]][reg.list[[i]]]
+  o <- toc.vals[reg.list[[i]]]
+  m <- paste0("surf, ",names(reg.list)[i])
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 1:5){
+  p <- susp.vals.list[[5]][reg.list[[i]]]
+  o <- toc.vals[reg.list[[i]]]
+  m <- paste0("susp, ",names(reg.list)[i])
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 1:5){
+  p <- settle.vals.list[[5]][reg.list[[i]]]
+  o <- toc.vals[reg.list[[i]]]
+  m <- paste0("settle, ",names(reg.list)[i])
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+```
+
+
+## East Antarctica - underpredicting near the Amery Ice Shelf
+
+```{r, fig.height=8, fig.width=10}
+sel <- reg.east
+xlim <- c(2000000,3000000)
+ylim1 <- c(-1500000,0)
+ylim2 <- c(0,1500000)
+##
+
+cex <- toc.vals[sel]*2
+p <- settle.vals.list[[5]][sel]
+o <- toc.vals[sel]
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)))
+
+par(mfrow=c(2,4), mar=c(2,2,2,0), oma=c(0,0,0,2))
+
+plot(h2, xlim=xlim, ylim=ylim1, main="depth", legend=FALSE)
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(h2, xlim=xlim, ylim=ylim2, main="depth")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]], xlim=xlim, ylim=ylim1, main="settle", legend=FALSE)
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]], xlim=xlim, ylim=ylim2, main="settle")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim1, main="susp", legend=FALSE)
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim2, main="susp")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+```{r, fig.height=8, fig.width=10}
+sel <- reg.east
+xlim <- c(2100000,2500000)
+ylim <- c(800000,1200000)
+##
+
+cex <- toc.vals[sel]*2
+p <- settle.vals.list[[5]][sel]
+o <- toc.vals[sel]
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)))
+
+par(mfrow=c(2,2), mar=c(2,2,2,0), oma=c(0,0,0,2))
+
+plot(h2, xlim=xlim, ylim=ylim, main="depth")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]], xlim=xlim, ylim=ylim, main="settle")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim, main="susp")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+## Mertz - underpredicting just off the adelie bank
+
+```{r, fig.height=7, fig.width=10}
+sel <- reg.mertz
+xlim <- c(1350000,1800000)
+ylim <- c(-2200000,-1900000)
+##
+
+cex <- toc.vals[sel]*2
+p <- settle.vals.list[[5]][sel]
+o <- toc.vals[sel]
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)))
+
+par(mfrow=c(2,2), mar=c(2,3,2,1))
+
+plot(h2, xlim=xlim, ylim=ylim, main="depth")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]], xlim=xlim, ylim=ylim, main="settle")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim, main="susp")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+## Ross Sea - underpredicted in the bay - overpredicted on the banks
+
+```{r, fig.height=10, fig.width=10}
+sel <- reg.ross
+xlim <- c(-600000,600000)
+ylim <- c(-1800000,-1200000)
+##
+
+cex <- toc.vals[sel]*2
+p <- settle.vals.list[[5]][sel]
+o <- toc.vals[sel]
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)))
+
+par(mfrow=c(2,2), mar=c(2,3,2,1))
+
+plot(h2, xlim=xlim, ylim=ylim, main="depth")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]]-settle_05[[1]], xlim=xlim, ylim=ylim, main="settle")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim, main="susp")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+## Amundsen: - vastly overestimating along the shelf break
+
+```{r, fig.height=10, fig.width=10}
+sel <- reg.amund
+xlim <- c(-2100000,-1200000)
+ylim <- c(-1300000,-250000)
+##
+
+cex <- toc.vals[sel]*2
+p <- settle.vals.list[[5]][sel]
+o <- toc.vals[sel]
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)),10)
+
+par(mfrow=c(2,2), mar=c(2,3,2,1))
+
+plot(h2, xlim=xlim, ylim=ylim, main="depth")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]]-settle_05[[1]], xlim=xlim, ylim=ylim, main="settle")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim, main="susp")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+## AP: - TO DO
+
+```{r, fig.height=10, fig.width=10}
+sel <- reg.ap
+xlim <- c(-2700000,-2000000)
+ylim <- c(500000,1800000)
+##
+
+cex <- toc.vals[sel]*2
+p <- settle.vals.list[[5]][sel]
+o <- toc.vals[sel]
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)))
+
+par(mfrow=c(2,2), mar=c(2,3,2,1))
+
+plot(h2, xlim=xlim, ylim=ylim, main="depth")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(settle_05[[30]], xlim=xlim, ylim=ylim, main="settle")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], xlim=xlim, ylim=ylim, main="susp")
+points(polar.dat.toc[sel], cex=cex)
+points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+## All:
+
+```{r, fig.height=10, fig.width=10}
+##
+cex <- toc.vals*2
+p <- settle.vals.list[[5]]
+o <- toc.vals
+fit <- lm(o~p)
+r2 <- summary(fit)$r.squared
+top5 <- tail(order(sqrt(fit$residuals^2)),10)
+
+par(mfrow=c(2,2), mar=c(2,3,2,1))
+
+plot(h2, main="depth")
+points(polar.dat.toc, cex=cex)
+points(polar.dat.toc[top5], cex=cex[top5], col="red")
+
+plot(settle_05[[30]], main="settle")
+points(polar.dat.toc, cex=cex)
+points(polar.dat.toc[top5], cex=cex[top5], col="red")
+
+plot(susp_05[[3]], main="susp")
+points(polar.dat.toc, cex=cex)
+points(polar.dat.toc[top5], cex=cex[top5], col="red")
+
+plot(p, o, main="toc vs settle")
+points(p[top5], o[top5], col="red")
+abline(fit, lty=2)
+legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(r2,3))),
+         bty="n")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, fig.width=10, fig.height=8}
+
+
+
+
+## mertz region
+toc.vals.m <- mertz.toc.dat[,7]
+surf.vals.list.m <- list()
+susp.vals.list.m <- list()
+settle.vals.list.m <- list()
+for(i in 1:8){
+  surf.vals.list.m[[i]] <- extract(get(paste0("surf_0",i)),mertz.toc.locs)[,3]
+  susp.vals.list.m[[i]] <- extract(get(paste0("susp_0",i)),mertz.toc.locs)[,3]
+  settle.vals.list.m[[i]] <- extract(get(paste0("settle_0",i)),mertz.toc.locs)[,30]
+}
+## ross region
+toc.vals.r <- ross.toc.dat[,5]
+surf.vals.list.r <- list()
+susp.vals.list.r <- list()
+settle.vals.list.r <- list()
+for(i in 1:8){
+  surf.vals.list.r[[i]] <- extract(get(paste0("surf_0",i)),ross.toc.locs)[,3]
+  susp.vals.list.r[[i]] <- extract(get(paste0("susp_0",i)),ross.toc.locs)[,3]
+  settle.vals.list.r[[i]] <- extract(get(paste0("settle_0",i)),ross.toc.locs)[,30]
+}
+## other regions
+toc.vals.o <- ant.toc.dat[,8]
+surf.vals.list.o <- list()
+susp.vals.list.o <- list()
+settle.vals.list.o <- list()
+for(i in 1:8){
+  surf.vals.list.o[[i]] <- extract(get(paste0("surf_0",i)),ant.toc.locs)[,3]
+  susp.vals.list.o[[i]] <- extract(get(paste0("susp_0",i)),ant.toc.locs)[,3]
+  settle.vals.list.o[[i]] <- extract(get(paste0("settle_0",i)),ant.toc.locs)[,30]
+}
+```
+
+## all regions:
+
+
+
+
+## by individual regions: settle only
+
+```{r, fig.width=10, fig.height=8}
+o <- c(toc.vals.m,toc.vals.r,toc.vals.o)
+par(mfrow=c(5,5), mar=c(3,2,2,1))
+for(i in 4:8){
+  p <- c(settle.vals.list.m[[i]],settle.vals.list.r[[i]],settle.vals.list.o[[i]])
+  m <- "settle"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## surface productivity
+
+```{r, fig.width=10, fig.height=8}
+par(mfrow=c(3,4), mar=c(3,2,2,1))
+for(i in 1:4){
+  p <- surf.vals.list.m[[i]]
+  o <- toc.vals.m
+  plot(p, o)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 1:4){
+  p <- surf.vals.list.r[[i]]
+  o <- toc.vals.r
+  plot(p, o)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 1:4){
+  p <- surf.vals.list.o[[i]]
+  o <- toc.vals.o
+  plot(p, o)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+```
+
+## suspended particles
+
+```{r, fig.width=10, fig.height=8}
+par(mfrow=c(3,4), mar=c(3,2,2,1))
+for(i in 1:4){
+  p <- susp.vals.list.m[[i]]
+  o <- toc.vals.m
+  m <- "mertz"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 1:4){
+  p <- susp.vals.list.r[[i]]
+  o <- toc.vals.r
+  m <- "ross sea"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+for(i in 1:4){
+  p <- susp.vals.list.o[[i]]
+  o <- toc.vals.o
+  m <- "other"
+  plot(p, o, main=m)
+  legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
+                             paste0("r2=",round(summary(lm(o~p))$r.squared,3))),
+         bty="n")
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, fig.width=10, fig.height=8}
+par(mfrow=c(3,3))
+plot(surf.vals.m[,3], toc.vals.m)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.m,surf.vals.m[,3]),3)), bty="n")
+plot(susp.vals.m[,3], toc.vals.m)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.m,susp.vals.m[,3]),3)), bty="n")
+plot(settle.vals.m[,30], toc.vals.m)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.m,settle.vals.m[,30]),3)), bty="n")
+plot(surf.vals.r[,3], toc.vals.r)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.r,surf.vals.r[,3]),3)), bty="n")
+plot(susp.vals.r[,3], toc.vals.r)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.r,susp.vals.r[,3]),3)), bty="n")
+plot(settle.vals.r[,30], toc.vals.r)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.r,settle.vals.r[,30]),3)), bty="n")
+plot(surf.vals.o[,3], toc.vals.o)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.o,surf.vals.o[,3]),3)), bty="n")
+plot(susp.vals.o[,3], toc.vals.o)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.o,susp.vals.o[,3]),3)), bty="n")
+plot(settle.vals.o[,30], toc.vals.o)
+legend("topleft", legend=paste0("cor=",round(cor(toc.vals.o,settle.vals.o[,30]),3)), bty="n")
+```
+
+
+```{r}
+## compare to Diatom values
+sel <- match(substr(mertz.toc.dat$Station,1,6),substr(mertz.diatom.dat$Sample,1,6))
 sel2 <- match(substr(mertz.diatom.dat$Sample,1,6),substr(mertz.toc.dat$ï..Station,1,6))
 
 plot(toc.vals.m, diatom.vals.m[sel])
+```
 
+
+
+```{r, fig.width=10, fig.height=8}
+#### Extract flux values at TOC locations
+toc.vals.o <- ant.toc.dat[,8]
+## other regions
+surf.vals.list <- list()
+susp.vals.list <- list()
+settle.vals.list <- list()
+for(i in 1:8){
+  surf.vals.list[[i]] <- extract(get(paste0("surf_0",i)),ant.toc.locs)[,3]
+  susp.vals.list[[i]] <- extract(get(paste0("susp_0",i)),ant.toc.locs)[,3]
+  settle.vals.list[[i]] <- extract(get(paste0("settle_0",i)),ant.toc.locs)[,30]
+}
 ```
 
 ```{r, fig.width=10, fig.height=8}
-#### Extract flux values at Diatom locations
-## Mertz region
-surf.vals.m <- extract(surf_08,mertz.toc.locs)
-susp.vals.m <- extract(susp_08,mertz.toc.locs)
-settle.vals.m <- extract(settle_08,mertz.toc.locs)
-toc.vals.m <- mertz.toc.dat[,7]
-## Ross region
-surf.vals.r <- extract(surf_08,ross.toc.locs)
-susp.vals.r <- extract(susp_08,ross.toc.locs)
-settle.vals.r <- extract(settle_08,ross.toc.locs)
-toc.vals.r <- ross.toc.dat[,5]
-
-par(mfrow=c(2,3))
-plot(surf.vals.m[,3], toc.vals.m)
-plot(susp.vals.m[,3], toc.vals.m)
-plot(settle.vals.m[,30], toc.vals.m)
-plot(surf.vals.r[,3], toc.vals.r)
-plot(susp.vals.r[,3], toc.vals.r)
-plot(settle.vals.r[,30], toc.vals.r)
+par(mfrow=c(3,3))
+for(i in 1:8){
+  plot(surf.vals.list[[i]], toc.vals.o)
+  legend("topleft", legend=c(paste0("cor=",round(cor(toc.vals.o,surf.vals.list[[i]]),3)),
+                             paste0("r2=",round(summary(lm(toc.vals.o~surf.vals.list[[i]]))$r.squared,3))),
+         bty="n")
+}
 ```
 
 ```{r, fig.width=10, fig.height=8}
+par(mfrow=c(3,3))
+for(i in 1:8){
+  plot(susp.vals.list[[i]], toc.vals.o)
+  legend("topleft", legend=c(paste0("cor=",round(cor(toc.vals.o,susp.vals.list[[i]]),3)),
+                             paste0("r2=",round(summary(lm(toc.vals.o~susp.vals.list[[i]]))$r.squared,3))),
+                             bty="n")
+}
+```
+
+```{r, fig.width=10, fig.height=8}
+par(mfrow=c(3,3))
+for(i in 1:8){
+  plot(settle.vals.list[[i]], toc.vals.all)
+  legend("topright", legend=c(paste0("cor=",round(cor(toc.vals.all,settle.vals.list[[i]]),3)), 
+                              paste0("r2=",round(summary(lm(toc.vals.all~settle.vals.list[[i]]))$r.squared,3))),
+         bty="n")
+}
+```
+
+
+
+
+
+
+```{r}
+plot(toc.vals.all)
+```
+
+
+
+
+
+
+
+
+
+```{r, fig.width=10, fig.height=4}
 pch <- c(rep(1,length(toc.vals.m)),rep(16,length(toc.vals.r)))
 surf.vals.all <- c(surf.vals.m[,3],surf.vals.r[,3])
 susp.vals.all <- c(susp.vals.m[,3],susp.vals.r[,3])
 settle.vals.all <- c(settle.vals.m[,30],settle.vals.r[,30])
 toc.vals.all <- c(toc.vals.m,toc.vals.r)
-par(mfrow=c(2,3))
+par(mfrow=c(1,3))
 plot(surf.vals.all, toc.vals.all, pch=pch)
 plot(susp.vals.all, toc.vals.all, pch=pch)
 plot(settle.vals.all, toc.vals.all, pch=pch)
@@ -439,6 +1077,32 @@ plot(settle.vals.all, toc.vals.all, pch=pch)
 # summary(lm(toc.vals.all~settle.vals.all))
 ```
 
+
+```{r, fig.width=10, fig.height=4}
+pch <- 16
+cols <- c(rep("blue",length(toc.vals.m)),rep("red",length(toc.vals.r)),rep("green",length(toc.vals.o)))
+surf.vals.all <- c(surf.vals.m[,3],surf.vals.r[,3],surf.vals.o[,3])
+susp.vals.all <- c(susp.vals.m[,3],susp.vals.r[,3],susp.vals.o[,3])
+settle.vals.all <- c(settle.vals.m[,30],settle.vals.r[,30],settle.vals.o[,30])
+toc.vals.all <- c(toc.vals.m,toc.vals.r,toc.vals.o)
+par(mfrow=c(1,3))
+plot(surf.vals.all, toc.vals.all, pch=pch, col=cols)
+plot(susp.vals.all, toc.vals.all, pch=pch, col=cols)
+plot(settle.vals.all, toc.vals.all, pch=pch, col=cols)
+
+# summary(lm(toc.vals.all~surf.vals.all))
+# summary(lm(toc.vals.all~susp.vals.all))
+# summary(lm(toc.vals.all~settle.vals.all))
+```
+
+```{r, fig.width=10, fig.height=8}
+pch <- 16
+cols <- c(rep("blue",length(toc.vals.m)),rep("red",length(toc.vals.r)),rep("green",length(toc.vals.o)))
+par(mfrow=c(1,1))
+# plot(surf.vals.all, toc.vals.all, pch=pch, col=cols)
+plot(susp.vals.all, toc.vals.all, pch=pch, col=cols)
+# plot(settle.vals.all, toc.vals.all, pch=pch, col=cols)
+```
 
 ```{r, fig.width=10, fig.height=8}
 ## sort diatom cruises by region

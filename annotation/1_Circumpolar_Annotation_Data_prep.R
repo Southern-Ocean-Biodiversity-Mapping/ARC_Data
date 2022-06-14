@@ -335,6 +335,7 @@ counts_cells_survey2 <- rep(NA, length(ids))
 counts_cells_transect1 <- as.character(rep(NA, length(ids)))
 counts_cells_transect2 <- rep(NA, length(ids))
 counts_cells_transect3 <- rep(NA, length(ids))
+counts_cells_mean_image_quality_score <- rep(NA, length(ids))
 
 for(i in 1:length(ids)){
   sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$counts=="yes")  # find images that are part of that cell and annotated in biigle
@@ -346,6 +347,7 @@ for(i in 1:length(ids)){
   dat.temp <- dat_counts_image_by_species[which(nams.counts%in%sel.names),] # find annotations from these images from the image-dataset
   counts_N[i] <-  nrow(dat.temp) # how many images are there
   counts_area[i] <- sum(image_metadata$area[sel.r]) # total area across these images
+  counts_cells_mean_image_quality_score[i] <- mean(image_metadata$image_quality_score[sel.r]) # ave quality across these images
   dat_counts_cell_by_species[i,] <- colSums(dat.temp) # how many individuals per species
   ## check if all images are from the same survey
   counts_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
@@ -396,6 +398,7 @@ cover_cells_survey2 <- rep(NA, length(ids))
 cover_cells_transect1 <- rep(NA, length(ids))
 cover_cells_transect2 <- rep(NA, length(ids))
 cover_cells_transect3 <- rep(NA, length(ids))
+cover_cells_mean_image_quality_score <- rep(NA, length(ids))
 for(i in 1:length(ids)){
   #print(i)
   sel.r <- which(image_metadata$cellID==ids[i]&image_metadata$cover=="yes") # find images that are part of that cell and annotated in coralnet
@@ -404,6 +407,7 @@ for(i in 1:length(ids)){
   dat.temp <- dat_cover_image_by_species[which(nams.cov%in%sel.names),] # find annotations from these images from the image-dataset
   cover_N[i] <-  nrow(dat.temp)
   cover_area[i] <- sum(image_metadata$area[sel.r])
+  cover_cells_mean_image_quality_score[i] <- mean(image_metadata$image_quality_score[sel.r]) # ave quality across these images
   dat_cover_cell_by_species[i,] <- colSums(dat.temp)
   ## check if all images are from the same survey
   cover_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
@@ -431,10 +435,10 @@ cell.lonlat <- project(cell.coords, proj=crs(r2), inverse=TRUE)
 
 cell_metadata <- data.frame(cbind(ids,cell.lonlat,cell.coords,cover_N, counts_N, cover_area, counts_area, 
                                   cover_cells_survey1, cover_cells_transect1, cover_cells_transect2, cover_cells_transect3, 
-                                  counts_cells_survey1, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3))
+                                  counts_cells_survey1, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3,cover_cells_mean_image_quality_score))
 names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y", "cover_N", "counts_N", "cover_area", "counts_area",
                           "cover_cells_survey", "cover_cells_transect1", "cover_cells_transect2", "cover_cells_transect3", 
-                          "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3")
+                          "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3","image_quality_score")
 
 ### add survey/year/gear information to cell metadata
 cell_metadata$year <- NA
@@ -479,14 +483,14 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
 
 ## change character data to factors
-for(i in c(1,10:17,19)){
+for(i in c(1,10:17,20)){
   cell_metadata[,i] <- as.factor(cell_metadata[,i])
 }
 for(i in c(1,8,15)){
   image_metadata[,i] <- as.factor(image_metadata[,i])
 }
 ## change character data to numeric
-for(i in c(2:9)){
+for(i in c(2:9,18)){
   cell_metadata[,i] <- as.numeric(cell_metadata[,i])
 }
 

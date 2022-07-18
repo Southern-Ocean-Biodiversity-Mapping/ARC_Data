@@ -51,8 +51,9 @@ ant.toc.locs.raw <- read.csv(paste0(sed.dir,"Circumpolar_TOC_coords_Leventer.csv
 ant.toc.locs <- project(as.matrix(ant.toc.locs.raw[-c(90,95),c(5,4)]),proj=ant.proj)
 
 #### load ROMS-runs:
+data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test2a/")
 # data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_float_test_6/")
-data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_float_test8/")
+# data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_float_test8/")
 # data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test3/")
 # data.dat200 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test4/")
 # data.dat400 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test5/")
@@ -167,11 +168,22 @@ plot(h2, col=cols, main="depth", xlim=xlim, ylim=ylim)
 
 ########## EVALUATE FAM ##########
 
+#### Check input surface layer:
+```{r}
+test <- brick("C:/Users/jjansen/Desktop/science/data_environmental/derived/waom4extend_nudge_climatology20022019_shelf.nc")
+
+input_01 <- brick(empty.roms.ra,nl=7)
+
+```
+
+
+
+
 ```{r, message=FALSE, warning=FALSE, results="hide"}
 ## values originally in kg/m2/s -> change to kg/m2/day (*86400)
 ### NOTE THAT CURRENTLY DIFFERENT MODEL RUNS HAVE ALL THE SAME OUTPUT APART FROM THE "ocean_flt.nc" file
-surf_01 <- surf_02 <- surf_03 <- surf_04 <- surf_05 <- surf_06 <- surf_07 <- surf_08 <- brick(empty.roms.ra,nl=3)
-susp_01 <- susp_02 <- susp_03 <- susp_04 <- susp_05 <- susp_06 <- susp_07 <- susp_08 <- brick(empty.roms.ra,nl=3)
+surf_01 <- surf_02 <- surf_03 <- surf_04 <- surf_05 <- surf_06 <- surf_07 <- surf_08 <- brick(empty.roms.ra,nl=7)
+susp_01 <- susp_02 <- susp_03 <- susp_04 <- susp_05 <- susp_06 <- susp_07 <- susp_08 <- brick(empty.roms.ra,nl=7)
 surf_his_01 <- surf_his_02 <- surf_his_03 <- surf_his_04 <- surf_his_05 <- surf_his_06 <- surf_his_07 <- surf_his_08 <-  brick(empty.roms.ra,nl=nlayers(u.raw))
 susp_his_01 <- susp_his_02 <- susp_his_03 <- susp_his_04 <- susp_his_05 <- susp_his_06 <- susp_his_07 <- susp_his_08 <-  brick(empty.roms.ra,nl=nlayers(u.raw))
 settle_01 <- settle_02 <- settle_03 <- settle_04 <- settle_05 <- settle_06 <- settle_07 <- settle_08 <- brick(empty.roms.ra,nl=nlayers(u.raw))
@@ -246,52 +258,64 @@ cols1 <- rev(viridis(50))#rev(magma(48))
 cols2 <- c("grey",rev(viridis(50)))
 cols3 <- c("grey",rev(viridis(50)))
 par(mfrow=c(3,3), mar=c(3,4,2,1))
-plot(surf_08[[1]], breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[2]))
-plot(surf_08[[2]], breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[3]))
-plot(surf_08[[3]], breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[4]))
-plot(susp_08[[1]], breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[2]))
-plot(susp_08[[2]], breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[3]))
-plot(susp_08[[3]], breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[4]))
-plot(settle_08[[10]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[2]))
-plot(settle_08[[20]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[3]))
-plot(settle_08[[30]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[4]))
+plot(surf_08[[1]], breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[1]))
+plot(surf_08[[4]], breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[4]))
+plot(surf_08[[7]], breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[7]))
+plot(susp_08[[1]], breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[1]))
+plot(susp_08[[4]], breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[4]))
+plot(susp_08[[7]], breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[7]))
+# plot(settle_08[[10]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[2]))
+# plot(settle_08[[20]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[3]))
+# plot(settle_08[[30]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[4]))
+plot(settle_08[[2]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[2]))
+plot(settle_08[[5]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[5]))
+plot(settle_08[[8]], breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[8]))
 
 #### comparisons Mertz
 par(mfrow=c(3,3))
 plot(surf_08[[1]], xlim=xlim, ylim=ylim, breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[1]))
-plot(surf_08[[2]], xlim=xlim, ylim=ylim, breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[2]))
-plot(surf_08[[3]], xlim=xlim, ylim=ylim, breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[3]))
+plot(surf_08[[4]], xlim=xlim, ylim=ylim, breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[4]))
+plot(surf_08[[7]], xlim=xlim, ylim=ylim, breaks=breaks1, col=cols1, main=paste0("surf_08 ",names(surf_08)[7]))
 plot(susp_08[[1]], xlim=xlim, ylim=ylim, breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[1]))
-plot(susp_08[[2]], xlim=xlim, ylim=ylim, breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[2]))
-plot(susp_08[[3]], xlim=xlim, ylim=ylim, breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[3]))
-plot(settle_08[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[10]))
-plot(settle_08[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[20]))
-plot(settle_08[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[30]))
+plot(susp_08[[4]], xlim=xlim, ylim=ylim, breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[4]))
+plot(susp_08[[7]], xlim=xlim, ylim=ylim, breaks=breaks2, col=cols2, main=paste0("susp_08 ",names(susp_08)[7]))
+# plot(settle_08[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[10]))
+# plot(settle_08[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[20]))
+# plot(settle_08[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[30]))
+plot(settle_08[[2]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[2]))
+plot(settle_08[[5]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[5]))
+plot(settle_08[[8]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols3, main=paste0("settle_08 ",names(settle_08)[8]))
 
 #### comparisons surf / sink / settle for Mertz
 par(mfrow=c(3,3))
-plot(settle_04[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[10]))
-plot(settle_04[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[20]))
-plot(settle_04[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[30]))
+# plot(settle_04[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[10]))
+# plot(settle_04[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[20]))
+# plot(settle_04[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[30]))
+plot(settle_04[[2]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[2]))
+plot(settle_04[[5]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[5]))
+plot(settle_04[[8]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_04 ",names(settle_04)[8]))
 # plot(settle_06[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_06 ",names(settle_06)[10]))
 # plot(settle_06[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_06 ",names(settle_06)[20]))
 # plot(settle_06[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_06 ",names(settle_06)[30]))
-plot(settle_08[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[10]))
-plot(settle_08[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[20]))
-plot(settle_08[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[30]))
+# plot(settle_08[[10]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[10]))
+# plot(settle_08[[20]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[20]))
+# plot(settle_08[[30]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[30]))
+plot(settle_08[[2]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[2]))
+plot(settle_08[[5]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[5]))
+plot(settle_08[[8]], xlim=xlim, ylim=ylim, breaks=breaks3, col=cols1, main=paste0("settle_08 ",names(settle_08)[8]))
 ```
 
 ```{r, fig.width=10, fig.height=10}
 #### comparisons surf / sink / settle for Mertz
 par(mfrow=c(3,2))
 plot(susp_08[[3]], xlim=xlim, ylim=ylim, main=paste0("susp_08 ",names(susp_08)[3]))#, breaks=breaks2, col=cols2)
-plot(settle_08[[31]], xlim=xlim, ylim=ylim, main=paste0("settle_08 ",names(settle_08)[3]))#, breaks=breaks3, col=cols1)
+plot(settle_08[[8]], xlim=xlim, ylim=ylim, main=paste0("settle_08 ",names(settle_08)[8]))#, breaks=breaks3, col=cols1)
 #plot(settle_08[[6]]-susp_08[[4]], xlim=xlim, ylim=ylim)
-plot(settle_08[[31]]-settle_08[[1]], xlim=xlim, ylim=ylim, main="sedimentation across 31 timesteps")
-plot(susp_08[[3]]-(settle_08[[31]]-settle_08[[1]]), xlim=xlim, ylim=ylim, main="mean-suspended minus sedimentation across 31 timesteps")
+plot(settle_08[[8]]-settle_08[[1]], xlim=xlim, ylim=ylim, main="sedimentation across 8 timesteps")
+plot(susp_08[[3]]-(settle_08[[8]]-settle_08[[1]]), xlim=xlim, ylim=ylim, main="mean-suspended minus sedimentation across 8 timesteps")
 
-plot((settle_08[[31]]-settle_08[[21]])/10, xlim=xlim, ylim=ylim, main="mean sedimentation last 10 timesteps")
-plot(susp_08[[3]]-(settle_08[[31]]-settle_08[[21]])/10, xlim=xlim, ylim=ylim, main="mean-suspended minus mean sedimentation for last third")
+# plot((settle_08[[31]]-settle_08[[21]])/10, xlim=xlim, ylim=ylim, main="mean sedimentation last 10 timesteps")
+plot(susp_08[[3]]-(settle_08[[8]]-settle_08[[1]])/10, xlim=xlim, ylim=ylim, main="mean-suspended minus mean sedimentation for last third")
 ```
 
 

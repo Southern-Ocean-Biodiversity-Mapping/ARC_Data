@@ -25,7 +25,7 @@ load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
 ## 2) COVER ----
 ## 2a) Prevalence
 cover_prev<-data.frame(count=colSums(cover_cells>0)) %>%
-  mutate(., prev= round(count/950, 3 )) %>%
+  mutate(., prev= round(count/961, 3 )) %>%
   rownames_to_column(., var="Label") %>%
   arrange(., desc(count))%>%
   add_column(Exclude= "",
@@ -58,7 +58,7 @@ rownames_to_column(., var="Taxa") %>%
 ## 3a) Prevalence
   
 count_prev<-data.frame(count=colSums(count_cells>0)) %>%
-  mutate(., prev= round(count/891, 3 )) %>%
+  mutate(., prev= round(count/897, 3 )) %>%
   rownames_to_column(., var="Label") %>%
   arrange(., desc(count)) %>%
 #add extra columns for notes
@@ -79,7 +79,7 @@ write_xlsx(x= list(COVER_prevalence=cover_prev,
           COVER_overall=cover_pc_overall,
           COUNT_prevalence= count_prev,
           COUNT_totAb= count_ab_overall),
-          path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"))
+          path=paste0(ARC_Data.dir, "Annotation/Species_list_29Sep22.xlsx"))
 
 
 #######################################################################
@@ -109,8 +109,10 @@ cover_cells_renamed<-pivot_wider(cover_cells_long, id_cols=cellID, names_from = 
 #remove species to exclude
 cover_mod<-cover_cells_renamed %>%
   select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
+cover_mod$cellID<-as.factor(cover_mod$cellID)
 
 #join back to cell metadata and environmental data
+
 cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
 
 
@@ -131,8 +133,13 @@ count_cells_long$new<-  ifelse(!is.na(count_cells_long$Merge_2pc), count_cells_l
 count_cells_renamed<-pivot_wider(count_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
 #remove species to exclude
-count_mod<-count_cells_renamed %>%
-  select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
+#count_mod<-count_cells_renamed %>%
+ # select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
+#some of these categories no longer exist. Only need ot exclude 'Tube"
+count_mod <- count_cells_renamed %>%
+  select(!Tube)
+
+count_mod$cellID<-as.factor(count_mod$cellID)
 
 #join back to cell metadata and environmental data
 count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")

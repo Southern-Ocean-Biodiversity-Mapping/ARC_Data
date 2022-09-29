@@ -300,6 +300,38 @@ image_metadata$gear[image_metadata$survey=="JR15005"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
 
+# ## CRS surveys are from multiple years
+dates <- unique(dat.list.clean$WAP$Date)
+dates
+sel.dates <- which(dat.list.clean$WAP$Date==dates[14])
+dat.list.clean$WAP$transectID[sel.dates]
+  
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1207"] <- 2009
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1208"] <- 2009
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1217"] <- 2009
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1219"] <- 2009
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1255"] <- 2009
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1267"] <- 2009
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1276"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1278"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1279"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1280"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1281"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1282"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1283"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1284"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1285"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1286"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1289"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1290"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1295"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1297"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1300"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1337"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1338"] <- 2010
+
+# image_metadata$year[image_metadata$survey=="CRS"] <- NA
+
 # for(i in c(1,8,15)){
 #   image_metadata[,i] <- as.factor(image_metadata[,i])
 # }
@@ -586,6 +618,235 @@ plot(r2, xlim=c(282500,283500),ylim=c(-2011500,-2010000))
 points(image_metadata[,5:6])
 points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=0.5)
 points(img.coord[sel2], cex=log(val), col="blue")
+
+
+
+
+
+##########################################################
+load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
+load(file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data.Rdata"))
+
+
+### standardise image metadata for csv-files
+
+# We need:
+# * SurveyID  
+# * TransectID  
+# * Filename  
+# * Filename-standardised  
+# * Longitude  
+# * Latitude  
+# * Date taken 
+# * Measured depth
+# * Link to original source  
+# * License  
+
+
+##### first, read in all metadata and store as a list
+csv.list <- list()
+csv.names <- c("Filename","Filename.standardised","Survey.ID","Transect.ID","Longitude","Latitude",
+               "Date","Date_start","Date_end","Source.link","License","Depth","Depth_start","Depth_end","Area","Area_from_annotations")
+
+csv.list$CRS <- cbind(dat.list$WAP[,c('Filename','Filename.standardised')],
+                      "CRS",dat.list$WAP[,c('transectID','lon','lat','Date')],
+                      NA,NA,
+                      NA,NA,
+                      dat.list$WAP[,c('depth.mean')],NA,NA,3,NA)
+
+csv.list$PS06 <- cbind(dat.list$PS06[,c('Filename','Filename.standardised')],
+                       "PS06",dat.list$PS06[,c('transectID','lon','lat')],
+                       NA,dat.list$PS06[,c('time_start','time_end')],
+                       NA,"CC-BY-3.0",
+                       dat.list$PS06[,c('depth')],NA,NA,NA,NA)
+
+csv.list$PS14 <- cbind(dat.list$PS14[,c('Filename','Filename.standardised')],
+                       "PS14",dat.list$PS14[,c('transectID','lon','lat')],
+                       NA,dat.list$PS14[,c('time_start','time_end')],
+                       NA,"CC-BY-3.0",
+                       NA,dat.list$PS14[,c('depth_start','depth_end')],0.56,NA)
+
+csv.list$PS18 <- cbind(dat.list$PS18[,c('Filename','Filename.standardised')],
+                       "PS18",dat.list$PS18[,c('transectID','lon','lat')],
+                       NA,dat.list$PS18[,c('time_start','time_end')],
+                       NA,"CC-BY-3.0",
+                       NA,dat.list$PS18[,c('depth_start','depth_end')],0.9,NA)
+
+csv.list$PS61 <- cbind(dat.list$PS61[,c('Filename','Filename.standardised')],
+                       "PS61",dat.list$PS61[,c('transectID','lon','lat')],
+                       NA,dat.list$PS61[,c('time_start','time_end')],
+                       NA,"CC-BY-3.0",
+                       NA,dat.list$PS61[,c('depth_start','depth_end')],1,NA)
+
+
+temp.PS81 <- cbind(dat.list$PS81[,c('Filename','Filename.standardised')],
+                   "PS81",dat.list$PS81[,c('transectID','Longitude','Latitude','Date.Time')],
+                   NA,NA,
+                   "doi.pangaea.de/10.1594/PANGAEA.872719","CC-BY-3.0",
+                   dat.list$PS81[,c('Bathy.depth..m.')],NA,NA,dat.list$PS81[,c('Area_from_metadata','Area')])
+temp.PS81_s <- cbind(dat.list$PS81_shallow[,c('Filename','Filename.standardised')],
+                     "PS81",dat.list$PS81_shallow[,c('transectID','Longitude','Latitude','Date.Time')],
+                     NA,NA,
+                     "doi.pangaea.de/10.1594/PANGAEA.872719","CC-BY-3.0",
+                     dat.list$PS81_shallow[,c('Bathy.depth..m.')],NA,NA,dat.list$PS81_shallow[,c('Area_from_metadata','Area')])
+names(temp.PS81) <- names(temp.PS81_s) <- csv.names
+csv.list$PS81 <- rbind(temp.PS81,temp.PS81_s)
+
+csv.list$PS96 <- cbind(dat.list$PS96[,c('Filename','Filename.standardised')],
+                       "PS96",dat.list$PS96[,c('transectID','Longitude','Latitude','Date.Time')],
+                       NA,NA,
+                       "doi.pangaea.de/10.1594/PANGAEA.862097","CC-BY-3.0",
+                       dat.list$PS96[,c('Depth.water..m.')],NA,NA,NA,dat.list$PS96[,c('Area')])
+
+csv.list$PS118 <- cbind(dat.list$PS118[,c('Filename','Filename.standardised')],
+                        "PS118",dat.list$PS118[,c('transectID','Longitude','Latitude','Date.Time')],
+                        NA,NA,
+                        "doi.pangaea.de/10.1594/PANGAEA.911904","CC-BY-4.0",
+                        dat.list$PS118[,c('Depth.water..m.')],NA,NA,NA,dat.list$PS118[,c('Area')])
+
+csv.list$TAN0802 <- cbind(dat.list$TAN0802[,c('FileName','Filename.standardised')],
+                          "TAN0802",dat.list$TAN0802[,c('transectID','GPS_lon','GPS_lat','time')],
+                          NA,NA,
+                          NA,NA,
+                          dat.list$TAN0802[,c('depth')],NA,NA,NA,NA)
+
+csv.list$TAN1802 <- cbind(dat.list$TAN1802[,c('FileName','Filename.standardised')],
+                          "TAN1802",dat.list$TAN1802[,c('transectID','GPS_lon','GPS_lat','time')],
+                          NA,NA,
+                          NA,NA,
+                          dat.list$TAN1802[,c('depth')],NA,NA,NA,NA)
+
+csv.list$TAN1901 <- cbind(dat.list$TAN1901[,c('FileName','Filename.standardised')],
+                          "TAN1901",dat.list$TAN1901[,c('transectID','GPS_lon','GPS_lat','time')],
+                          NA,NA,
+                          NA,NA,
+                          dat.list$TAN1901[,c('depth')],NA,NA,NA,NA)
+
+csv.list$NBP1402 <- cbind(dat.list$NBP1402[,c('FileName','Filename.standardised')],
+                          "NBP1402",dat.list$NBP1402[,c('transectID','GPS_lon','GPS_lat','time')],
+                          NA,NA,
+                          "www.usap-dc.org/view/dataset/601310","CC-BY-NC 4.0",
+                          dat.list$NBP1402[,c('Depth')],NA,NA,4.8,NA)
+
+csv.list$NBP1502 <- cbind(dat.list$NBP1502[,c('FileName','Filename.standardised')],
+                          "NBP1502",dat.list$NBP1502[,c('transectID','GPS_lon','GPS_lat','Date')],
+                          NA,NA,
+                          "doi.org/10.15784/601182","CC-BY-NC 4.0",
+                          NA,NA,NA,NA,NA)
+
+csv.list$AA2011 <- cbind(dat.list$AA2011[,c('Filename','Filename.standardised')],
+                         "AA2011",dat.list$AA2011[,c('transectID','lon','lat','DateTime')],
+                         NA,NA,
+                         "doi.org/doi:10.4225/15/59acda196ccfb","CC-BY-4.0",
+                         dat.list$AA2011[,c('altimeter')],NA,NA,NA,NA)
+
+csv.list$JR262 <- cbind(dat.list$JR262[,c('filename','Filename.standardised')],
+                        "JR262",dat.list$JR262[,c('transectID','lon','lat','time')],
+                        NA,NA,
+                        NA,NA,
+                        dat.list$JR262[,c('depth')],NA,NA,0.51,NA)
+
+csv.list$JR15005 <- cbind(dat.list$JR15005[,c('filename','Filename.standardised')],
+                          "JR15005",dat.list$JR15005[,c('transectID','lon','lat','time')],
+                          NA,NA,
+                          NA,NA,
+                          dat.list$JR15005[,c('depth')],NA,NA,0.51,NA)
+
+csv.list$JR17001 <- cbind(dat.list$JR17001[,c('filename','Filename.standardised')],
+                          "JR17001",dat.list$JR17001[,c('transectID','lon','lat','time')],
+                          NA,NA,
+                          NA,NA,
+                          dat.list$JR17001[,c('depth')],NA,NA,0.51,NA)
+
+csv.list$JR17003 <- cbind(dat.list$JR17003[,c('filename','Filename.standardised')],
+                          "JR17003",dat.list$JR17003[,c('transectID','lon','lat','time')],
+                          NA,NA,
+                          "doi.org/10.5285/48dcef16-6719-45e5-a335-3a97f099e451","http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+                          dat.list$JR17003[,c('depth')],NA,NA,0.51,NA)
+
+csv.list$LMG1311 <- cbind(dat.list$LMG1311[,c('filename','Filename.standardised')],
+                          "LMG1311",dat.list$LMG1311[,c('transectID','lon','lat','DateTime')],
+                          NA,NA,
+                          "doi.org/10.15784/601311","CC-BY-NC 4.0",
+                          NA,dat.list$LMG1311[,c('depth.start','depth.end')],NA,NA)
+
+for(i in 1:length(csv.list)){
+  names(csv.list[[i]]) <- csv.names
+}
+
+##### some surveys need special attention
+## PS06, PS14, PS18, PS61 all have a separate doi/link for each transect
+unique(csv.list$PS06$Transect.ID)
+csv.list$PS06$Source.link[csv.list$PS06$Transect.ID=="289"] <- "doi.pangaea.de/10.1594/PANGAEA.713324"
+csv.list$PS06$Source.link[csv.list$PS06$Transect.ID=="292"] <- "doi.pangaea.de/10.1594/PANGAEA.713325"
+unique(csv.list$PS14$Transect.ID)
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="245"] <- "doi.pangaea.de/10.1594/PANGAEA.691559"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="246"] <- "doi.pangaea.de/10.1594/PANGAEA.691560"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="250"] <- "doi.pangaea.de/10.1594/PANGAEA.691561"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="256"] <- "doi.pangaea.de/10.1594/PANGAEA.691562"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="259"] <- "doi.pangaea.de/10.1594/PANGAEA.691563"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="260"] <- "doi.pangaea.de/10.1594/PANGAEA.691564"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="261"] <- "doi.pangaea.de/10.1594/PANGAEA.691565"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="270"] <- "doi.pangaea.de/10.1594/PANGAEA.691566"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="275"] <- "doi.pangaea.de/10.1594/PANGAEA.691568"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="276"] <- "doi.pangaea.de/10.1594/PANGAEA.691569"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="277"] <- "doi.pangaea.de/10.1594/PANGAEA.691570"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="278-2"] <- "doi.pangaea.de/10.1594/PANGAEA.691571"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="278-3"] <- "doi.pangaea.de/10.1594/PANGAEA.691572"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="280"] <- "doi.pangaea.de/10.1594/PANGAEA.691573"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="285"] <- "doi.pangaea.de/10.1594/PANGAEA.691574"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="293"] <- "doi.pangaea.de/10.1594/PANGAEA.691575"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="294"] <- "doi.pangaea.de/10.1594/PANGAEA.691576"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="304"] <- "doi.pangaea.de/10.1594/PANGAEA.691577"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="305"] <- "doi.pangaea.de/10.1594/PANGAEA.691578"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="306"] <- "doi.pangaea.de/10.1594/PANGAEA.691579"
+csv.list$PS14$Source.link[csv.list$PS14$Transect.ID=="307"] <- "doi.pangaea.de/10.1594/PANGAEA.691580"
+unique(csv.list$PS18$Transect.ID)
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="126-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667008"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="126-6"] <- "doi.pangaea.de/10.1594/PANGAEA.667009"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="129-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667010"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="131-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667011"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="134-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667012"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="135-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667013"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="136-4"] <- "doi.pangaea.de/10.1594/PANGAEA.667014"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="160-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667015"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="165-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667017"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="169-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667018"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="171-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667019"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="174-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667021"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="175-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667022"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="179-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667023"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="180-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667024"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="182-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667025"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="189-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667026"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="206-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667027"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="211-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667029"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="212-2"] <- "doi.pangaea.de/10.1594/PANGAEA.667030"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="220-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667031"
+csv.list$PS18$Source.link[csv.list$PS18$Transect.ID=="222-1"] <- "doi.pangaea.de/10.1594/PANGAEA.667032"
+unique(csv.list$PS61$Transect.ID)
+csv.list$PS61$Source.link[csv.list$PS61$Transect.ID=="235-1"] <- "doi.org/10.1594/PANGAEA.220746"
+csv.list$PS61$Source.link[csv.list$PS61$Transect.ID=="249-1"] <- "doi.org/10.1594/PANGAEA.220747"
+
+
+for(i in 1:19){
+  message(names(csv.list)[i])
+  print(head(csv.list[[i]]))
+}
+
+
+### add annotated area
+image_metadata$area
+
+
+
+### save individual csv files
+
+
+
+
+
+
 
 
 

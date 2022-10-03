@@ -51,7 +51,8 @@ ant.toc.locs.raw <- read.csv(paste0(sed.dir,"Circumpolar_TOC_coords_Leventer.csv
 ant.toc.locs <- project(as.matrix(ant.toc.locs.raw[-c(90,95),c(5,4)]),proj=ant.proj)
 
 #### load ROMS-runs:
-data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test2a/")
+# data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test2a/")
+data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_test3a/")
 # data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_float_test_6/")
 # data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/4km_outputs/output_sed_float_test8/")
 # data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test3/")
@@ -73,17 +74,17 @@ empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=400
 
 #### load other ROMS data (currents & depth)
 #depth
-h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
+h <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="h", level=1)
 #salinity
-salt <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="salt", level=1)
+salt <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="salt", level=1)
 #temperature
-temp <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="temp", level=1)
+temp <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="temp", level=1)
 #seafloor currents (seafloor-layer is 1)
-u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
-v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)
+u.raw <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
+v.raw <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="v", level=1)
 #seasurface currents (surface-layer is 31)
-u_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="u", level=31)
-v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="v", level=31)
+u_31.raw <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=31)
+v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=31)
 ## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
 u.mean <- sum(u.raw)/nlayers(u.raw)
 v.mean <- sum(v.raw)/nlayers(v.raw)

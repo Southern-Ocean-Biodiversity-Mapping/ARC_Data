@@ -75,11 +75,11 @@ count_ab_overall<-data.frame(total_count=colSums(count_cells))%>%
 
 ## 4) Save to excel to comments and notes on aggregation etc.
 
-write_xlsx(x= list(COVER_prevalence=cover_prev,
-          COVER_overall=cover_pc_overall,
-          COUNT_prevalence= count_prev,
-          COUNT_totAb= count_ab_overall),
-          path=paste0(ARC_Data.dir, "Annotation/Species_list_29Sep22.xlsx"))
+# write_xlsx(x= list(COVER_prevalence=cover_prev,
+#           COVER_overall=cover_pc_overall,
+#           COUNT_prevalence= count_prev,
+#           COUNT_totAb= count_ab_overall),
+#           path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_06.xlsx"))
 
 
 #######################################################################
@@ -90,7 +90,7 @@ load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
 
 
 ## 5a) cover data
-mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"),
+mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_06.xlsx"),
 sheet=1)
 names(mod_cover_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
@@ -106,9 +106,9 @@ cover_cells_long$new<-  ifelse(!is.na(cover_cells_long$Merge_2pc), cover_cells_l
 
 cover_cells_renamed<-pivot_wider(cover_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
-#remove species to exclude
-cover_mod<-cover_cells_renamed %>%
-  select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
+#remove species to exclude (DON'T REMOVE BECAUSE WE MESS UP TOTAL COVER DATA?)
+# cover_mod<-cover_cells_renamed %>%
+#   select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
 cover_mod$cellID<-as.factor(cover_mod$cellID)
 
 #join back to cell metadata and environmental data
@@ -117,7 +117,7 @@ cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
 
 
 ## 5b) count data
-mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list.xlsx"),
+mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_06.xlsx"),
                           sheet=3)
 names(mod_count_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
@@ -133,11 +133,11 @@ count_cells_long$new<-  ifelse(!is.na(count_cells_long$Merge_2pc), count_cells_l
 count_cells_renamed<-pivot_wider(count_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
 #remove species to exclude
-#count_mod<-count_cells_renamed %>%
- # select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
-#some of these categories no longer exist. Only need ot exclude 'Tube"
-count_mod <- count_cells_renamed %>%
-  select(!Tube)
+count_mod<-count_cells_renamed %>%
+ select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
+# #some of these categories no longer exist. Only need to exclude 'Tube"
+# count_mod <- count_cells_renamed %>%
+#   select(!Tube)
 
 count_mod$cellID<-as.factor(count_mod$cellID)
 

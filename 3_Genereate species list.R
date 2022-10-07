@@ -7,17 +7,33 @@
 ###################################################################################################
 
 
-
 # 1) libraries and paths 
 library(tidyverse)
 library(writexl)
 library(readxl)
 
-sci.dir <-      "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
-env.derived <-  paste0(sci.dir,"data_environmental/derived/")
-tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
-ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
+user = "Jan"
+#user = "charley"
+#user="nicole"
 
+if (user == "Jan") {
+  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+  tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+  ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+} 
+if (user == "charley") {
+  sci.dir <- "C:/Users/cgros/code/IMAS/"
+  ARC_Data.dir <- paste0(sci.dir,"ARC_Data/")
+  env.derived <-  "C:/Users/cgros/data/SO_env_layers/derived/"
+  tools.dir <-    paste0(sci.dir,"Useful_Functions_Tools/")
+}
+if (user == "nicole") {
+  sci.dir <-    "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
+  ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
+  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+  tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
+}
 
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
 
@@ -90,7 +106,7 @@ load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
 
 
 ## 5a) cover data
-mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_06.xlsx"),
+mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_07.xlsx"),
 sheet=1)
 names(mod_cover_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
@@ -107,6 +123,7 @@ cover_cells_long$new<-  ifelse(!is.na(cover_cells_long$Merge_2pc), cover_cells_l
 cover_cells_renamed<-pivot_wider(cover_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
 #remove species to exclude (DON'T REMOVE BECAUSE WE MESS UP TOTAL COVER DATA?)
+cover_mod<-cover_cells_renamed
 # cover_mod<-cover_cells_renamed %>%
 #   select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
 cover_mod$cellID<-as.factor(cover_mod$cellID)
@@ -117,7 +134,7 @@ cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
 
 
 ## 5b) count data
-mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_06.xlsx"),
+mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_07.xlsx"),
                           sheet=3)
 names(mod_count_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 

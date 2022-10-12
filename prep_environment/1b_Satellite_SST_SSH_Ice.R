@@ -336,13 +336,13 @@ writeRaster(geomorph_rast, filename = paste0(VM_path2, string.chr, "geomorpholog
 # geomorph_rast<-rasterize(geomorph, bathy_2km_shelf, field=3)
 # 
 # ###
-# writeRaster(ice_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ice",".tif"), overwrite=TRUE)
-# writeRaster(ice_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ice",".tif"), overwrite=TRUE)
-# writeRaster(sst_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "sst",".tif"), overwrite=TRUE)
-# writeRaster(sst_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_sst",".tif"), overwrite=TRUE)
-# writeRaster(ssh_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ssh",".tif"), overwrite=TRUE)
-# writeRaster(ssh_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ssh",".tif"), overwrite=TRUE)
-# writeRaster(geomorph_rast,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "geomorphology",".tif"))
+# writeRaster(ice_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ice"), overwrite=TRUE)
+# writeRaster(ice_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ice"), overwrite=TRUE)
+# writeRaster(sst_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "sst"), overwrite=TRUE)
+# writeRaster(sst_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_sst"), overwrite=TRUE)
+# writeRaster(ssh_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ssh"), overwrite=TRUE)
+# writeRaster(ssh_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ssh"), overwrite=TRUE)
+# writeRaster(geomorph_rast,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "geomorphology"))
 
 
 

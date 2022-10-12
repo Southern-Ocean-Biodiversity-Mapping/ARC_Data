@@ -309,3 +309,45 @@ geomorph<-readOGR("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_wo
 geomorph_rast<-rasterize(geomorph, bathy_shelf, field=3)
 plot(geomorph_rast)
 writeRaster(geomorph_rast, filename = paste0(VM_path2, string.chr, "geomorphology"))
+
+
+
+
+# #######################################################
+# #### read in all of the above datasets and save as 2km resolution files, with a depth-range of 0 to 2500m
+# ice_stack <- stack(paste0(VM_path2, "Circumpolar_EnvData_ice"))
+# sst_stack <- stack(paste0(VM_path2, "Circumpolar_EnvData_SST"))
+# ssh_stack <- stack(paste0(VM_path2, "Circumpolar_EnvData_SSH"))
+# geomorph<-readOGR("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb", layer="AntarcticGeomorphology")
+# 
+# ## load 2km bathy file:
+# bathy_2km_shelf <- raster(...)
+# 
+# ## bring to 2km resolution and 2500m depth range
+# ice_stack_2km<-projectRaster(ice_stack, bathy_2km_shelf)
+# ice_stack_2km_shelf<-mask(ice_stack_2km, bathy_2km_shelf)
+# 
+# sst_stack_2km<-projectRaster(sst_stack, bathy_2km_shelf)
+# sst_stack_2km_shelf<-mask(sst_stack_2km, bathy_2km_shelf)
+# 
+# ssh_stack_2km<-projectRaster(ssh_stack, bathy_2km_shelf)
+# ssh_stack_2km_shelf<-mask(ssh_stack_2km, bathy_2km_shelf)
+# 
+# geomorph_rast<-rasterize(geomorph, bathy_2km_shelf, field=3)
+# 
+# ###
+# writeRaster(ice_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ice",".tif"), overwrite=TRUE)
+# writeRaster(ice_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ice",".tif"), overwrite=TRUE)
+# writeRaster(sst_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "sst",".tif"), overwrite=TRUE)
+# writeRaster(sst_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_sst",".tif"), overwrite=TRUE)
+# writeRaster(ssh_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ssh",".tif"), overwrite=TRUE)
+# writeRaster(ssh_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ssh",".tif"), overwrite=TRUE)
+# writeRaster(geomorph_rast,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "geomorphology",".tif"))
+
+
+
+
+
+
+
+

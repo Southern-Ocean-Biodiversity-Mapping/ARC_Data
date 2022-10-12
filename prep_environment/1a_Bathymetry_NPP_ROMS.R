@@ -29,6 +29,7 @@ library(dplyr)
 library(blueant)
 library(rgdal)        ## package for geospatial analysis
 library(ggplot2)      ## package for plotting
+library(terra)
 
 library(spatialEco)
 
@@ -94,9 +95,8 @@ if(data.depth=="shelf"){
 
 
 #NOTE: gebco, takes 30-40mins to run!
-
 ## read in bathymetry data and project/reproject if needed
-r <- readtopo("ibcso") ## already projected and at 500m resolution
+ri <- readtopo("ibcso") ## already projected and at 500m resolution
 if(data.name=="gebco"){
   ## load raw (unprojected) data
   # g <- raster(paste0(env.raw,"GEBCO_2020/gebco_2020_SO.tif"))
@@ -115,12 +115,19 @@ if(data.name=="gebco"){
   r <- g  
 }
 
+## OR, load the latest IBCSO version here:
+r <- raster(paste0(env.raw,"IBCSO_2022/IBCSO_v2_ice-surface.tif"))
+r <- crop(r, ri)
+
 ## create layers for depth, slope and topographic position index (TPI) at different scales
 r.depth <- r
-r.slope <- terrain(r)
-r.tpi <- tpi(r)
-r.tpi5 <- tpi(r, scale=5)
-r.tpi11 <- tpi(r, scale=11)
+r.depth[r.depth>=200] <- NA
+r.depth[r.depth<=-3500] <- NA
+
+r.slope <- terrain(r.depth)
+r.tpi <- tpi(r.depth)
+r.tpi5 <- tpi(r.depth, scale=5)
+r.tpi11 <- tpi(r.depth, scale=11)
 # r.tpi21 <- tpi(r, scale=21)
 # r.tpi31 <- tpi(r, scale=31)
 
@@ -134,8 +141,8 @@ r.tpi11[is.na(r.depth[])] <- NA
 # r.tpi21[is.na(r.depth[])] <- NA
 # r.tpi31[is.na(r.depth[])] <- NA
 
-r.bathy <- stack(r.depth, r.slope, r.tpi, r.tpi5, r.tpi11)#, r.tpi21, r.tpi31)
-names(r.bathy) <- c("depth","slope","tpi","tpi5","tpi11")#"tpi21","tpi31")
+# r.bathy <- stack(r.depth, r.slope, r.tpi, r.tpi5, r.tpi11)#, r.tpi21, r.tpi31)
+# names(r.bathy) <- c("depth","slope","tpi","tpi5","tpi11")#"tpi21","tpi31")
 
 # # xlim=c(128,148)
 # # ylim=c(-67.5,-64)
@@ -180,12 +187,47 @@ if(data.name=="gebco"){
 save.string <- paste0(env.derived, string.chr, res.string, ra.string, "bathy_", data.name)
 
 # writeRaster(g, filename=paste0("C:/Users/jjansen/Desktop/science/data_environmental/derived/Circumpolar_EnvData_500m_bathy_gebco.Rdata"), overwrite=TRUE)
-writeRaster(r.depth, filename=paste0(save.string,"_depth.grd"), overwrite=TRUE)
-writeRaster(r.slope, filename=paste0(save.string,"_slope.grd"), overwrite=TRUE)
-writeRaster(r.tpi,   filename=paste0(save.string,"_tpi.grd"), overwrite=TRUE)
-writeRaster(r.tpi5,  filename=paste0(save.string,"_tpi5.grd"), overwrite=TRUE)
-writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.grd"), overwrite=TRUE)
+# writeRaster(r.depth, filename=paste0(save.string,"_depth.grd"), overwrite=TRUE)
+# writeRaster(r.slope, filename=paste0(save.string,"_slope.grd"), overwrite=TRUE)
+# writeRaster(r.tpi,   filename=paste0(save.string,"_tpi.grd"), overwrite=TRUE)
+# writeRaster(r.tpi5,  filename=paste0(save.string,"_tpi5.grd"), overwrite=TRUE)
+# writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.grd"), overwrite=TRUE)
+writeRaster(r.depth, filename=paste0(save.string,"_depth.tif"), overwrite=TRUE)
+writeRaster(r.slope, filename=paste0(save.string,"_slope.tif"), overwrite=TRUE)
+writeRaster(r.tpi,   filename=paste0(save.string,"_tpi.tif"), overwrite=TRUE)
+writeRaster(r.tpi5,  filename=paste0(save.string,"_tpi5.tif"), overwrite=TRUE)
+writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.tif"), overwrite=TRUE)
 
+##### redo the same for 2km resolution data:
+rm(r.depth, r.slope, r.tpi, r.tpi5, r.tpi11)
+r2k.depth <- aggregate(r, 4)
+r2k.depth[r2k.depth>=200] <- NA
+r2k.depth[r2k.depth<=-3500] <- NA
+
+r2k.slope <- terrain(r2k.depth)
+r2k.tpi <- tpi(r2k.depth)
+r2k.tpi5 <- tpi(r2k.depth, scale=5)
+r2k.tpi11 <- tpi(r2k.depth, scale=11)
+# r.tpi21 <- tpi(r, scale=21)
+# r.tpi31 <- tpi(r, scale=31)
+
+## set anything on land to NA, and optionally set abyssal zone to NA
+r2k.depth[r2k.depth>=0] <- NA
+r2k.depth[r2k.depth<=depth.range[2]] <- NA
+r2k.slope[is.na(r2k.depth[])] <- NA
+r2k.tpi[is.na(r2k.depth[])] <- NA
+r2k.tpi5[is.na(r2k.depth[])] <- NA
+r2k.tpi11[is.na(r2k.depth[])] <- NA
+
+save.string <- paste0(env.derived, string.chr, "2km_", ra.string, "bathy_", data.name)
+writeRaster(r2k.depth, filename=paste0(save.string,"_depth.tif"), overwrite=TRUE)
+writeRaster(r2k.slope, filename=paste0(save.string,"_slope.tif"), overwrite=TRUE)
+writeRaster(r2k.tpi,   filename=paste0(save.string,"_tpi.tif"), overwrite=TRUE)
+writeRaster(r2k.tpi5,  filename=paste0(save.string,"_tpi5.tif"), overwrite=TRUE)
+writeRaster(r2k.tpi11, filename=paste0(save.string,"_tpi11.tif"), overwrite=TRUE)
+
+
+###
 
 r <- raster(paste0(env.derived,string.chr,"500m_bathy_gebco.grd"))
 r[r>=0] <- NA

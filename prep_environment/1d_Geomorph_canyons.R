@@ -15,9 +15,11 @@ library(sf)
 library(rasterDT)     ##Faster version of rasterize
 library(stars)
 library(rgeos)
+library(stringr)
 
 #user = "Nicole"
-user = "charley"
+#user = "charley"
+user="Jan"
 
 SHOW_PLOT = FALSE
 
@@ -39,8 +41,17 @@ if (user == "Nicole") {
   env.derived <- paste0(env.folder, "derived/")
   tools.dir <- paste0(sci.dir,"Useful_Functions_Tools/")
   path_geomorphology_gdb <- paste0(env.raw,"Geomorphology.gdb")
-}
-path_r_depth <- paste0(env.derived, "Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd")
+} else if (user == "Jan") {
+  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+  tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+  ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+  env.raw <- "E:/science/data_environmental/raw/"
+  path_geomorphology_gdb <- paste0(env.raw,"Geomorphology.gdb")
+} 
+
+path_r_depth <- paste0(env.derived, "Circumpolar_EnvData_500m_shelf_bathy_ibcso2_depth.tif")
+path_r_depth2k <- paste0(env.derived, "Circumpolar_EnvData_2km_shelf_bathy_ibcso2_depth.tif")
 
 ### 1) set up details for conversion ----
 # polar stereographic projection:
@@ -52,7 +63,8 @@ string.res <- "500m_"
 
 #template raster
 #bathy_shelf<-raster(paste0(VM_path2, "Circumpolar_EnvData_500m_shelf_bathy_gebco_depth"))
-bathy_shelf<-raster(paste0(env.derived, "Circumpolar_EnvData_500m_shelf_bathy_gebco_depth"))
+bathy_shelf<-raster(path_r_depth)
+bathy_shelf2k<-raster(path_r_depth2k)
 
 #coastline
 load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
@@ -66,14 +78,16 @@ geomorph<-st_read(path_geomorphology_gdb, layer="AntarcticGeomorphology")
 
 geomorph_pro<-st_transform(geomorph, CRS(stereo)) #both stereographic, but slightly different projection
 geomorph_rast<-fasterizeDT(geomorph_pro, bathy_shelf, field="Feature")
+geomorph_rast2k<-fasterizeDT(geomorph_pro, bathy_shelf2k, field="Feature")
 
 if (SHOW_PLOT) {
-  plot(geomorph_rast)
+  plot(geomorph_rast2k)
   plot(coast.proj, add=TRUE) #looks right
 }
 
 #writeRaster(geomorph_rast, filename = paste0(VM_path2, string.chr, "geomorphology"))
 writeRaster(geomorph_rast, filename = paste0(env.derived, string.chr, "geomorphology"), overwrite=TRUE)
+writeRaster(geomorph_rast2k, filename = paste0(env.derived, string.chr, "2km_geomorphology"), overwrite=TRUE)
 
 
 ## 3) Distance to canyonheads (for canyons above 3000 m)
@@ -166,6 +180,7 @@ distance_to_canyon[is.na(r_depth)] <- NA
 
 # Save result
 writeRaster(distance_to_canyon, filename = paste0(env.derived, string.chr, "500m_shelf_distance2canyons"), overwrite=TRUE)
+#writeRaster(distance_to_canyon, filename = paste0(env.derived, string.chr, "2km_shelf_distance2canyons.tif"), overwrite=TRUE)
 
 if (SHOW_PLOT) {
   par(mar=c(0,0,0,0))

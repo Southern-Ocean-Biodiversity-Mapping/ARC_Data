@@ -36,7 +36,7 @@ if (user == "nicole") {
 library(terra)
 
 ## first, load bathy data and draw a mask to include/exclude areas
-r2 <- rast(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.tif"))
+r2 <- rast(paste0(env.derived,"res_500m/shelf/Circumpolar_EnvData_500m_shelf_bathy_ibcso2_depth.tif"))
 #t <- draw(x="polygon")
 #writeVector(t,paste0(env.derived,"Circumpolar_EnvData_mask_shelf.shp"))
 t <- vect(paste0(env.derived,"Circumpolar_EnvData_mask_shelf.shp"))
@@ -72,11 +72,87 @@ names(env_stack) <- env_names
 
 
 
+
+
+
+
+#######################################################
+##### ICE, SSH & SST
+#######################################################
+
+# #### read in all of the above datasets and save as 2km resolution files, with a depth-range of 0 to 2500m
+# ice_stack <- stack(paste0(VM_path2, "Circumpolar_EnvData_ice"))
+# sst_stack <- stack(paste0(VM_path2, "Circumpolar_EnvData_SST"))
+# ssh_stack <- stack(paste0(VM_path2, "Circumpolar_EnvData_SSH"))
+# geomorph<-readOGR("C:\\Users\\hillna\\OneDrive - University of Tasmania\\UTAS_work\\Projects\\Benthic Diversity ARC\\data_environmental\\raw\\Geomorphology.gdb", layer="AntarcticGeomorphology")
+# 
+# ## load 2km bathy file:
+# bathy_2km_shelf <- raster(...)
+# 
+# ## bring to 2km resolution and 2500m depth range
+# ice_stack_2km<-projectRaster(ice_stack, bathy_2km_shelf)
+# ice_stack_2km_shelf<-mask(ice_stack_2km, bathy_2km_shelf)
+# 
+# sst_stack_2km<-projectRaster(sst_stack, bathy_2km_shelf)
+# sst_stack_2km_shelf<-mask(sst_stack_2km, bathy_2km_shelf)
+# 
+# ssh_stack_2km<-projectRaster(ssh_stack, bathy_2km_shelf)
+# ssh_stack_2km_shelf<-mask(ssh_stack_2km, bathy_2km_shelf)
+# 
+
+
+#######################################################
+##### GEOMORPH & DISTANCE TO CANYONS
+#######################################################
+
+# geomorph_rast<-rasterize(geomorph, bathy_2km_shelf, field=3)
+# 
+# ###
+ogrListLayers(paste0(env.raw,"/Geomorphology.gdb"))
+geomorph<-readOGR(paste0(env.raw,"/Geomorphology.gdb"), layer="AntarcticGeomorphology")
+
+bathy_2km <- raster(paste0(env.derived,"/Circumpolar_EnvData_2km_shelf_bathy_ibcso2_depth.tif"))
+geomorph_rast_2km<-rasterize(geomorph, bathy_2km, field=3)
+writeRaster(geomorph_rast_2km, filename = paste0(VM_path2, string.chr, "geomorphology_2km"))
+
+
+#######################################################
+##### BGC
+#######################################################
+
+
+
+
+
+
+
+#######################################################
+##### NPP and WAOM-OUTPUT
+#######################################################
+
+
+
+
+
+
+
+
+
+
 ### lower their resolution
 
 
 ### mask both high-res and low-res layers and save the output
 
+
+
+# writeRaster(ice_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ice"), overwrite=TRUE)
+# writeRaster(ice_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ice"), overwrite=TRUE)
+# writeRaster(sst_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "sst"), overwrite=TRUE)
+# writeRaster(sst_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_sst"), overwrite=TRUE)
+# writeRaster(ssh_stack_2km,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "ssh"), overwrite=TRUE)
+# writeRaster(ssh_stack_2km_shelf, filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "shelf_ssh"), overwrite=TRUE)
+# writeRaster(geomorph_rast,       filename=paste0(VM_path2, "Circumpolar_EnvData_2km_", "geomorphology"))
 
 
 

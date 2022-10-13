@@ -77,8 +77,8 @@ set_data_roots(AAD_dir)
 
 ## Choose dataset
 #data.name <- "ibcso"  ## ibcso can be found using Ben's AAd dataset-wrapper
-#data.name <- "ibcso2"  ## DOESN'T EXIST YET, DOESN'T FUNCTION IN THE CODE YET
-data.name <- "gebco"  ## gebco is on file
+data.name <- "ibcso2"  ## DOESN'T EXIST YET, DOESN'T FUNCTION IN THE CODE YET
+#data.name <- "gebco"  ## gebco is on file
 
 ## Choose resolution and projection (only relevant for gebco bathymetry)
 data.format <- "project.500" ## project polar stereographic to 500m resolution
@@ -118,6 +118,7 @@ if(data.name=="gebco"){
 ## OR, load the latest IBCSO version here:
 r <- raster(paste0(env.raw,"IBCSO_2022/IBCSO_v2_ice-surface.tif"))
 r <- crop(r, ri)
+r <- projectRaster(r, ri)
 
 ## create layers for depth, slope and topographic position index (TPI) at different scales
 r.depth <- r
@@ -233,6 +234,8 @@ r <- raster(paste0(env.derived,string.chr,"500m_bathy_gebco.grd"))
 r[r>=0] <- NA
 r[r<=depth.range[2]] <- NA
 
+r.depth <- raster(paste0(env.derived,string.chr,"500m_shelf_bathy_ibcso2_depth.tif"))
+
 #### 4) Net Primary Production ----
 
 #Raw NPP is being read in and manipulated using a different script as part of preparing the input for the circumpolar ocean model ("ReadIn_Circumpolar_Environmental_Data_ROMS_NPP.Rmd").    
@@ -310,16 +313,43 @@ Mar_ave <- mean(brick(list_03[-1]), na.rm=TRUE)
 Oct_ave <- mean(brick(list_10), na.rm=TRUE)
 Nov_ave <- mean(brick(list_11), na.rm=TRUE)
 Dec_ave <- mean(brick(list_12), na.rm=TRUE)
+Jan_sd <- calc(brick(list_01[-1]), fun=sd, na.rm=TRUE)
+Feb_sd <- calc(brick(list_02[-1]), fun=sd, na.rm=TRUE)
+Mar_sd <- calc(brick(list_03[-1]), fun=sd, na.rm=TRUE)
+Oct_sd <- calc(brick(list_10), fun=sd, na.rm=TRUE)
+Nov_sd <- calc(brick(list_11), fun=sd, na.rm=TRUE)
+Dec_sd <- calc(brick(list_12), fun=sd, na.rm=TRUE)
 
-Su_ave <- mean(Jan_ave,Feb_ave,Mar_ave,Oct_ave,Nov_ave,Dec_ave, na.rm=TRUE)
-writeRaster(Su_ave, filename=paste0(env.derived,string.chr,"NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
+Su_ave <- calc(stack(Jan_ave,Feb_ave,Mar_ave,Oct_ave,Nov_ave,Dec_ave), fun=mean, na.rm=TRUE)
+Su_sd <- calc(stack(brick(list_01[-1]),brick(list_02[-1]),brick(list_03[-1]),
+                    brick(list_10),brick(list_11), brick(list_12)), fun=sd, na.rm=TRUE)
+writeRaster(Su_ave, filename=paste0(env.derived,string.chr,"NPP_Cafe_filled_SummerAverage.tif"), overwrite=TRUE)
+writeRaster(Su_sd, filename=paste0(env.derived,string.chr,"NPP_Cafe_filled_SummerStandardDeviation.tif"), overwrite=TRUE)
 
 npp_su <- projectRaster(Su_ave,r)
-writeRaster(npp_su, filename=paste0(env.derived,string.chr,"500m_NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
+npp_su_sd <- projectRaster(Su_sd,r)
+writeRaster(npp_su, filename=paste0(env.derived,string.chr,"500m_NPP_Cafe_filled_SummerAverage.tif"), overwrite=TRUE)
+writeRaster(npp_su_sd, filename=paste0(env.derived,string.chr,"500m_NPP_Cafe_filled_SummerStandardDeviation.tif"), overwrite=TRUE)
 
+npp2k_su <- projectRaster(Su_ave,r2k.depth)
+npp2k_su_sd <- projectRaster(Su_sd,r2k.depth)
+writeRaster(npp2k_su, filename=paste0(env.derived,string.chr,"2km_NPP_Cafe_filled_SummerAverage.tif"), overwrite=TRUE)
+writeRaster(npp2k_su_sd, filename=paste0(env.derived,string.chr,"2km_NPP_Cafe_filled_SummerStandardDeviation.tif"), overwrite=TRUE)
+
+r.depth <- raster(paste0(env.derived,string.chr,"500m_shelf_bathy_ibcso2_depth.tif"))
 npp_su_shelf <- npp_su
 npp_su_shelf[is.na(r.depth)] <- NA
-writeRaster(npp_su_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP_Cafe_filled_SummerAverage.Rdata"), overwrite=TRUE)
+npp_su_sd_shelf <- npp_su_sd
+npp_su_sd_shelf[is.na(r.depth)] <- NA
+writeRaster(npp_su_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP_Cafe_filled_SummerAverage.tif"), overwrite=TRUE)
+writeRaster(npp_su_sd_shelf, filename=paste0(env.derived,string.chr,"500m_shelf_NPP_Cafe_filled_SummerStandardDeviation.tif"), overwrite=TRUE)
+
+npp2k_su_shelf <- npp2k_su
+npp2k_su_shelf[is.na(r2k.depth)] <- NA
+npp2k_su_sd_shelf <- npp2k_su_sd
+npp2k_su_sd_shelf[is.na(r2k.depth)] <- NA
+writeRaster(npp2k_su_shelf, filename=paste0(env.derived,string.chr,"2km_shelf_NPP_Cafe_filled_SummerAverage.tif"), overwrite=TRUE)
+writeRaster(npp2k_su_sd_shelf, filename=paste0(env.derived,string.chr,"2km_shelf_NPP_Cafe_filled_SummerStandardDeviation.tif"), overwrite=TRUE)
 
 
 #### 5) ROMS Currents & Temperature & FAM ----
@@ -331,7 +361,7 @@ grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
 lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
 lat_rho <- ncvar_get(grd4k_nc, varid="lat_rho")
 #### Prepare empty rasters to assign correct projected values to
-roms.coords.proj <- project(cbind(c(lon_rho), c(lat_rho)), proj=stereo)
+roms.coords.proj <- rgdal::project(cbind(c(lon_rho), c(lat_rho)), proj=stereo)
 x.range <- c(min(roms.coords.proj[,1])-2000,max(roms.coords.proj[,1])+2000)
 y.range <- c(min(roms.coords.proj[,2])-2000,max(roms.coords.proj[,2])+2000)
 empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=stereo, resolution=4000)
@@ -436,27 +466,75 @@ susp_08_500_shelf[is.na(r)] <- NA
 flux_08_500_shelf[is.na(r)] <- NA
 
 ## write rasters to file
-writeRaster(mean.uv_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.Rdata"))
-writeRaster(mean.uv_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.Rdata"))
-writeRaster(abs.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.Rdata"))
-writeRaster(abs.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.Rdata"))
-writeRaster(res.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.Rdata"))
-writeRaster(res.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.Rdata"))
-writeRaster(temp,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.Rdata"))
-writeRaster(t_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloortemperature.Rdata"))
-writeRaster(t_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloortemperature.Rdata"))
-writeRaster(salt,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.Rdata"))
-writeRaster(s_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.Rdata"))
-writeRaster(s_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.Rdata"))
-writeRaster(settle_08,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_settle08.Rdata"))
-writeRaster(settle_08_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_settle08.Rdata"))
-writeRaster(settle_08_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_settle08.Rdata"))
-writeRaster(susp_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_susp08.Rdata"))
-writeRaster(susp_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_susp08.Rdata"))
-writeRaster(susp_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_susp08.Rdata"))
-writeRaster(flux_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_flux08.Rdata"))
-writeRaster(flux_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_flux08.Rdata"))
-writeRaster(flux_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_flux08.Rdata"))
+writeRaster(mean.uv_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(mean.uv_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(abs.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(abs.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(res.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(res.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(temp,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.tif"))
+writeRaster(t_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloortemperature.tif"))
+writeRaster(t_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloortemperature.tif"))
+writeRaster(salt,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.tif"))
+writeRaster(s_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.tif"))
+writeRaster(s_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.tif"))
+writeRaster(settle_08,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_settle08.tif"))
+writeRaster(settle_08_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_settle08.tif"))
+writeRaster(settle_08_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_settle08.tif"))
+writeRaster(susp_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_susp08.tif"))
+writeRaster(susp_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_susp08.tif"))
+writeRaster(susp_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_susp08.tif"))
+writeRaster(flux_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_flux08.tif"))
+writeRaster(flux_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_flux08.tif"))
+writeRaster(flux_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_flux08.tif"))
+
+
+## resample to standard 500m resolution of other environmental variables
+mean.uv_2k <- resample(mean.uv,r2k.depth)
+abs.uv_2k <-  resample(abs.uv,r2k.depth)
+res.uv_2k <-  resample(res.uv,r2k.depth)
+t_2k <-       resample(te,r2k.depth)
+s_2k <-       resample(sa,r2k.depth)
+settle_08_2k<-resample(se,r2k.depth)
+susp_08_2k <- resample(su,r2k.depth)
+flux_08_2k <- resample(fl,r2k.depth)
+
+## shelf only
+mean.uv_2k_shelf <- mean.uv_2k
+abs.uv_2k_shelf <- abs.uv_2k
+res.uv_2k_shelf <- res.uv_2k
+t_2k_shelf <- t_2k
+s_2k_shelf <- s_2k
+settle_08_2k_shelf <- settle_08_2k
+susp_08_2k_shelf <- susp_08_2k
+flux_08_2k_shelf <- flux_08_2k
+
+mean.uv_2k_shelf[is.na(r2k.depth)] <- NA
+abs.uv_2k_shelf[is.na(r2k.depth)] <- NA
+res.uv_2k_shelf[is.na(r2k.depth)] <- NA
+t_2k_shelf[is.na(r2k.depth)] <- NA
+s_2k_shelf[is.na(r2k.depth)] <- NA
+settle_08_2k_shelf[is.na(r2k.depth)] <- NA
+susp_08_2k_shelf[is.na(r2k.depth)] <- NA
+flux_08_2k_shelf[is.na(r2k.depth)] <- NA
+
+## write rasters to file
+writeRaster(mean.uv_2k,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(mean.uv_2k_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(abs.uv_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(abs.uv_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(res.uv_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(res.uv_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(t_2k,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloortemperature.tif"))
+writeRaster(t_2k_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloortemperature.tif"))
+writeRaster(s_2k,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorsalinity.tif"))
+writeRaster(s_2k_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorsalinity.tif"))
+writeRaster(settle_08_2k,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_settle08.tif"))
+writeRaster(settle_08_2k_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_settle08.tif"))
+writeRaster(susp_08_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_susp08.tif"))
+writeRaster(susp_08_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_susp08.tif"))
+writeRaster(flux_08_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_flux08.tif"))
+writeRaster(flux_08_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_flux08.tif"))
 
 
 # #NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  

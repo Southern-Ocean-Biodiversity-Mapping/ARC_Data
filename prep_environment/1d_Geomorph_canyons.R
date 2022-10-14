@@ -86,8 +86,8 @@ if (SHOW_PLOT) {
 }
 
 #writeRaster(geomorph_rast, filename = paste0(VM_path2, string.chr, "geomorphology"))
-writeRaster(geomorph_rast, filename = paste0(env.derived, string.chr, "geomorphology"), overwrite=TRUE)
-writeRaster(geomorph_rast2k, filename = paste0(env.derived, string.chr, "2km_geomorphology"), overwrite=TRUE)
+writeRaster(geomorph_rast, filename = paste0(env.derived, string.chr, "geomorphology.tif"), overwrite=TRUE)
+writeRaster(geomorph_rast2k, filename = paste0(env.derived, string.chr, "2km_geomorphology.tif"), overwrite=TRUE)
 
 
 ## 3) Distance to canyonheads (for canyons above 3000 m)

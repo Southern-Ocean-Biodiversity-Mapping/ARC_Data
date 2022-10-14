@@ -34,9 +34,6 @@ if (user == "nicole") {
 ##############################################################################################################
 ##############################################################################################################
 
-res <- "500m"
-#res <- "2km"
-
 #######################################################
 ##### Bathymetry
 ##### - already resampled to 2km in script
@@ -46,7 +43,7 @@ res <- "500m"
 
 ## first, load bathy data and draw a mask to include/exclude areas
 bathy_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-bathy_list<-bathy_list[grep(paste0(".",res,"_shelf_bathy"), bathy_list)]
+bathy_list<-bathy_list[grep(".2km_shelf_bathy", bathy_list)]
 bathy_names <- gsub(".*_|\\..*","",bathy_list)
 
 r <- rast(bathy_list)
@@ -70,7 +67,7 @@ t <- vect(paste0(env.derived,"Circumpolar_EnvData_mask_shelf.shp"))
 r2 <- mask(r,t)
 
 ## set filenames to save to:
-savestring <- paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_")
+savestring <- paste0(env.derived,"Circumpolar_EnvData_2km_shelf_mask_bathy_ibcso2_")
 
 ## save bathymetry back to file
 for(i in 1:nlyr(r)){
@@ -89,34 +86,25 @@ ice_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_ice.grd"))
 sst_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SST.grd"))
 ssh_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SSH.grd"))
 
-## load bathy file:
-bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
+## load 2km bathy file:
+bathy_2km_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_shelf_mask_bathy_ibcso2_depth.tif"))
  
+## bring to 2km resolution and 2500m depth range, and mask
+ice_stack_2km<-project(ice_stack, bathy_2km_shelf)
+ice_stack_2km_shelf<-mask(ice_stack_2km, bathy_2km_shelf)
 
-if(ext(ice_stack)!=ext(bathy_shelf)){
-  ice_stack <- crop(ice_stack, bathy_shelf)
-}
-if(res=="500m"){
-  ice_stack <- resample(ice_stack, bathy_shelf)
-  ice_stack_shelf<-mask(ice_stack, bathy_shelf)
-}else{
-  ## bring to resolution and 2500m depth range, and mask
-ice_stack<-terra::project(ice_stack, bathy_shelf)
-ice_stack_shelf<-mask(ice_stack, bathy_shelf)
-}
+sst_stack_2km<-project(sst_stack, bathy_2km_shelf)
+sst_stack_2km_shelf<-mask(sst_stack_2km, bathy_2km_shelf)
 
-sst_stack<-terra::project(sst_stack, bathy_shelf)
-sst_stack_shelf<-mask(sst_stack, bathy_shelf)
-
-ssh_stack<-terra::project(ssh_stack, bathy_shelf)
-ssh_stack_shelf<-mask(ssh_stack, bathy_shelf)
+ssh_stack_2km<-project(ssh_stack, bathy_2km_shelf)
+ssh_stack_2km_shelf<-mask(ssh_stack_2km, bathy_2km_shelf)
 
 ## set filenames to save to:
-savestring2 <- paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_")
+savestring2 <- paste0(env.derived,"Circumpolar_EnvData_2km_shelf_mask_")
 
-writeRaster(ice_stack_shelf, filename=paste0(savestring2,"ICE.tif"), overwrite=TRUE)
-writeRaster(sst_stack_shelf, filename=paste0(savestring2,"SST.tif"), overwrite=TRUE)
-writeRaster(ssh_stack_shelf, filename=paste0(savestring2,"SSH.tif"), overwrite=TRUE)
+writeRaster(ice_stack_2km_shelf, filename=paste0(savestring2,"ICE.tif"))
+writeRaster(sst_stack_2km_shelf, filename=paste0(savestring2,"SST.tif"))
+writeRaster(ssh_stack_2km_shelf, filename=paste0(savestring2,"SSH.tif"))
 
 #######################################################
 ##### GEOMORPH & DISTANCE TO CANYONS
@@ -125,25 +113,20 @@ writeRaster(ssh_stack_shelf, filename=paste0(savestring2,"SSH.tif"), overwrite=T
 ##### - mask
 #######################################################
 library(raster)
-## load bathy file:
-bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
+## load 2km bathy file:
+bathy_2km_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_shelf_mask_bathy_ibcso2_depth.tif"))
 
 ## load files
-if(res=="500m"){
-  geomorph <- rast(paste0(env.derived, "Circumpolar_EnvData_geomorphology.tif"))
-  dist2cany <- rast(paste0(env.derived, "Circumpolar_EnvData_500m_shelf_distance2canyons.tif"))
-} else{
-  geomorph <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_geomorphology.tif"))
-  dist2cany <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_shelf_distance2canyons.tif"))
-}
+geomorph <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_geomorphology.tif"))
+dist2cany <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_shelf_distance2canyons.tif"))
 
 ## mask to 2500m depth range and extent
-geomorph_shelf<-mask(geomorph, bathy_shelf)
-dist2cany_shelf<-mask(dist2cany, bathy_shelf)
+geomorph_2km_shelf<-mask(geomorph, bathy_2km_shelf)
+dist2cany_2km_shelf<-mask(dist2cany, bathy_2km_shelf)
 
 ## save to:
-writeRaster(geomorph_shelf, filename=paste0(savestring2,"geomorphology.tif"))
-writeRaster(dist2cany_shelf, filename=paste0(savestring2,"distance2canyons.tif"))
+writeRaster(geomorph_2km_shelf, filename=paste0(savestring2,"geomorphology.tif"))
+writeRaster(dist2cany_2km_shelf, filename=paste0(savestring2,"distance2canyons.tif"))
 
 #######################################################
 ##### BGC
@@ -159,11 +142,11 @@ PO4  <- rast(paste0(env.raw, "bot_PO4_BSOSE.grd"))
 
 bsose_stack <- c(arag,NO3,O2,PO4)
 
-## load bathy file:
-bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
+## load 2km bathy file:
+bathy_2km_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_shelf_mask_bathy_ibcso2_depth.tif"))
 
 ## crop rasters to SO extent, project to polar stereographic, then crop to shelf.
-SO.ext2 <- ext(0, 360, -80, -55)
+SO.ext2 <- extent(0, 360, -80, -55)
 bsose_stack<-crop(bsose_stack, SO.ext2)
 
 #because 0 to 360 degrees- projection doesn't work very well. Clumsy fix
@@ -172,37 +155,38 @@ bsose_temp<-raster::shift(bsose_stack, dx = -360)
 origin(bsose_temp)<-origin(bsose_stack)
 bsose_stack<-raster::merge(bsose_stack, bsose_temp)
 
-## project and resample
-bsose_res <- terra::project(bsose_stack, bathy_shelf)
+## project and resample to 2km
+bsose_2km <- terra::project(bsose_stack, bathy_2km_shelf)
 
 ## mask to 2500m depth range and extent
-bsose_shelf<-mask(bsose_res, bathy_shelf)
+bsose_2km_shelf<-mask(bsose_2km, bathy_2km_shelf)
 
 ## save to:
-writeRaster(bsose_shelf, filename=paste0(savestring2,"bsose.tif"))
+writeRaster(bsose_2km_shelf, filename=paste0(savestring2,"bsose.tif"))
 
 #######################################################
 ##### NPP and WAOM-OUTPUT
 #######################################################
 
-npp <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_NPP_Cafe_filled_SummerAverage.tif"),
-                 paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_NPP_Cafe_filled_SummerStandardDeviation.tif")))
+npp <- rast(c(paste0(env.derived,"Circumpolar_EnvData_2km_shelf_NPP_Cafe_filled_SummerAverage.tif"),
+                 paste0(env.derived,"Circumpolar_EnvData_2km_shelf_NPP_Cafe_filled_SummerStandardDeviation.tif")))
 names(npp) <- c("npp_mean", "npp_sd")
 
 waom_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-waom_list<-waom_list[grep(paste0(".",res,"_shelf_waom"), waom_list)]
+waom_list<-waom_list[grep(".2km_shelf_waom", waom_list)]
 waom_names <- gsub(".*waom4k_|\\..*","",waom_list)
 
 waom <- rast(waom_list)
 names(waom) <- waom_names
 
+
 ## mask to 2500m depth range and extent
-npp_shelf<-mask(npp, bathy_shelf)
-waom_shelf<-mask(waom, bathy_shelf)
+npp_2km_shelf<-mask(npp, bathy_2km_shelf)
+waom_2km_shelf<-mask(waom, bathy_2km_shelf)
 
 ## save to:
-writeRaster(npp_shelf, filename=paste0(savestring2,"NPP.tif"))
-writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k.tif"))
+writeRaster(npp_2km_shelf, filename=paste0(savestring2,"NPP.tif"))
+writeRaster(waom_2km_shelf, filename=paste0(savestring2,"waom4k.tif"))
 
 
 

@@ -102,8 +102,6 @@ count_ab_overall<-data.frame(total_count=colSums(count_cells))%>%
 
 ## 5) Read commented file back in and make exclusions and aggregations
 # blanks read in as NAs
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
-
 
 ## 5a) cover data
 mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_07.xlsx"),
@@ -128,9 +126,6 @@ cover_mod<-cover_cells_renamed
 #   select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
 cover_mod$cellID<-as.factor(cover_mod$cellID)
 
-#join back to cell metadata and environmental data
-
-cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
 
 
 ## 5b) count data
@@ -158,10 +153,21 @@ count_mod<-count_cells_renamed %>%
 
 count_mod$cellID<-as.factor(count_mod$cellID)
 
-#join back to cell metadata and environmental data
+#############
+# ## 500m resolution data
+# load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data.RData"))
+# #join cover data back to cell metadata and environmental data
+# cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
+# #join count data back to cell metadata and environmental data
+# count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
+# # save outputs
+# save(cover_mod, cover_cells_env, count_mod, count_cells_env, file=paste0(ARC_Data.dir,"Cell_level_bioenv_2pc.RData"))
+
+## 2km resolution data
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data_2km.RData"))
+#join cover data back to cell metadata and environmental data
+cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
+#join count data back to cell metadata and environmental data
 count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
-
-
-
 # save outputs
-save(cover_mod, cover_cells_env, count_mod, count_cells_env, file=paste0(ARC_Data.dir,"Cell_level_bioenv_2pc.RData"))
+save(cover_mod, cover_cells_env, count_mod, count_cells_env, file=paste0(ARC_Data.dir,"Cell_level_bioenv_2pc_2km.RData"))

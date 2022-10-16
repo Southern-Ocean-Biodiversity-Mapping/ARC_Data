@@ -146,7 +146,7 @@ count_cells_renamed<-pivot_wider(count_cells_long, id_cols=cellID, names_from = 
 
 #remove species to exclude
 count_mod<-count_cells_renamed %>%
- select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
+ dplyr::select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
 # #some of these categories no longer exist. Only need to exclude 'Tube"
 # count_mod <- count_cells_renamed %>%
 #   select(!Tube)
@@ -161,7 +161,7 @@ count_mod$cellID<-as.factor(count_mod$cellID)
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # # save outputs
-# save(cover_mod, cover_cells_env, count_mod, count_cells_env, file=paste0(ARC_Data.dir,"Cell_level_bioenv_2pc.RData"))
+# save(cover_mod, cover_cells_env, count_mod, count_cells_env, file=paste0(ARC_Data.dir,"Cell_level_bioenv_2pc_500m.RData"))
 
 ## 2km resolution data
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data_2km.RData"))

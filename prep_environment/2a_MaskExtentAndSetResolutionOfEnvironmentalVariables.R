@@ -142,8 +142,8 @@ geomorph_shelf<-mask(geomorph, bathy_shelf)
 dist2cany_shelf<-mask(dist2cany, bathy_shelf)
 
 ## save to:
-writeRaster(geomorph_shelf, filename=paste0(savestring2,"geomorphology.tif"))
-writeRaster(dist2cany_shelf, filename=paste0(savestring2,"distance2canyons.tif"))
+writeRaster(geomorph_shelf, filename=paste0(savestring2,"geomorphology.tif"), overwrite=TRUE)
+writeRaster(dist2cany_shelf, filename=paste0(savestring2,"distance2canyons.tif"), overwrite=TRUE)
 
 #######################################################
 ##### BGC

@@ -63,10 +63,6 @@ env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
 
 env_stack <- rast(env_list)
 
-names(env_stack)[which(names(env_stack)=="category")] <- "geomorphology"
-names(env_stack)[which(names(env_stack)=="Circumpolar_EnvData_",res,"_shelf_distance2canyons")] <- "distance2canyons"
-
-
 ## 3) Match environmental data to image data (at cell level) ----
 #can run a image level too if needed
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))

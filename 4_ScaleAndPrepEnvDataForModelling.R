@@ -39,6 +39,12 @@ if (user == "nicole") {
 ##############################################################################################################
 ##############################################################################################################
 
+res <- "500m"
+# res <- "2km"
+
+
+######################################
+
 ## Running this scipt for both data at 500m res and at 2km res
 
 ##### load biological and environmental data
@@ -46,7 +52,7 @@ load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data.Rdata"))
 ## cell_metadata, count_cells, cover_cells
 ## image_metadata, count_images, cover_images
 
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_2km.RData"))
+load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,".RData"))
 ## cell_metadata_env, count_cells_env, cover_cells_env
 ## image_metadata_env
 
@@ -62,8 +68,6 @@ waom.na.sel <- which(!is.na(cell_metadata_env$seafloorcurrents_absolute))
 cell_metadata_env_clean <- cell_metadata_env[waom.na.sel,]
 cover_cells_clean <- cover_cells[waom.na.sel,]
 
-
-
 ##### add information about number of unscorable points per cell
 cell_metadata_env_clean$cover_points_total <- rowSums(cover_cells_clean)
 cell_metadata_env_clean$cover_points_scorable <- rowSums(cover_cells_clean)-cover_cells_clean$Unscorable
@@ -72,7 +76,7 @@ cell_metadata_env_clean$cover_points_scorable <- rowSums(cover_cells_clean)-cove
 cell_metadata_env_clean_scaled <- cell_metadata_env_clean
 scale.means <- NA
 scale.sd <- NA
-for(i in (1:ncol(cell_metadata_env_clean_scaled))[-c(1:20,68,69,78,79)]){
+for(i in (1:ncol(cell_metadata_env_clean_scaled))[-c(1:21,68,69,78,79)]){
   scale.means[i] <- mean(cell_metadata_env_clean_scaled[,i], na.rm=TRUE)
   scale.sd[i] <- sd(cell_metadata_env_clean_scaled[,i], na.rm=TRUE)
   cell_metadata_env_clean_scaled[,i] <- (cell_metadata_env_clean_scaled[,i]-scale.means[i])/scale.sd[i]

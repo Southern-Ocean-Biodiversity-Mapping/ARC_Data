@@ -50,7 +50,7 @@ res <- "2km"
 
 ######################################
 ##### load biological and environmental data
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data.Rdata"))
+load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
 ## cell_metadata, count_cells, cover_cells
 ## image_metadata, count_images, cover_images
 
@@ -70,31 +70,38 @@ cell_metadata_env$cover_points_scorable <- rowSums(cover_cells)-cover_cells$Unsc
 ##### check correlations (essentially the same between 500m and 2km resolution)
 
 # ## first batch: 
-# chart.Correlation(cell_metadata_env[,21:35])
+# chart.Correlation(cell_metadata_env[,21:34])
 # # remove tpi5, arag_mean, no3_mean & sd, po4_mean & sd
-# chart.Correlation(cell_metadata_env[,c(21:25,28,31:32,35)])
+# chart.Correlation(dplyr::select(cell_metadata_env[,21:34],-c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd")))
 # 
 # ## second batch:
-# chart.Correlation(cell_metadata_env[,37:51])
+# chart.Correlation(cell_metadata_env[,36:47])
 # #remove ice prop & mean & max, ice summer sd
-# chart.Correlation(cell_metadata_env[,c(40:45,47:51)])
+# chart.Correlation(dplyr::select(cell_metadata_env[,36:47],-c("ice_prop", "ice_mean", "ice_max", "ice_su_sd")))
+
 # 
 # ## third batch:
-# chart.Correlation(cell_metadata_env[,52:71])
+# chart.Correlation(cell_metadata_env[,48:70])
 # #remove ssh summer mean & sd, ssh spring mean, sst seasonal means, yearly sd and spring sd,  flux
-# chart.Correlation(cell_metadata_env[,c(52:53,55,63:68,70:71)])
-# 
-# ## together: note that npp_mean-susp08 are correlated, and tpi-tpi11
-# chart.Correlation(cell_metadata_env[,c(21:25,28,31:32,35,40:45,47:51,52:53,55,63:68,70:71)])
+# chart.Correlation(dplyr::select(cell_metadata_env[,48:70],-c("ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean","test_flux08")))
 
-sel.not.correlated <- c(21:25,28,31:32,35,40:45,47:53,55,63:68,70:71)
+# ## together: note that npp_mean-susp08 are correlated, and tpi-tpi11
+env.remove <- c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",
+                "ice_prop", "ice_mean", "ice_max", "ice_su_sd",
+                "ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean","test_flux08")
+# env.sel.plot <- which(names(cell_metadata_env[,21:70])%in%env.remove)
+# chart.Correlation(cell_metadata_env[,21:70][,-c(env.sel,15)])
+
+'%!in%' <- function(x,y)!('%in%'(x,y))
+env.sel <- which(names(cell_metadata_env)%!in%env.remove)
+sel.not.correlated <- c(23:26,29,32,33,36,37,41:46,48:51,53,56,61:66,68:74)
 
 ######################################################################################################
 ##### scale environmental data
 cell_metadata_env_scaled <- cell_metadata_env
 scale.means <- NA
 scale.sd <- NA
-sel.not.to.be.scaled <- c(1:21,36,72:73)
+sel.not.to.be.scaled <- c(1:22,37,73:74)
 for(i in (1:ncol(cell_metadata_env_scaled))[-sel.not.to.be.scaled]){
   scale.means[i] <- mean(cell_metadata_env_scaled[,i], na.rm=TRUE)
   scale.sd[i] <- sd(cell_metadata_env_scaled[,i], na.rm=TRUE)
@@ -119,29 +126,21 @@ save(cell_metadata_env, transect.xy, sel.not.correlated,
 ## we only need res, env.derived and cell_metadata_env:
 rm(list=setdiff(ls(), c("res","scale.means","scale.sd","env.derived","cell_metadata_env_scaled")))
 
-
 ## get file names of all environmental rasters and bricks and load into one big stack----
-#all files with "gri" extension
-env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-#subset to  "shelf" files
-env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
-if(length(grep(paste0(".",res,"_shelf_mask_scaled"), env_list))>0){
-  env_list<-env_list[-grep(paste0(".",res,"_shelf_mask_scaled"), env_list)]
-}
-#stack all environmental layers and check that they have appropriate names
-pred_stack<-rast(env_list)
+pred_stack <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"),
+                    paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_polynomials_etc.tif")))
 
 #names(cell_metadata_env)[-sel.not.to.be.scaled]
 
 ## only select rasters we actually need
 #plot(pred_stack)
 
-## for the 2km resolution, split scaling into five runs:
-seq_split <- split(1:nlyr(pred_stack), ceiling(seq_along(1:nlyr(pred_stack))/10))
+## split scaling into runs of 5:
+seq_split <- split(1:nlyr(pred_stack), ceiling(seq_along(1:nlyr(pred_stack))/5))
 for(j in 1:length(seq_split)){
   ## creating an empty stack of 10 layers
   pred_stack_scaled <- rast(pred_stack[[seq_split[[j]]]])
-  for(i in 1:10){
+  for(i in 1:5){
     l <- seq_split[[j]][i]
     print(l)
     k <- names(pred_stack)[l]
@@ -164,6 +163,9 @@ for(j in 1:length(seq_split)){
 file_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
 #subset to  "shelf" files
 file_list<-file_list[grep(paste0(".",res,"_shelf_mask_scaled_temporary"), file_list)]
+## we need to reorder the list so that #10 comes after 9...
+file_list <- file_list[c(1,3:10,2)]
+## read in and save as one file
 all_temporary_files <- rast(file_list)
 writeRaster(all_temporary_files, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"), overwrite=TRUE)
 #file.remove(file_list)
@@ -171,7 +173,7 @@ writeRaster(all_temporary_files, filename=paste0(env.derived,"Circumpolar_EnvDat
 ##############################################
 ## creating a dataframe with scaled values, one row per environmental cell
 env_stack_scaled <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"))
-  sel <- which(!is.na(env_stack_scaled$depth[]))
+sel <- which(!is.na(env_stack_scaled$depth[]))
 
 ## res=="2km" takes about 5min
 ## res=="500m" takes about 1-2hrs

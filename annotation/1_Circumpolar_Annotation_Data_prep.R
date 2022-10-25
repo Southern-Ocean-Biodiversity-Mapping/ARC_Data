@@ -44,6 +44,12 @@ if (user == "nicole") {
 
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+###############
+## choose resolution of environmental variables:
+res <- "500m"
+#res <- "2km"
+###############
+
 ## R-drive paths
 RS.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
 ann.dir <- paste0(RS.dir,"AnnotationLibrary_AllFinishedSurveys/")
@@ -57,13 +63,15 @@ image.quality.path <- "R:/IMAS/Antarctic_Seafloor/image_quality_analysis/image_q
 load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
 
 ## from "ReadIn_Circumpolar_Environmental_Data.Rmd"
-r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
+r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_bathy_ibcso2_depth.tif"))
 
 ##### load coastline
 #stereo <- as.character(r2@crs)
 #load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 
 source(paste0(tools.dir,"bubbleplot.R"))
+
+
 
 
 
@@ -89,14 +97,14 @@ dat_cover <- dat_cover.raw[,-c(4,8,11)]
 names(dat_cover)[8] <- "Label"
 
 ## metadata for each image, including cellIDs (things like filename, full_path, surveyID, transectID, cellID, lon, lat, x, y, area, CoralNet, Biigle)
-image_metadata <- select(dat.list.clean[[1]],Filename.standardised,lon,lat,transectID)
+image_metadata <- dplyr::select(dat.list.clean[[1]],Filename.standardised,lon,lat,transectID)
 for(i in 2:length(dat.list.clean)){
   message(i)
   print(names(dat.list.clean[[i]]))
-  if("lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,lon,lat,transectID) }
-  if("Lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,Lon,Lat,transectID) }
-  if("Longitude" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,Longitude,Latitude,transectID) }
-  if("GPS_lon" %in% names(dat.list.clean[[i]])){ dat.temp <- select(dat.list.clean[[i]],Filename.standardised,GPS_lon,GPS_lat,transectID) }  
+  if("lon" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,lon,lat,transectID) }
+  if("Lon" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,Lon,Lat,transectID) }
+  if("Longitude" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,Longitude,Latitude,transectID) }
+  if("GPS_lon" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,GPS_lon,GPS_lat,transectID) }  
   names(dat.temp) <- c("Filename.standardised","lon","lat","transectID")
   image_metadata <- rbind(image_metadata,dat.temp)
 }
@@ -367,6 +375,7 @@ counts_cells_survey2 <- rep(NA, length(ids))
 counts_cells_transect1 <- as.character(rep(NA, length(ids)))
 counts_cells_transect2 <- rep(NA, length(ids))
 counts_cells_transect3 <- rep(NA, length(ids))
+counts_cells_transect4 <- rep(NA, length(ids))
 counts_cells_mean_image_quality_score <- rep(NA, length(ids))
 
 for(i in 1:length(ids)){
@@ -385,7 +394,7 @@ for(i in 1:length(ids)){
   counts_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
   print(counts_cells_survey1[i])
   if(length(unique(image_metadata$survey[sel.r]))>1){
-    message("Two surveys!")
+    message("TWO surveys!")
     counts_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
   }
   ## ... and same transect
@@ -396,6 +405,10 @@ for(i in 1:length(ids)){
     counts_cells_transect2[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[2]
     if(length(unique(image_metadata$transectID_full[sel.r]))>2){
       counts_cells_transect3[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[3]
+      if(length(unique(image_metadata$transectID_full[sel.r]))>3){
+        message("FOUR transects!")
+        counts_cells_transect4[i] <- unique(as.character(image_metadata$transectID_full)[sel.r])[4]
+      }
     }}
 }
 
@@ -430,6 +443,7 @@ cover_cells_survey2 <- rep(NA, length(ids))
 cover_cells_transect1 <- rep(NA, length(ids))
 cover_cells_transect2 <- rep(NA, length(ids))
 cover_cells_transect3 <- rep(NA, length(ids))
+cover_cells_transect4 <- rep(NA, length(ids))
 cover_cells_mean_image_quality_score <- rep(NA, length(ids))
 for(i in 1:length(ids)){
   #print(i)
@@ -457,6 +471,11 @@ for(i in 1:length(ids)){
       message("Three transects!")
       message(t.per.cell)
       cover_cells_transect3[i] <- cell.transects[3]
+      if(t.per.cell>3){
+        message("FOUR transects!")
+        message(t.per.cell)
+        cover_cells_transect4[i] <- cell.transects[4]
+      }
     }}
 }
 
@@ -466,11 +485,11 @@ cell.coords <- xyFromCell(r2, ids)
 cell.lonlat <- project(cell.coords, proj=crs(r2), inverse=TRUE) 
 
 cell_metadata <- data.frame(cbind(ids,cell.lonlat,cell.coords,cover_N, counts_N, cover_area, counts_area, 
-                                  cover_cells_survey1, cover_cells_transect1, cover_cells_transect2, cover_cells_transect3, 
-                                  counts_cells_survey1, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3,cover_cells_mean_image_quality_score))
+                                  cover_cells_survey1, cover_cells_transect1, cover_cells_transect2, cover_cells_transect3, cover_cells_transect4, 
+                                  counts_cells_survey1, counts_cells_transect1, counts_cells_transect2, counts_cells_transect3,counts_cells_transect4,cover_cells_mean_image_quality_score))
 names(cell_metadata) <- c("cellID", "lon", "lat", "proj_coord_x", "proj_coord_y", "cover_N", "counts_N", "cover_area", "counts_area",
-                          "cover_cells_survey", "cover_cells_transect1", "cover_cells_transect2", "cover_cells_transect3", 
-                          "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3","image_quality_score")
+                          "cover_cells_survey", "cover_cells_transect1", "cover_cells_transect2", "cover_cells_transect3","cover_cells_transect4", 
+                          "counts_cells_survey", "counts_cells_transect1", "counts_cells_transect2", "counts_cells_transect3","counts_cells_transect4","image_quality_score")
 
 ### add survey/year/gear information to cell metadata
 cell_metadata$year <- NA
@@ -515,14 +534,14 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
 
 ## change character data to factors
-for(i in c(1,10:17,20)){
+for(i in c(1,10:19,22)){
   cell_metadata[,i] <- as.factor(cell_metadata[,i])
 }
 for(i in c(1,8,15)){
   image_metadata[,i] <- as.factor(image_metadata[,i])
 }
 ## change character data to numeric
-for(i in c(2:9,18)){
+for(i in c(2:9,20)){
   cell_metadata[,i] <- as.numeric(cell_metadata[,i])
 }
 
@@ -536,7 +555,7 @@ head(image_metadata)
 head(cell_metadata)
 
 save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, count_images,
-     file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data.Rdata"))
+     file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
 
 
 

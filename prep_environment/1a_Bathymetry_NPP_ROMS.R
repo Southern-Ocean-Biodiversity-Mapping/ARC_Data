@@ -29,7 +29,7 @@ library(dplyr)
 library(blueant)
 library(rgdal)        ## package for geospatial analysis
 library(ggplot2)      ## package for plotting
-library(terra)
+#library(terra)
 
 library(spatialEco)
 
@@ -116,14 +116,14 @@ if(data.name=="gebco"){
 }
 
 ## OR, load the latest IBCSO version here:
-r <- raster(paste0(env.raw,"IBCSO_2022/IBCSO_v2_ice-surface.tif"))
-r <- crop(r, ri)
-r <- projectRaster(r, ri)
+r.raw <- raster(paste0(env.raw,"IBCSO_2022/IBCSO_v2_ice-surface.tif"))
+r.raw.c <- crop(r.raw, ri)
+r <- projectRaster(r.raw.c, ri)
 
 ## create layers for depth, slope and topographic position index (TPI) at different scales
 r.depth <- r
-r.depth[r.depth>=200] <- NA
-r.depth[r.depth<=-3500] <- NA
+#r.depth[r.depth>=200] <- NA
+#r.depth[r.depth<=-4000] <- NA
 
 r.slope <- terrain(r.depth)
 r.tpi <- tpi(r.depth)
@@ -133,7 +133,7 @@ r.tpi11 <- tpi(r.depth, scale=11)
 # r.tpi31 <- tpi(r, scale=31)
 
 ## set anything on land to NA, and optionally set abyssal zone to NA
-r.depth[r>=0] <- NA
+r.depth[r>0] <- NA
 r.depth[r<=depth.range[2]] <- NA
 r.slope[is.na(r.depth[])] <- NA
 r.tpi[is.na(r.depth[])] <- NA
@@ -202,8 +202,8 @@ writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.tif"), overwrite=TRUE)
 ##### redo the same for 2km resolution data:
 rm(r.depth, r.slope, r.tpi, r.tpi5, r.tpi11)
 r2k.depth <- aggregate(r, 4)
-r2k.depth[r2k.depth>=200] <- NA
-r2k.depth[r2k.depth<=-3500] <- NA
+# r2k.depth[r2k.depth>=200] <- NA
+# r2k.depth[r2k.depth<=-3500] <- NA
 
 r2k.slope <- terrain(r2k.depth)
 r2k.tpi <- tpi(r2k.depth)

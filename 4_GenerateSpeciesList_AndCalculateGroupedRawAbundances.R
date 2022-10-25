@@ -36,13 +36,19 @@ if (user == "nicole") {
   tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
 }
 
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
+######
+#res <- "500m"
+res <- "2km"
+######
+
+
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_",res,".RData"))
 
 
 ## 2) COVER ----
 ## 2a) Prevalence
 cover_prev<-data.frame(count=colSums(cover_cells>0)) %>%
-  mutate(., prev= round(count/961, 3 )) %>%
+  mutate(., prev= round(count/nrow(cover_cells), 3 )) %>%
   rownames_to_column(., var="Label") %>%
   arrange(., desc(count))%>%
   add_column(Exclude= "",
@@ -75,7 +81,7 @@ rownames_to_column(., var="Taxa") %>%
 ## 3a) Prevalence
   
 count_prev<-data.frame(count=colSums(count_cells>0)) %>%
-  mutate(., prev= round(count/897, 3 )) %>%
+  mutate(., prev= round(count/nrow(count_cells), 3 )) %>%
   rownames_to_column(., var="Label") %>%
   arrange(., desc(count)) %>%
 #add extra columns for notes
@@ -96,7 +102,7 @@ count_ab_overall<-data.frame(total_count=colSums(count_cells))%>%
 #           COVER_overall=cover_pc_overall,
 #           COUNT_prevalence= count_prev,
 #           COUNT_totAb= count_ab_overall),
-#           path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_06.xlsx"))
+#           path=paste0(ARC_Data.dir, "Annotation/Species_list_",res,"_2022_10.xlsx"))
 
 
 #######################################################################
@@ -105,7 +111,7 @@ count_ab_overall<-data.frame(total_count=colSums(count_cells))%>%
 # blanks read in as NAs
 
 ## 5a) cover data
-mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_07.xlsx"),
+mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_",res,"_2022_10.xlsx"),
 sheet=1)
 names(mod_cover_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
@@ -129,7 +135,7 @@ cover_mod$cellID<-as.factor(cover_mod$cellID)
 
 
 ## 5b) count data
-mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2022_10_07.xlsx"),
+mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_",res,"_2022_10.xlsx"),
                           sheet=3)
 names(mod_count_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
@@ -156,8 +162,8 @@ count_mod$cellID<-as.factor(count_mod$cellID)
 ##### 
 
 ## 6) Calculate abundances of functional groups and richness on the raw data (before species are excluded)
-## first read in cell-metadata, it doesn't matter at which resolution, we only need the number of points scored etc.
-load(paste0(ARC_Data.dir,"Cell_level_env_500m.Rdata"))
+## first read in cell-metadata
+load(paste0(ARC_Data.dir,"Cell_level_env_",res,".Rdata"))
 
 ## 6a) cover data
 ## names of faunal groups for cover_cells_renamed:
@@ -237,7 +243,7 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod, count_mod, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc.RData"))
+save(cover_mod, count_mod, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_",res,".RData"))
 
 
 

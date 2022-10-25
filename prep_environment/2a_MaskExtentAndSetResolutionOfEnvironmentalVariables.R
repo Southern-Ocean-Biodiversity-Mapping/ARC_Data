@@ -1,8 +1,8 @@
 
-## changing .grd files to .tif for more efficient storage (once off, code now at the bottom)
 ## testing how many cells we have in the rasters for different resolutions (once off, now at the bottom)
 ## masking the extent of the environmental layers
 ## aggregating data from 500m resolution to 2km resolution
+## saving files into a single tif-file
 
 library(terra)
 
@@ -205,12 +205,20 @@ writeRaster(npp_shelf, filename=paste0(savestring2,"NPP.tif"))
 writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k.tif"))
 
 
-
-
 #######################################################
 
+##### read in all files and save as one single tif:
+env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
+#subset to  "shelf" files
+env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
+# env_list<-env_list[-grep(paste0(".",res,"_shelf_mask_scaled"), env_list)]
+# env_list<-env_list[-grep(paste0(".",res,"_shelf_mask_polynomials"), env_list)]
 
+env_stack <- rast(env_list)
+writeRaster(env_stack, filename=paste0(savestring2,"unscaled_variables.tif"), overwrite=TRUE)
 
+## remove files, commented to stop accidently deleting things
+#file.remove(env_list)
 
 
 

@@ -47,19 +47,8 @@ res = "500m"
 
 ###################################
 
-
-
 ## 2) get file names of all environmental rasters and bricks and load into one big stack----
-#all files with "gri" extension
-env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-#subset to  "shelf" files
-env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
-
-env_stack <- rast(env_list)
-
-names(env_stack)[which(names(env_stack)=="category")] <- "geomorphology"
-names(env_stack)[which(names(env_stack)==paste0("Circumpolar_EnvData_",res,"_shelf_distance2canyons"))] <- "distance2canyons"
-
+env_stack <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"))
 
 ## creating polynomials of raster layers
 depth2 <- rast(env_stack$depth)
@@ -76,5 +65,5 @@ logslope <- log(env_stack$slope)
 
 poly_stack <- c(depth2, distance2canyons2, logslope)
 names(poly_stack) <- c("depth2", "distance2canyons2", "logslope")
-writeRaster(poly_stack, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_polynomials_etc.tif"), overwrite=TRUE)
+writeRaster(poly_stack, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_polynomials_etc.tif"), overwrite=TRUE)
 

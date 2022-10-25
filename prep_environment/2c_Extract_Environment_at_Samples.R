@@ -8,7 +8,7 @@
 
 ## 1) set up----
 library(tidyverse)
-library(raster)
+library(terra)
 library(rasterVis)
 library(stringr)
 
@@ -49,23 +49,19 @@ if (user == "nicole") {
 
 ################
 
-res <- "500m"
-#res <- "2km"
+#res <- "500m"
+res <- "2km"
 
 ##############
 
 
 ## 2) get file names of all environmental rasters and bricks and load into one big stack----
-#all files with "gri" extension
-env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-#subset to  "shelf" files
-env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
-
-env_stack <- rast(env_list)
+env_stack <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"),
+                       paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_polynomials_etc.tif")))
 
 ## 3) Match environmental data to image data (at cell level) ----
 #can run a image level too if needed
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data.RData"))
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_",res,".RData"))
 
 
  #for some reason nearly every column of cell_metadata are now character strings
@@ -80,8 +76,11 @@ cell_metadata_env<- cell_metadata %>%
   filter(! is.na (cover_N))
 
 #extract environmental data
+# cell_metadata_env<-cbind(cell_metadata_env, 
+#                          raster::extract(env_stack, cell_metadata_env[,c("proj_coord_x", "proj_coord_y")]))
 cell_metadata_env<-cbind(cell_metadata_env, 
-                         raster::extract(env_stack, cell_metadata_env[,c("proj_coord_x", "proj_coord_y")]))
+                         terra::extract(env_stack, cell_metadata_env[,c("proj_coord_x", "proj_coord_y")])[,-1])
+
 # #add geomorph name
 # cell_metadata_env<-cell_metadata_env %>%
 #   left_join(., geomorph_cat, by=c("geomorph"= "ID"))

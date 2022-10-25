@@ -42,7 +42,7 @@ res <- "2km"
 ######
 
 
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_",res,".RData"))
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
 
 
 ## 2) COVER ----
@@ -237,13 +237,13 @@ count_richness.l <- rowSums(count_cells_pa[,-sel_sed])/log(cell_metadata_env$cou
 count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, count_richness, count_richness.l))
 
 #############
-# load(paste0(ARC_Data.dir, "Cell_level_env_",res,".RData"))
+# load(paste0(ARC_Data.dir, "Cell_level_env_",res,".Rdata"))
 # #join cover data back to cell metadata and environmental data
 # cover_mod_env<-left_join(cell_metadata_env, cover_mod, by="cellID")
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod, count_mod, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_",res,".RData"))
+save(cover_mod, count_mod, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_",res,".Rdata"))
 
 
 

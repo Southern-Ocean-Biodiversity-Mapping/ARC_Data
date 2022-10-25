@@ -54,7 +54,7 @@ load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata")
 ## cell_metadata, count_cells, cover_cells
 ## image_metadata, count_images, cover_images
 
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,".RData"))
+load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,".Rdata"))
 ## cell_metadata_env, count_cells_env, cover_cells_env
 ## image_metadata_env
 

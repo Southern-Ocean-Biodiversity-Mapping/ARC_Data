@@ -187,6 +187,7 @@ if(data.name=="gebco"){
 }
 save.string <- paste0(env.derived, string.chr, res.string, ra.string, "bathy_", data.name)
 
+writeRaster(r, filename=paste0(env.derived,string.chr,res.string,"bathy_ibcso2_depth.tif"), overwrite=TRUE)
 # writeRaster(g, filename=paste0("C:/Users/jjansen/Desktop/science/data_environmental/derived/Circumpolar_EnvData_500m_bathy_gebco.Rdata"), overwrite=TRUE)
 # writeRaster(r.depth, filename=paste0(save.string,"_depth.grd"), overwrite=TRUE)
 # writeRaster(r.slope, filename=paste0(save.string,"_slope.grd"), overwrite=TRUE)
@@ -202,6 +203,7 @@ writeRaster(r.tpi11, filename=paste0(save.string,"_tpi11.tif"), overwrite=TRUE)
 ##### redo the same for 2km resolution data:
 rm(r.depth, r.slope, r.tpi, r.tpi5, r.tpi11)
 r2k.depth <- aggregate(r, 4)
+writeRaster(r2k.depth, filename=paste0(env.derived,string.chr,"2km_bathy_ibcso2_depth.tif"), overwrite=TRUE)
 # r2k.depth[r2k.depth>=200] <- NA
 # r2k.depth[r2k.depth<=-3500] <- NA
 

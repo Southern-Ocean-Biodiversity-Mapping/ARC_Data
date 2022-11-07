@@ -165,9 +165,13 @@ count_mod$cellID<-as.factor(count_mod$cellID)
 ## first read in cell-metadata
 load(paste0(ARC_Data.dir,"Cell_level_env_",res,".Rdata"))
 
+## need to remove the cellID from the columns to properly calculate rowSums etc
+cover_cells_renamed2 <- data.frame(cover_cells_renamed[,-1])
+rownames(cover_cells_renamed2) <- cover_cells_renamed$cellID
+  
 ## 6a) cover data
-## names of faunal groups for cover_cells_renamed:
-dataset.names <- names(cover_cells_renamed)
+## names of faunal groups for cover_cells_renamed (minus cellID):
+dataset.names <- names(cover_cells_renamed2)
 ## selector for each faunal class
 sel_S <- grep("Sp",substr(dataset.names,1,2))
 sel_O <- grep("Oc",substr(dataset.names,1,2))
@@ -187,28 +191,28 @@ sel_sed <- grep("Sub_",dataset.names)
 sel_noid.cov <- grep("NoID",dataset.names)
 sel_unsc.cov <- grep("Unscorable",dataset.names)
 
-## calculating species richness
+## calculating species richness etc, keeping in mind that the first column is the cellID
 scorable.pts <- cell_metadata_env$cover_points_scorable
 
-cover_cells_pa <- cover_cells_renamed
+cover_cells_pa <- cover_cells_renamed2
 cover_cells_pa[cover_cells_pa>0] <- 1
 
-cover_SF.prop <- rowSums(cover_cells_renamed[,sel_SF])/scorable.pts
-cover_SF <- rowSums(cover_cells_renamed[,sel_SF])
+cover_SF.prop <- rowSums(cover_cells_renamed2[,sel_SF])/scorable.pts
+cover_SF <- rowSums(cover_cells_renamed2[,sel_SF])
 cover_SF_pa <- cover_SF
 cover_SF_pa[cover_SF>0] <- 1
 richness <- rowSums(cover_cells_pa[,-sel_sed])
 richness.l <- rowSums(cover_cells_pa[,-sel_sed])/log(cell_metadata_env$cover_points_total)
-cover_all.prop <- rowSums(cover_cells_renamed[,-sel_sed])/scorable.pts
-cover_all <- rowSums(cover_cells_renamed[,-sel_sed])
+cover_all.prop <- rowSums(cover_cells_renamed2[,-sel_sed])/scorable.pts
+cover_all <- rowSums(cover_cells_renamed2[,-sel_sed])
 
-cover_B.prop <- rowSums(cover_cells_renamed[,sel_B])/scorable.pts
-cover_B <- rowSums(cover_cells_renamed[,sel_B])
+cover_B.prop <- rowSums(cover_cells_renamed2[,sel_B])/scorable.pts
+cover_B <- rowSums(cover_cells_renamed2[,sel_B])
 cover_B_pa <- cover_B
 cover_B_pa[cover_B>0] <- 1
 
-cover_S.prop <- rowSums(cover_cells_renamed[,sel_S])/scorable.pts
-cover_S <- rowSums(cover_cells_renamed[,sel_S])
+cover_S.prop <- rowSums(cover_cells_renamed2[,sel_S])/scorable.pts
+cover_S <- rowSums(cover_cells_renamed2[,sel_S])
 cover_S_pa <- cover_S
 cover_S_pa[cover_S>0] <- 1
 

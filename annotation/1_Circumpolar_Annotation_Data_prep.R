@@ -429,6 +429,10 @@ for(i in 1:length(nams.cov)){
   }
 }
 
+## sites on the seamounts are still incuded here
+sel.seamounts <- which(rownames(dat_cover_image_by_species)%!in%image_metadata$Filename.standardised[image_metadata$cover=="yes"])
+rownames(dat_cover_image_by_species)[sel.seamounts]
+
 
 ### 4b) site(cell)-by-species matrix
 
@@ -556,6 +560,13 @@ head(cell_metadata)
 
 save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, count_images,
      file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
+
+
+
+
+
+
+
 
 
 

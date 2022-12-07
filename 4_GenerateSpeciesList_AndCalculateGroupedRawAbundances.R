@@ -394,16 +394,16 @@ img.count_richness <- rowSums(count_images_pa[,-sel_sed])
 ## large species groupings - counts
 img.count_groupings <- data.frame(cbind(img.count_mobile, img.count_echino, img.count_crust, img.count_richness))
 
-# save outputs
-save(img.cover_mod, img.count_mod, img.cover_groupings, img.count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_images.Rdata"))
+# save outputs, but first add metadata of images
+sel.metadat <- match(rownames(cover_images),image_metadata$Filename.standardised)
+img.metadata <- image_metadata[sel.metadat,]
+
+save(img.cover_mod, img.count_mod, img.cover_groupings, img.count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio.Rdata"))
 
 
 
 
-
-
-
-
+##
 
 
 

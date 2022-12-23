@@ -155,8 +155,6 @@ mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_",r
 names(mod_cover_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
 img.mod_cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_images_2022_12.xlsx"),sheet=1)
-names(img.mod_cover_list)[5]<- "Merge_2pc"
-
 
 #reformat to long, merge, change names and convert back to wide
 cover_cells_long<-cover_cells %>%
@@ -167,6 +165,7 @@ cover_cells_long<-cover_cells %>%
 cover_cells_long$new<-  ifelse(!is.na(cover_cells_long$Merge_2pc), cover_cells_long$Merge_2pc, cover_cells_long$Label)
 cover_cells_renamed<-pivot_wider(cover_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
+#also for images
 cover_images_long<-cover_images %>%
   mutate(cellID=rownames(cover_images))  %>% #add cellID
   pivot_longer( cols=`1Sub_Fine`:Echinoderms_Crinoids_Stalked, 
@@ -174,6 +173,15 @@ cover_images_long<-cover_images %>%
   left_join(img.mod_cover_list[,c("Label", "Merge_2pc")])
 cover_images_long$new<-  ifelse(!is.na(cover_images_long$Merge_2pc), cover_images_long$Merge_2pc, cover_images_long$Label)
 cover_images_renamed<-pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+
+#also for list of annotation labels for library
+cover_annimages_long<-cover_images %>%
+  mutate(cellID=rownames(cover_images))  %>% #add cellID
+  pivot_longer( cols=`1Sub_Fine`:Echinoderms_Crinoids_Stalked, 
+                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(img.mod_cover_list[,c("Label", "Merge_For_Annotation_Library")])
+cover_annimages_long$new<-  ifelse(!is.na(cover_annimages_long$Merge_For_Annotation_Library),cover_annimages_long$Merge_For_Annotation_Library, cover_annimages_long$Label)
+cover_annimages_renamed<-pivot_wider(cover_annimages_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
 
 #remove species to exclude (DON'T REMOVE BECAUSE WE MESS UP TOTAL COVER DATA?)
@@ -183,17 +191,16 @@ cover_mod<-cover_cells_renamed
 cover_mod$cellID<-as.factor(cover_mod$cellID)
 
 img.cover_mod<-cover_images_renamed
-# cover_mod<-cover_cells_renamed %>%
-#   select( - mod_cover_list$Label[which(mod_cover_list$Exclude =='x')])
 img.cover_mod$cellID<-as.factor(img.cover_mod$cellID)
 
+img.ann.cover_mod<-cover_annimages_renamed
+img.ann.cover_mod$cellID<-as.factor(img.ann.cover_mod$cellID)
 
 ## 5b) count data
 mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_",res,"_2022_12.xlsx"),sheet=3)
 names(mod_count_list)[5:6]<- c("Merge_1pc", "Merge_2pc")
 
 img.mod_count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_images_2022_12.xlsx"),sheet=3)
-names(img.mod_count_list)[5]<- "Merge_2pc"
 
 #reformat to long, merge, change names and convert back to wide
 count_cells_long<-count_cells %>%
@@ -204,18 +211,30 @@ count_cells_long<-count_cells %>%
 count_cells_long$new<-  ifelse(!is.na(count_cells_long$Merge_2pc), count_cells_long$Merge_2pc, count_cells_long$Label)
 count_cells_renamed<-pivot_wider(count_cells_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
+#also for images
 count_images_long<-count_images %>%
   mutate(cellID=rownames(count_images))  %>% #add cellID
   pivot_longer( cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
                 names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join( mod_count_list[,c("Label", "Merge_2pc")])
+  left_join( img.mod_count_list[,c("Label", "Merge_2pc")])
 count_images_long$new<-  ifelse(!is.na(count_images_long$Merge_2pc), count_images_long$Merge_2pc, count_images_long$Label)
 count_images_renamed<-pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+
+#also list of annotation labels for library
+count_annimages_long<-count_images %>%
+  mutate(cellID=rownames(count_images))  %>% #add cellID
+  pivot_longer( cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join( img.mod_count_list[,c("Label", "Merge_For_Annotation_Library")])
+count_annimages_long$new<-  ifelse(!is.na(count_annimages_long$Merge_For_Annotation_Library), count_annimages_long$Merge_For_Annotation_Library, count_annimages_long$Label)
+count_annimages_renamed<-pivot_wider(count_annimages_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 
 #remove species to exclude
 count_mod<-count_cells_renamed %>%
  dplyr::select( - mod_count_list$Label[which(mod_count_list$Exclude =='x')])
 img.count_mod<-count_images_renamed %>%
+  dplyr::select( - img.mod_count_list$Label[which(img.mod_count_list$Exclude =='x')])
+img.ann.count_mod<-count_annimages_renamed %>%
   dplyr::select( - img.mod_count_list$Label[which(img.mod_count_list$Exclude =='x')])
 # #some of these categories no longer exist. Only need to exclude 'Tube"
 # count_mod <- count_cells_renamed %>%
@@ -223,6 +242,7 @@ img.count_mod<-count_images_renamed %>%
 
 count_mod$cellID<-as.factor(count_mod$cellID)
 img.count_mod$cellID<-as.factor(img.count_mod$cellID)
+img.ann.count_mod$cellID<-as.factor(img.ann.count_mod$cellID)
 
 ##### 
 
@@ -399,6 +419,35 @@ sel.metadat <- match(rownames(cover_images),image_metadata$Filename.standardised
 img.metadata <- image_metadata[sel.metadat,]
 
 save(img.cover_mod, img.count_mod, img.cover_groupings, img.count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio.Rdata"))
+###
+
+
+####################################################
+### species names for comparison with CATAMI
+## cover at the image level:
+img.ann.cover_prev2 <- data.frame(count=colSums(img.ann.cover_mod[,-1]>0)) %>%
+  mutate(., prev= round(count/nrow(img.ann.cover_mod), 3 )) %>%
+  rownames_to_column(., var="Label") %>%
+  arrange(., desc(count))%>%
+  add_column(CATAMI= "",
+             CAAB= "")
+cover.reordered <- order(img.ann.cover_prev2$Label)
+img.ann.cover_prev3 <- img.ann.cover_prev2[cover.reordered,]
+
+## counts at the image level:
+img.ann.count_prev2<-data.frame(count=colSums(img.ann.count_mod[,-1]>0)) %>%
+  mutate(., prev= round(count/nrow(img.ann.count_mod), 3 )) %>%
+  rownames_to_column(., var="Label") %>%
+  arrange(., desc(count)) %>%
+  #add extra columns for notes
+  add_column(CATAMI= "",
+             CAAB= "")
+counts.reordered <- order(img.ann.count_prev2$Label)
+img.ann.count_prev3 <- img.ann.count_prev2[counts.reordered,]
+
+# write_xlsx(x=list(COVER_naming=img.cover_prev3, COUNT_naming= img.count_prev3),
+#           path=paste0(ARC_Data.dir, "Annotation/Species_list_images_vs_CATAMI_.xlsx"))
+
 
 
 

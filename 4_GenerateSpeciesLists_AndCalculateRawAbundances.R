@@ -43,6 +43,9 @@ if (user == "nicole") {
 
 ##### 3: read in excel-sheet, group relevant labels, calculate prevalence again and save into excel again for final publishable annotation library
 
+##### 4: read back in the species excel-sheet and make groupings for modelling of COVER data
+
+
 
 ################################################################################
 ##### 1: load image data and create table of count/prevalence per morphotype
@@ -101,7 +104,7 @@ count_prev<-data.frame(count=colSums(count_images>0)) %>%
 
 
 ################################################################################
-##### 2: save excel-file and edit/delete relevant labels for final publishable annotation library
+##### 2: save excel-file and edit/delete relevant labels for image annotation library
 
 ## write out excel-file to comment on
 # write_xlsx(x= list(COVER_prevalence = cover_prev,
@@ -109,7 +112,7 @@ count_prev<-data.frame(count=colSums(count_images>0)) %>%
 #           path=paste0(ARC_Data.dir, "Annotation/Species_list_2023_01.xlsx"))
 
 ################################################################################
-##### 3: read in excel-sheet, group relevant labels, calculate prevalence again, but also for 500m and 2km cells, and save into excel again for final publishable annotation library
+##### 3: read in excel-sheet, group relevant labels for each resolution, calculate prevalence again, and save into excel again for final publishable annotation library
 
 ## read in excel sheets
 cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2023_01.xlsx"),sheet=1)
@@ -288,6 +291,54 @@ sc.img <- 108-cover_mod$Unscorable
 sc.500m <- meta_env_500m$cover_points_scorable
 sc.2km  <- meta_env_2km$cover_points_scorable
 
+#### group morphospecies in 500m and 2km data as decided in the excel file
+### reformat data to long, merge, change names and convert back to wide
+## Cover data
+cover_images_long <- cover_mod.500m[,-1] %>%
+  mutate(cellID=cover_mod.500m$cellID)  %>% #add cellID
+  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, 
+               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(cover_list[,c("Label", "Merge_With_2pc_500m")])
+cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_2pc_500m), cover_images_long$Merge_With_2pc_500m, cover_images_long$Label)
+cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+cover_mod.500m <- cover_images_renamed
+cover_mod.500m$cellID <- as.factor(cover_mod.500m$cellID)
+
+cover_images_long <- cover_mod.2km[,-1] %>%
+  mutate(cellID=cover_mod.2km$cellID)  %>% #add cellID
+  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, 
+               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(cover_list[,c("Label", "Merge_With_2pc_2km")])
+cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_2pc_2km), cover_images_long$Merge_With_2pc_2km, cover_images_long$Label)
+cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+cover_mod.2km <- cover_images_renamed
+cover_mod.2km$cellID <- as.factor(cover_mod.2km$cellID)
+
+## Count data
+count_images_long <- count_mod.500m[,-1] %>%
+  mutate(cellID=count_mod.500m$cellID)  %>% #add cellID
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(count_list[,c("Label", "Merge_With_2pc_500m")])
+count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_500m), count_images_long$Merge_With_2pc_500m, count_images_long$Label)
+count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+#remove species to exclude
+count_mod.500m <- count_images_renamed %>%
+  dplyr::select( - count_list$Label[which(count_list$Exclude_500m =='x')])
+count_mod.500m$cellID <- as.factor(count_mod.500m$cellID)
+
+count_images_long <- count_mod.2km[,-1] %>%
+  mutate(cellID=count_mod.2km$cellID)  %>% #add cellID
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(count_list[,c("Label", "Merge_With_2pc_2km")])
+count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_2km), count_images_long$Merge_With_2pc_2km, count_images_long$Label)
+count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+#remove species to exclude
+count_mod.2km <- count_images_renamed %>%
+  dplyr::select( - count_list$Label[which(count_list$Exclude_2km =='x')])
+count_mod.2km$cellID <- as.factor(count_mod.2km$cellID)
+
 ###########################################################################################
 ######## THE BELOW CODE IS REPETITIVE BUT WORKS...!!! COULD CLEAN UP BUT NO TIME... #######
 
@@ -462,11 +513,11 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod, count_mod, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_500m.Rdata"))
+save(cover_mod.500m, count_mod.500m, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_500m.Rdata"))
 
 
 #################################
-#### 4b) 2km:
+#### 4c) 2km:
 ## Calculate abundances of functional groups and richness on the raw data (before species are excluded)
 ## for the count data
 dat.count <- count_cells_2km
@@ -551,7 +602,7 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod, count_mod, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_2km.Rdata"))
+save(cover_mod.2km, count_mod.2km, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_2km.Rdata"))
 
 
 

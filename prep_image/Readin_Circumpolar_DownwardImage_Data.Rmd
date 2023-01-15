@@ -67,14 +67,14 @@ stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS8
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-#### load depth
-r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
-
-# #### load diatom data
-# load(file=paste0(image.dir,"Circumpolar_Diatom_locations.Rdata"))
-
-#### load coastline
-load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+# #### load depth
+# r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
+# 
+# # #### load diatom data
+# # load(file=paste0(image.dir,"Circumpolar_Diatom_locations.Rdata"))
+# 
+# #### load coastline
+# load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
 ```
 
 ### load image area information
@@ -994,7 +994,7 @@ col.select.list <- list(c("lon","lat","Filename.standardised","transectID","File
                         c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
                         c("lon","lat","Filename.standardised","transectID","filename","image.select","DateTime"))
 
-# #### standardise date and time formats, add missing dates where necessary
+#### standardise date and time formats, add missing dates where necessary
 # for(i in 1:20){
 #   a <- select(dat.list.clean[[i]],col.select.list[[i]][7])[1,]
 #   print(a)
@@ -1002,9 +1002,7 @@ col.select.list <- list(c("lon","lat","Filename.standardised","transectID","File
 # dat.list.clean[[16]]$time <- 2011 ## JR262
 # dat.list.clean[[19]]$time <- 2018 ## JR17003
 
-
-
-#####                        
+#### adding the total number of images, creating the image subset dataframes                         
 col.select2 <- c("lon","lat","Filename.standardised","transectID","Filename","image.select","DateTime")
 polar.dat.subset.list <- list()
 dat.subset.list <- list()

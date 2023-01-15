@@ -356,8 +356,12 @@ writeRaster(npp2k_su_sd_shelf, filename=paste0(env.derived,string.chr,"2km_shelf
 
 #### 5) ROMS Currents & Temperature & FAM ----
 
+## WE NEED A RUN ACROSS SUMMER WITH HIGH-RES HISTORY FILES!!! 8 has one month only, 8_Nov has 10-day intervals...
+
+## focussing on the summer period
 ## 4k models for now, 2k to follow, and proper FAM to follow!!
-data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_float_test8/"
+#data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_float_test8/"
+data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_test8_Nov/"
 #### load lon/lat information from ROMS-grid
 grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
 lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
@@ -371,15 +375,27 @@ empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=stereo, resolution=4000)
 #depth
 h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
 #salinity
-salt <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="salt", level=1)
+salt1 <- raster(paste0(data.dat100,"ocean_avg_0002.nc"), varname="salt", level=1)
+salt2 <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="salt", level=1)
+salt3 <- raster(paste0(data.dat100,"ocean_avg_0004.nc"), varname="salt", level=1)
 #temperature
-temp <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="temp", level=1)
+temp1 <- raster(paste0(data.dat100,"ocean_avg_0002.nc"), varname="temp", level=1)
+temp2 <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="temp", level=1)
+temp3 <- raster(paste0(data.dat100,"ocean_avg_0004.nc"), varname="temp", level=1)
 #seafloor currents (seafloor-layer is 1)
-u.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="u", level=1)
-v.raw <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="v", level=1)
+u.raw1 <- brick(paste0(data.dat100,"ocean_his_0002.nc"), varname="u", level=1)
+v.raw1 <- brick(paste0(data.dat100,"ocean_his_0002.nc"), varname="v", level=1)
+u.raw2 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
+v.raw2 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="v", level=1)
+u.raw3 <- brick(paste0(data.dat100,"ocean_his_0004.nc"), varname="u", level=1)
+v.raw3 <- brick(paste0(data.dat100,"ocean_his_0004.nc"), varname="v", level=1)
 #seasurface currents (surface-layer is 31)
-u_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="u", level=31)
-v_31.raw <- brick(paste0(data.dat100,"ocean_avg_0001.nc"), varname="v", level=31)
+u_31.raw1 <- brick(paste0(data.dat100,"ocean_avg_0002.nc"), varname="u", level=31)
+v_31.raw1 <- brick(paste0(data.dat100,"ocean_avg_0002.nc"), varname="v", level=31)
+u_31.raw2 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=31)
+v_31.raw2 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=31)
+u_31.raw3 <- brick(paste0(data.dat100,"ocean_avg_0004.nc"), varname="u", level=31)
+v_31.raw3 <- brick(paste0(data.dat100,"ocean_avg_0004.nc"), varname="v", level=31)
 ## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
 u.sum <- sum(u.raw)
 v.sum <- sum(v.raw)

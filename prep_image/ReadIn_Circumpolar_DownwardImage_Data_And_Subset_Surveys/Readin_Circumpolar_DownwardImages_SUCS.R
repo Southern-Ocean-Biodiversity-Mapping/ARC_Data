@@ -12,7 +12,7 @@ substrRight <- function(x, n){
 }
 
 env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/derived/"
-image.dir <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/"
+image.dir <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/"
 
 ## environmental data for plotting
 # my_data_dir <- "C:/Users/jjansen/Desktop/science/data_environmental/accessed_through_R"
@@ -28,15 +28,15 @@ stereo <- crs(coast.proj)#"+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0
 ## 4 different surveys, so a number of metadata records and image folders need to be loaded:
 bio.path <- "C:/Users/jjansen/Desktop/science/data_biological/"
 
-image.dir_1 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/JR262/"
-image.dir_2 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/JR15005/"
-image.dir_3 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/JR17001/"
-image.dir_4 <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/JR17003/"
+image.dir_1 <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/JR262/"
+image.dir_2 <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/JR15005/"
+image.dir_3 <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/JR17001/"
+image.dir_4 <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/JR17003/"
 
-path.bad.images_1 <- "D:/ARC_DP_data/adjusted_SUCS/JR262/"
-path.bad.images_2 <- "D:/ARC_DP_data/adjusted_SUCS/JR15005/"
-path.bad.images_3 <- "D:/ARC_DP_data/adjusted_SUCS/JR17001/"
-path.bad.images_4 <- "D:/ARC_DP_data/adjusted_SUCS/JR17003/"
+path.bad.images_1 <- "E:/ARC_DP_data/adjusted_SUCS/JR262/"
+path.bad.images_2 <- "E:/ARC_DP_data/adjusted_SUCS/JR15005/"
+path.bad.images_3 <- "E:/ARC_DP_data/adjusted_SUCS/JR17001/"
+path.bad.images_4 <- "E:/ARC_DP_data/adjusted_SUCS/JR17003/"
 
 dat.JR262.raw <- read_xlsx(paste0(image.dir_1,"JR262_SUCS_SouthOrkneys.xlsx"))
 dat.JR262.raw <- dat.JR262.raw[-c(2,4,6),]
@@ -225,6 +225,7 @@ m.sel <- match(dat.JR17003$image.code,dat.JR17003.raw$image.code)
 dat.JR17003$lat <- dat.JR17003.raw$Latitude.seatex.gga...seatex.gga.lat.[m.sel]
 dat.JR17003$lon <- dat.JR17003.raw$Longitude.seatex.gga...seatex.gga.lon[m.sel]
 dat.JR17003$depth <- dat.JR17003.raw$Water.depth.ea600...ea600.depth.[m.sel]
+dat.JR17003$time <- dat.JR17003.raw$Time[m.sel]
 
 ##### bad images
 good.dat.JR262 <- dat.JR262[which(dat.JR262$filename_in_folder%in%good.images_1),]
@@ -266,6 +267,8 @@ for(i in 1:length(levels(dat$transectID))){
     dat$image.select[dat.subset.v][1:t.counts] <- sample(1:t.counts)
 }
 
+## add time from cruise report:
+dat$time <- c(rep(ymd("2011-11-18"),8),rep(ymd("2011-11-19"),23))
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
 # save(dat, file="C:/Users/jjansen/Desktop/science/data_biological/JR262_dat.Rdata")
 #load(file="C:/Users/jjansen/Desktop/science/data_biological/JR262_dat.Rdata")

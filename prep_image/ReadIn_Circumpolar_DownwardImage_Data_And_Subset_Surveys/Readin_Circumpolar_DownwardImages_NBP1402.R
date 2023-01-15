@@ -21,9 +21,9 @@ library(MBHdesign)
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 #### specify paths
-img.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/"
-txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/"
-gps.txt.path <- "D:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/Totten_all/"
+img.path <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/"
+txt.path <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/"
+gps.txt.path <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/NBP14_02_Post2016/Totten_all/"
 
 r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
 nbp.path <- paste0(r.path,"NBP1402/NBP1402_1_raw_images_and_metadata/images_colourcorrected/")
@@ -39,13 +39,31 @@ dat$FileName <- as.character(dat$FileName)
 add.yoyo <- which(grepl("yoyo",dat$FileName)==FALSE)
 dat$FileName[add.yoyo] <- paste0("yoyo",as.character(dat$FileName[add.yoyo]))
 dat$FileName <- paste0(dat$FileName,".jpg")
+## fixing missing timestamps in transect yoyo36
+dat$Time[365:367] <- c("16:55","16:56","16:57")
+dat$Time[369:372] <- c("16:57","16:57","16:58","16:58")
+dat$Time[374:377] <- c("16:58","16:59","16:59","17:00")
+dat$Time[379:382] <- c("17:00","17:01","17:01","17:02")
+dat$Time[384:387] <- c("17:02","17:03","17:03","17:04")
+dat$Time[389:392] <- c("17:04","17:05","17:05","17:06")
+dat$Time[394:397] <- c("17:06","17:07","17:07","17:08")
+dat$Time[399:402] <- c("17:08","17:09","17:09","17:10")
+dat$Time[404:407] <- c("17:10","17:11","17:11","17:12")
+dat$Time[409:412] <- c("17:12","17:12","17:13","17:13")
+dat$Time[414:417] <- c("17:13","17:14","17:14","17:15")
+dat$Time[419:422] <- c("17:15","17:16","17:16","17:17")
+dat$Time[424:427] <- c("17:17","17:17","17:18","17:18")
+dat$Time[429:432] <- c("17:18","17:18","17:19","17:19")
+dat$Time[434:437] <- c("17:19","17:20","17:20","17:21")
+dat$Time[439:446] <- c("17:21","17:22","17:22","17:22","17:23","17:23","17:23","17:24")
+dat$Time[448:449] <- c("17:24","17:25")
 dat$time <- dmy_hm(paste0(dat$Date," ",dat$Time))
 
 #### plot all positions of the actual images, and underlay all tracked gps locations to check if anything is off ####
-set_data_roots(my_data_dir)
-r <- readtopo("ibcso")
-r2 <- r
-r2[r2>0] <- NA
+# set_data_roots(my_data_dir)
+# r <- readtopo("ibcso")
+# r2 <- r
+# r2[r2>0] <- NA
 
 ## remove images without gps data
 dat2 <- dat[-which(is.na(dat$GPS_lat+dat$GPS_lon)),]
@@ -102,10 +120,10 @@ coordinates(spatial.dat) <- c("Longitude","Latitude")
 proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
 polar.dat <- spTransform(spatial.dat, CRS("+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
-plot(r2, xlim=c(2170000,2320000), ylim=c(-1370000,-1220000))
-points(polar.dat)
-points(polar.dat.ship, col="red")
-text(polar.dat,labels=dat2$transectID, adj=c(2,2))
+# plot(r2, xlim=c(2170000,2320000), ylim=c(-1370000,-1220000))
+# points(polar.dat)
+# points(polar.dat.ship, col="red")
+# text(polar.dat,labels=dat2$transectID, adj=c(2,2))
 
 #par(mfrow=c(2,3),mar=c(5,4,4,1))
 ## each transect individually

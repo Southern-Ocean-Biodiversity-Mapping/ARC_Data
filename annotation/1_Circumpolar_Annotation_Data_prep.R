@@ -46,8 +46,8 @@ if (user == "nicole") {
 
 ###############
 ## choose resolution of environmental variables:
-res <- "500m"
-#res <- "2km"
+#res <- "500m"
+res <- "2km"
 ###############
 
 ## R-drive paths
@@ -109,14 +109,16 @@ for(i in 2:length(dat.list.clean)){
   image_metadata <- rbind(image_metadata,dat.temp)
 }
 # image_metadata$Filename.standardised <- gsub(".tif",".jpg",image_metadata$Filename.standardised)
-image_metadata$proj_coord_x <- project(image_metadata[,2:3], proj=crs(r2))$x
-image_metadata$proj_coord_y <- project(image_metadata[,2:3], proj=crs(r2))$y
+image_metadata$proj_coord_x <- proj4::project(image_metadata[,2:3], proj=crs(r2))$x
+image_metadata$proj_coord_y <- proj4::project(image_metadata[,2:3], proj=crs(r2))$y
 image_metadata$cellID <- extract(r2, image_metadata[,5:6], cellnumbers=TRUE)[,1]
 
 name_split <- str_split(image_metadata$Filename.standardised,"_", simplify=T)
 image_metadata$survey <- name_split[,1]
 image_metadata$transectID_full <- paste0(name_split[,1],"_",name_split[,2])
 image_metadata$transectID_full <- as.factor(image_metadata$transectID_full)
+# image_metadata$survey[which(image_metadata$survey=="tan0802")] <- "TAN0802"
+# image_metadata$survey[which(image_metadata$survey=="tan1901")] <- "TAN1901"
 
 ids <- unique(image_metadata$cellID)
 
@@ -652,6 +654,7 @@ points(img.coord[sel2], cex=log(val), col="blue")
 
 
 ##########################################################
+library(lubridate)
 load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
 load(file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_500m.Rdata"))
 
@@ -676,13 +679,13 @@ head(image_metadata)
 csv.list <- list()
 csv.names <- c("Filename","Filename.standardised","Survey.ID","Transect.ID","Longitude","Latitude",
                "Date","Date_start","Date_end","Source.link","License",
-               "Depth","Depth_start","Depth_end","Area","Area_from_annotations")
+               "Depth","Depth_start","Depth_end","Image_area","Image_area_source")
 
 csv.list$CRS <- cbind(dat.list.clean$WAP[,c('Filename','Filename.standardised')], 
                       "CRS", dat.list.clean$WAP[,c('transectID','lon','lat')],
                       ymd(dat.list.clean$WAP$Date), NA, NA, 
                       NA, NA,
-                      dat.list.clean$WAP[,c('depth.mean')], NA, NA, 3, NA)
+                      dat.list.clean$WAP[,c('depth.mean')], NA, NA, 3, "metadata")
 
 csv.list$PS06 <- cbind(dat.list.clean$PS06[,c('Filename','Filename.standardised')], 
                        "PS06", dat.list.clean$PS06[,c('transectID','lon','lat')],
@@ -694,31 +697,31 @@ csv.list$PS14 <- cbind(dat.list.clean$PS14[,c('Filename','Filename.standardised'
                        "PS14",dat.list.clean$PS14[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list.clean$PS14$time_start), ymd_hms(dat.list.clean$PS14$time_end), 
                        NA, "CC-BY-3.0",
-                       NA, dat.list.clean$PS14[,c('depth_start','depth_end')], 0.56, NA)
+                       NA, dat.list.clean$PS14[,c('depth_start','depth_end')], 0.56, "metadata")
 
 csv.list$PS18 <- cbind(dat.list.clean$PS18[,c('Filename','Filename.standardised')],
                        "PS18",dat.list.clean$PS18[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list.clean$PS18$time_start), ymd_hms(dat.list.clean$PS18$time_end),
                        NA,"CC-BY-3.0",
-                       NA,dat.list.clean$PS18[,c('depth_start','depth_end')],0.9,NA)
+                       NA,dat.list.clean$PS18[,c('depth_start','depth_end')],0.9, "metadata")
 
 csv.list$PS61 <- cbind(dat.list.clean$PS61[,c('Filename','Filename.standardised')],
                        "PS61",dat.list.clean$PS61[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list.clean$PS61$time_start), ymd_hms(dat.list.clean$PS61$time_end),
                        NA,"CC-BY-3.0",
                        NA,as.numeric(substr(dat.list.clean$PS61$depth_start,1,6)),
-                       as.numeric(substr(dat.list.clean$PS61$depth_end,1,6)),1,NA)
+                       as.numeric(substr(dat.list.clean$PS61$depth_end,1,6)),1, "metadata")
 
 temp.PS81 <- cbind(dat.list.clean$PS81[,c('Filename','Filename.standardised')],
                    "PS81", dat.list.clean$PS81[,c('transectID','Longitude','Latitude')],
                    ymd_hms(dat.list.clean$PS81$Date.Time), NA, NA,
                    "doi.pangaea.de/10.1594/PANGAEA.872719", "CC-BY-3.0",
-                   dat.list.clean$PS81[,c('Bathy.depth..m.')], NA, NA, dat.list.clean$PS81[,c('Area_from_metadata','Area')])
+                   dat.list.clean$PS81[,c('Bathy.depth..m.')], NA, NA, dat.list.clean$PS81$Area_from_metadata, "metadata")
 temp.PS81_s <- cbind(dat.list.clean$PS81_shallow[,c('Filename','Filename.standardised')],
                      "PS81", dat.list.clean$PS81_shallow[,c('transectID','Longitude','Latitude')],
                      ymd_hms(dat.list.clean$PS81_shallow$Date.Time), NA, NA,
                      "doi.pangaea.de/10.1594/PANGAEA.872719", "CC-BY-3.0",
-                     dat.list.clean$PS81_shallow[,c('Bathy.depth..m.')], NA, NA, dat.list.clean$PS81_shallow[,c('Area_from_metadata','Area')])
+                     dat.list.clean$PS81_shallow[,c('Bathy.depth..m.')], NA, NA, dat.list.clean$PS81_shallow$Area_from_metadata, "metadata")
 names(temp.PS81) <- names(temp.PS81_s) <- csv.names
 csv.list$PS81 <- rbind(temp.PS81,temp.PS81_s)
 
@@ -726,13 +729,13 @@ csv.list$PS96 <- cbind(dat.list.clean$PS96[,c('Filename','Filename.standardised'
                        "PS96", dat.list.clean$PS96[,c('transectID','Longitude','Latitude')],
                        ymd_hms(dat.list.clean$PS96$Date.Time), NA, NA,
                        "doi.pangaea.de/10.1594/PANGAEA.862097", "CC-BY-3.0",
-                       dat.list.clean$PS96[,c('Depth.water..m.')], NA, NA, NA, dat.list.clean$PS96[,c('Area')])
+                       dat.list.clean$PS96[,c('Depth.water..m.')], NA, NA, dat.list.clean$PS96[,c('Area')], "laserpoints")
 
 csv.list$PS118 <- cbind(dat.list.clean$PS118[,c('Filename','Filename.standardised')],
                         "PS118", dat.list.clean$PS118[,c('transectID','Longitude','Latitude')], 
                         ymd_hms(dat.list.clean$PS118$Date.Time), NA, NA,
                         "doi.pangaea.de/10.1594/PANGAEA.911904", "CC-BY-4.0",
-                        dat.list.clean$PS118[,c('Depth.water..m.')], NA, NA, NA, dat.list.clean$PS118[,c('Area')])
+                        dat.list.clean$PS118[,c('Depth.water..m.')], NA, NA, dat.list.clean$PS118[,c('Area')], "metadata")
 csv.list$PS118[1875:1972,7] <- ymd_hm(substr(dat.list.clean$PS118$Date.Time[1875:1972],1,19))
 
 csv.list$TAN0802 <- cbind(dat.list.clean$TAN0802[,c('FileName','Filename.standardised')],
@@ -757,7 +760,7 @@ csv.list$NBP1402 <- cbind(dat.list.clean$NBP1402[,c('FileName','Filename.standar
                           "NBP1402", dat.list.clean$NBP1402[,c('transectID','GPS_lon','GPS_lat')],
                           ymd_hms(dat.list.clean$NBP1402$time), NA, NA,
                           "www.usap-dc.org/view/dataset/601310", "CC-BY-NC 4.0",
-                          dat.list.clean$NBP1402[,c('Depth')], NA, NA, 4.8, NA)
+                          dat.list.clean$NBP1402[,c('Depth')], NA, NA, 4.8, "metadata")
 
 csv.list$NBP1502 <- cbind(dat.list.clean$NBP1502[,c('FileName','Filename.standardised')],
                           "NBP1502", dat.list.clean$NBP1502[,c('transectID','GPS_lon','GPS_lat')],
@@ -774,27 +777,27 @@ csv.list$AA2011 <- cbind(dat.list.clean$AA2011[,c('Filename','Filename.standardi
 
 csv.list$JR262 <- cbind(dat.list.clean$JR262[,c('filename','Filename.standardised')],
                         "JR262",dat.list.clean$JR262[,c('transectID','lon','lat')],
-                        dat.list.clean$JR262$time, NA, NA,
+                        ymd(dat.list.clean$JR262$time), NA, NA,
                         NA,NA,
-                        dat.list.clean$JR262[,c('depth')], NA, NA, 0.51, NA)
+                        dat.list.clean$JR262[,c('depth')], NA, NA, 0.51, "metadata")
 
 csv.list$JR15005 <- cbind(dat.list.clean$JR15005[,c('filename','Filename.standardised')],
                           "JR15005", dat.list.clean$JR15005[,c('transectID','lon','lat')],
                           dat.list.clean$JR15005$time, NA, NA,
                           NA,NA,
-                          dat.list.clean$JR15005[,c('depth')],NA,NA,0.51,NA)
+                          dat.list.clean$JR15005[,c('depth')],NA,NA,0.51, "metadata")
 
 csv.list$JR17001 <- cbind(dat.list.clean$JR17001[,c('filename','Filename.standardised')],
-                          "JR17001", dat.list.clean$JR17001[,c('transectID','lon','lat','time')],
+                          "JR17001", dat.list.clean$JR17001[,c('transectID','lon','lat')],
                           dat.list.clean$JR17001$time, NA, NA,
                           NA, NA,
-                          dat.list.clean$JR17001[,c('depth')], NA, NA, 0.51, NA)
+                          dat.list.clean$JR17001[,c('depth')], NA, NA, 0.51, "metadata")
 
 csv.list$JR17003 <- cbind(dat.list.clean$JR17003[,c('filename','Filename.standardised')],
-                          "JR17003", dat.list.clean$JR17003[,c('transectID','lon','lat','time')],
+                          "JR17003", dat.list.clean$JR17003[,c('transectID','lon','lat')],
                           dat.list.clean$JR17003$time, NA, NA,
                           "doi.org/10.5285/48dcef16-6719-45e5-a335-3a97f099e451", "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-                          dat.list.clean$JR17003[,c('depth')], NA, NA, 0.51, NA)
+                          dat.list.clean$JR17003[,c('depth')], NA, NA, 0.51, "metadata")
 
 csv.list$LMG1311 <- cbind(dat.list.clean$LMG1311[,c('filename','Filename.standardised')],
                           "LMG1311",dat.list.clean$LMG1311[,c('transectID','lon','lat')],
@@ -867,21 +870,57 @@ for(i in 1:19){
 }
 
 
-### add annotated area
+### replace area with annotated area where available and record this
 for(i in 1:19){
   message(names(csv.list)[i])
   ## merge csv_list and image_metadata by filename and replace area values in csv_list
-  csv.list[[i]]$Area_from_annotations <- merge(csv.list[[i]][,c(2,15)], image_metadata[,c(1,10)], by="Filename.standardised", all.x=TRUE)[,3]
+  csv.list[[i]][c('Image_area','Image_area_source')] <- merge(csv.list[[i]][,c(2,15)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)[,3:4]
   print(head(csv.list[[i]]))
 }
 
+## check if all dim are the same (tan0802 and tan1901 are in caps vs lowercase...)
+for(i in 1:19){
+  survID <- names(csv.list)[i]
+  message(survID)
+  metadat.sel <- which(image_metadata$survey==survID)
+  print(dim(image_metadata[metadat.sel,]))
+  print(dim(csv.list[[i]]))
+}
 
+### limit csv-files to annotated images only:
+sel.names <- names(csv.list)
+sel.names[c(9,11)] <- c("tan0802","tan1901")
+ann.csv.list <- list()
+for(i in 1:19){
+  survID <- sel.names[i]
+  message(survID)
+  metadat.sel <- which(image_metadata$survey==survID&image_metadata$cover=="yes")
+  ann.sel <- image_metadata$Filename.standardised[metadat.sel]
+  ann.csv.list[[i]] <- csv.list[[i]][csv.list[[i]]$Filename.standardised%in%ann.sel,]
+}
+names(ann.csv.list) <- names(csv.list)
 
+## check if correct
+for(i in 1:19){
+  message(names(csv.list)[i])
+  print(dim(ann.csv.list[[i]]))
+  print(dim(csv.list[[i]]))
+}
 
+### dat.subset.list has a few images marked as annotated that are not:
+## PS81 (1041 vs 1045)
+dat.subset.list$PS81$Filename.standardised[which(dat.subset.list$PS81$Filename.standardised%!in%ann.csv.list$PS81$Filename.standardised)]
+## TAN1901 (363 vs 365)
+dat.subset.list$TAN1901$Filename.standardised[which(dat.subset.list$TAN1901$Filename.standardised%!in%ann.csv.list$TAN1901$Filename.standardised)]
 
 ### save individual csv files
-
-
+r.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
+for(i in 1:19){
+  survID <- sel.names[i]
+  message(survID)
+  write.csv(csv.list[[i]], file=paste0(r.dir,"metadata_full_dataset_",survID,".csv"), row.names=FALSE)
+  write.csv(ann.csv.list[[i]], file=paste0(r.dir,"metadata_annotated_dataset_",survID,".csv"), row.names=FALSE)
+}
 
 
 

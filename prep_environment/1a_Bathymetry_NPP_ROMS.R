@@ -23,13 +23,13 @@
 # load libraries
 library(ncdf4)        ## package for netcdf manipulation
 library(raadtools)
-library(raster)       ## package for raster manipulation
+#library(raster)       ## package for raster manipulation
 library(sp)
 library(dplyr)
 library(blueant)
 library(rgdal)        ## package for geospatial analysis
 library(ggplot2)      ## package for plotting
-#library(terra)
+library(terra)
 
 library(spatialEco)
 
@@ -361,7 +361,8 @@ writeRaster(npp2k_su_sd_shelf, filename=paste0(env.derived,string.chr,"2km_shelf
 ## focussing on the summer period
 ## 4k models for now, 2k to follow, and proper FAM to follow!!
 #data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_float_test8/"
-data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_test8_Nov/"
+#data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_sed_test8_Nov/"
+data.dat100 <- "E:/science/data_environmental/Circumpolar_ROMS/4km_outputs/output_yr10/"
 #### load lon/lat information from ROMS-grid
 grd4k_nc <- nc_open(paste0(env.raw,"waom4extend_grd.nc"))
 lon_rho <- ncvar_get(grd4k_nc, varid="lon_rho")
@@ -370,70 +371,176 @@ lat_rho <- ncvar_get(grd4k_nc, varid="lat_rho")
 roms.coords.proj <- rgdal::project(cbind(c(lon_rho), c(lat_rho)), proj=stereo)
 x.range <- c(min(roms.coords.proj[,1])-2000,max(roms.coords.proj[,1])+2000)
 y.range <- c(min(roms.coords.proj[,2])-2000,max(roms.coords.proj[,2])+2000)
-empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=stereo, resolution=4000)
+empty.roms.ra <- rast(extent=extent(c(x.range,y.range)), crs=stereo, resolution=4000)
 
 #depth
-h <- raster(paste0(data.dat100,"ocean_avg_0001.nc"), varname="h", level=1)
+h <- rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="h")
+## seafloor variables
+s <- seq(1,217, by=31)
 #salinity
-salt1 <- raster(paste0(data.dat100,"ocean_avg_0002.nc"), varname="salt", level=1)
-salt2 <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="salt", level=1)
-salt3 <- raster(paste0(data.dat100,"ocean_avg_0004.nc"), varname="salt", level=1)
+salt.raw  <- c(subset(rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0002.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0003.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0004.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0005.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0006.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0007.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0008.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0009.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0010.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0011.nc"), subds="salt"), subset=s),
+               subset(rast(paste0(data.dat100,"ocean_avg_0012.nc"), subds="salt"), subset=s))
+salt <- mean(salt.raw)
 #temperature
-temp1 <- raster(paste0(data.dat100,"ocean_avg_0002.nc"), varname="temp", level=1)
-temp2 <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="temp", level=1)
-temp3 <- raster(paste0(data.dat100,"ocean_avg_0004.nc"), varname="temp", level=1)
+temp.raw <- c(subset(rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0002.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0003.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0004.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0005.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0006.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0007.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0008.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0009.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0010.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0011.nc"), subds="temp"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0012.nc"), subds="temp"), subset=s))
+temp <- mean(temp.raw)
+# #seafloor currents (seafloor-layer is 1)
+# u.raw1 <- brick(paste0(data.dat100,"ocean_his_0002.nc"), varname="u", level=1)
+# v.raw1 <- brick(paste0(data.dat100,"ocean_his_0002.nc"), varname="v", level=1)
+# u.raw2 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
+# v.raw2 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="v", level=1)
+# u.raw3 <- brick(paste0(data.dat100,"ocean_his_0004.nc"), varname="u", level=1)
+# v.raw3 <- brick(paste0(data.dat100,"ocean_his_0004.nc"), varname="v", level=1)
+# #seasurface currents (surface-layer is 31)
+# u_31.raw1 <- brick(paste0(data.dat100,"ocean_avg_0002.nc"), varname="u", level=31)
+# v_31.raw1 <- brick(paste0(data.dat100,"ocean_avg_0002.nc"), varname="v", level=31)
+# u_31.raw2 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=31)
+# v_31.raw2 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=31)
+# u_31.raw3 <- brick(paste0(data.dat100,"ocean_avg_0004.nc"), varname="u", level=31)
+# v_31.raw3 <- brick(paste0(data.dat100,"ocean_avg_0004.nc"), varname="v", level=31)
+# ## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
+# u.sum <- sum(u.raw)
+# v.sum <- sum(v.raw)
+# u.sum.abs <- sum(abs(u.raw))
+# v.sum.abs <- sum(abs(v.raw))
+# u31.sum <- sum(u_31.raw)
+# v31.sum <- sum(v_31.raw)
+
 #seafloor currents (seafloor-layer is 1)
-u.raw1 <- brick(paste0(data.dat100,"ocean_his_0002.nc"), varname="u", level=1)
-v.raw1 <- brick(paste0(data.dat100,"ocean_his_0002.nc"), varname="v", level=1)
-u.raw2 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
-v.raw2 <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="v", level=1)
-u.raw3 <- brick(paste0(data.dat100,"ocean_his_0004.nc"), varname="u", level=1)
-v.raw3 <- brick(paste0(data.dat100,"ocean_his_0004.nc"), varname="v", level=1)
+u.raw <- c(subset(rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0002.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0003.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0004.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0005.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0006.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0007.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0008.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0009.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0010.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0011.nc"), subds="u"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0012.nc"), subds="u"), subset=s))
+
+v.raw <- c(subset(rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0002.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0003.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0004.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0005.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0006.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0007.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0008.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0009.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0010.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0011.nc"), subds="v"), subset=s),
+           subset(rast(paste0(data.dat100,"ocean_avg_0012.nc"), subds="v"), subset=s))
+
 #seasurface currents (surface-layer is 31)
-u_31.raw1 <- brick(paste0(data.dat100,"ocean_avg_0002.nc"), varname="u", level=31)
-v_31.raw1 <- brick(paste0(data.dat100,"ocean_avg_0002.nc"), varname="v", level=31)
-u_31.raw2 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="u", level=31)
-v_31.raw2 <- brick(paste0(data.dat100,"ocean_avg_0003.nc"), varname="v", level=31)
-u_31.raw3 <- brick(paste0(data.dat100,"ocean_avg_0004.nc"), varname="u", level=31)
-v_31.raw3 <- brick(paste0(data.dat100,"ocean_avg_0004.nc"), varname="v", level=31)
-## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
-u.sum <- sum(u.raw)
-v.sum <- sum(v.raw)
-u.sum.abs <- sum(abs(u.raw))
-v.sum.abs <- sum(abs(v.raw))
-u31.sum <- sum(u_31.raw)
-v31.sum <- sum(v_31.raw)
+s <- seq(31,217, by=31)
+u_31.raw <- c(subset(rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0002.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0003.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0004.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0005.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0006.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0007.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0008.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0009.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0010.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0011.nc"), subds="u"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0012.nc"), subds="u"), subset=s))
+
+v_31.raw <- c(subset(rast(paste0(data.dat100,"ocean_avg_0001.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0002.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0003.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0004.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0005.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0006.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0007.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0008.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0009.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0010.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0011.nc"), subds="v"), subset=s),
+              subset(rast(paste0(data.dat100,"ocean_avg_0012.nc"), subds="v"), subset=s))
+
+## interpolate u and v values at the rho points (where h, temp and salt are already defined)
+
 ## extract current speeds at rho-points where depth is defined
 ## (in ROMS they are all at different locations):
+coord.grd.u <- coord.grd.v <- crds(h)
 ## u has one less column than the grid, so all coordinates need to be moved half a cell to the right for the grids to match up
-coord.grd.u <- coordinates(h)
-coord.grd.u[,1] <- coordinates(h)[,1]-0.5
+coord.grd.u[,1] <- crds(h)[,1]-0.5
 ## v has one less row than the grid, so all coordinates need to be moved half a cell up for the grids to match up
-coord.grd.v <- coordinates(h)
-coord.grd.v[,2] <- coordinates(h)[,2]-0.5
+coord.grd.v[,2] <- crds(h)[,2]-0.5
 ## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
-u <- v <- u.abs <- v.abs <- u31 <- v31 <- sa <- te <- se <- su <- fl <- empty.roms.ra
-u[] <- extract(u.sum, coord.grd.u, method="bilinear")
-v[] <- extract(v.sum, coord.grd.v, method="bilinear")
-u.abs[] <- extract(u.sum.abs, coord.grd.u, method="bilinear")
-v.abs[] <- extract(v.sum.abs, coord.grd.v, method="bilinear")
-u31[] <- extract(u31.sum, coord.grd.u, method="bilinear")
-v31[] <- extract(v31.sum, coord.grd.v, method="bilinear")
-#seasurface current speeds
-uv_31 <- sqrt(u31^2+v31^2)
-#temporal mean seafloor current speed
-mean.uv <- sqrt(u^2+v^2)
-#absolute mean seafloor current speed
-abs.uv <- sqrt(u.abs^2+v.abs^2)
-#residual seafloor current speed
-res.uv <- abs.uv-mean.uv
+u <- v <- u31 <- v31 <- rast(extent=extent(c(x.range,y.range)), crs=stereo, resolution=4000, nlyr=nlyr(u.raw))
+## need to do this consecutively because of RAM
+u.dat <- extract(u.raw, coord.grd.u, method="bilinear")
+for(i in 1:ncol(u.dat)){
+  print(i)
+  u[[i]][] <- u.dat[,i]
+}
+rm(u.dat, u.raw)
+v.dat <- extract(v.raw, coord.grd.v, method="bilinear")
+for(i in 1:ncol(v.dat)){
+  print(i)
+  v[[i]][] <- v.dat[,i]
+}
+rm(v.dat, v.raw)
+u31.dat <- extract(u_31.raw, coord.grd.u, method="bilinear")
+for(i in 1:ncol(u31.dat)){
+  print(i)
+  u31[[i]][] <- u31.dat[,i]
+}
+rm(u31.dat, u_31.raw)
+v31.dat <- extract(v_31.raw, coord.grd.v, method="bilinear")
+for(i in 1:ncol(v31.dat)){
+  print(i)
+  v31[[i]][] <- v31.dat[,i]
+}
+rm(v31.dat, v_31.raw)
 
-#settling FAM
-susp_08_full <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_08", level=1)*86400
-settle_08_full <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)*86400
-susp_08 <- susp_08_full[[31]]
-settle_08 <- settle_08_full[[31]]-settle_08_full[[1]]
-flux_08 <- susp_08-settle_08
+## simple current speeds
+uv_31 <- sqrt(u31^2+v31^2)
+uv <- sqrt(u^2+v^2)
+## and derivatives
+uv.max <- max(uv)
+uv.sd <- stdev(uv)
+
+## u and v derivatives
+u.mean <- mean(u)
+u.mean.abs <- mean(abs(u))
+v.mean <- mean(v)
+v.mean.abs <- mean(abs(v))
+## uv based on mean u and v
+uv.mean <- sqrt(u.mean^2+v.mean^2)
+uv.abs.mean <- sqrt(u.mean.abs^2+v.mean.abs^2) ## this is essentially the same as mean(uv)
+
+# #settling FAM
+# susp_08_full <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sand_08", level=1)*86400
+# settle_08_full <- brick(paste0(data.dat100,"ocean_his_0001.nc"), varname="sandfrac_08", level=1)*86400
+# susp_08 <- susp_08_full[[31]]
+# settle_08 <- settle_08_full[[31]]-settle_08_full[[1]]
+# flux_08 <- susp_08-settle_08
 
 # susp_his_08 <-  brick(empty.roms.ra,nl=nlayers(u.raw))
 # settle_08_full <- brick(empty.roms.ra,nl=nlayers(u.raw))
@@ -444,115 +551,136 @@ flux_08 <- susp_08-settle_08
 # settle_08 <- settle_08_full[[31]]-settle_08_full[[1]]
 # flux_08 <- susp_08-settle_08
 
-## remove inland values for depth
-h2 <- empty.roms.ra
-h2[] <- h[]
-h2[is.na(mean.uv)] <- NA
-sa[] <- extract(salt, coordinates(h), method="bilinear")
-te[] <- extract(temp, coordinates(h), method="bilinear")
-se[] <- extract(settle_08, coordinates(h), method="bilinear")
-su[] <- extract(susp_08, coordinates(h), method="bilinear")
-fl[] <- extract(flux_08, coordinates(h), method="bilinear")
+## 
+sa <- te <- empty.roms.ra
+salt.dat <- extract(salt, coord.grd.u, method="bilinear")
+temp.dat <- extract(temp, coord.grd.u, method="bilinear")
+sa[] <- salt.dat[,1]
+te[] <- temp.dat[,1]
+# se[] <- extract(settle_08, coordinates(h), method="bilinear")
+# su[] <- extract(susp_08, coordinates(h), method="bilinear")
+# fl[] <- extract(flux_08, coordinates(h), method="bilinear")
 
 ## resample to standard 500m resolution of other environmental variables
-mean.uv_500 <- resample(mean.uv,r)
-abs.uv_500 <- resample(abs.uv,r)
-res.uv_500 <- resample(res.uv,r)
+uv.res <- uv.abs.mean-uv.mean
+uv.mean_500 <- resample(uv.mean,r)
+uv.abs_500  <- resample(uv.abs.mean,r)
+uv.res_500  <- resample(uv.res,r)
+uv.max_500  <- resample(uv.max,r)
+uv.sd_500   <- resample(uv.sd,r)
 t_500 <- resample(te,r)
 s_500 <- resample(sa,r)
-settle_08_500 <- resample(se,r)
-susp_08_500 <- resample(su,r)
-flux_08_500 <- resample(fl,r)
+# settle_08_500 <- resample(se,r)
+# susp_08_500 <- resample(su,r)
+# flux_08_500 <- resample(fl,r)
 
 ## shelf only
-mean.uv_500_shelf <- mean.uv_500
-abs.uv_500_shelf <- abs.uv_500
-res.uv_500_shelf <- res.uv_500
+uv.mean_500_shelf<- uv.mean_500
+uv.abs_500_shelf <- uv.abs_500
+uv.res_500_shelf <- uv.res_500
+uv.max_500_shelf <- uv.max_500
+uv.sd_500_shelf  <- uv.sd_500   
 t_500_shelf <- t_500
 s_500_shelf <- s_500
-settle_08_500_shelf <- settle_08_500
-susp_08_500_shelf <- susp_08_500
-flux_08_500_shelf <- flux_08_500
+# settle_08_500_shelf <- settle_08_500
+# susp_08_500_shelf <- susp_08_500
+# flux_08_500_shelf <- flux_08_500
 
-mean.uv_500_shelf[is.na(r)] <- NA
-abs.uv_500_shelf[is.na(r)] <- NA
-res.uv_500_shelf[is.na(r)] <- NA
+uv.mean_500_shelf[is.na(r)] <- NA
+uv.abs_500_shelf[is.na(r)] <- NA
+uv.res_500_shelf[is.na(r)] <- NA
+uv.max_500_shelf[is.na(r)] <- NA
+uv.sd_500_shelf[is.na(r)] <- NA
 t_500_shelf[is.na(r)] <- NA
 s_500_shelf[is.na(r)] <- NA
-settle_08_500_shelf[is.na(r)] <- NA
-susp_08_500_shelf[is.na(r)] <- NA
-flux_08_500_shelf[is.na(r)] <- NA
+# settle_08_500_shelf[is.na(r)] <- NA
+# susp_08_500_shelf[is.na(r)] <- NA
+# flux_08_500_shelf[is.na(r)] <- NA
 
 ## write rasters to file
-writeRaster(mean.uv_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.tif"))
-writeRaster(mean.uv_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.tif"))
-writeRaster(abs.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.tif"))
-writeRaster(abs.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.tif"))
-writeRaster(res.uv_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.tif"))
-writeRaster(res.uv_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.tif"))
-writeRaster(temp,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.tif"))
+writeRaster(uv.mean_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(uv.mean_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(uv.abs_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(uv.abs_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(uv.res_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(uv.res_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(uv.max_500,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_max.tif"))
+writeRaster(uv.max_500_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_max.tif"))
+writeRaster(uv.sd_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorcurrents_sd.tif"))
+writeRaster(uv.sd_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorcurrents_sd.tif"))
+writeRaster(te,               overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloortemperature.tif"))
 writeRaster(t_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloortemperature.tif"))
 writeRaster(t_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloortemperature.tif"))
-writeRaster(salt,             overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.tif"))
+writeRaster(sa,               overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_seafloorsalinity.tif"))
 writeRaster(s_500,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_seafloorsalinity.tif"))
 writeRaster(s_500_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_seafloorsalinity.tif"))
-writeRaster(settle_08,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_settle08.tif"))
-writeRaster(settle_08_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_settle08.tif"))
-writeRaster(settle_08_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_settle08.tif"))
-writeRaster(susp_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_susp08.tif"))
-writeRaster(susp_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_susp08.tif"))
-writeRaster(susp_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_susp08.tif"))
-writeRaster(flux_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_flux08.tif"))
-writeRaster(flux_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_flux08.tif"))
-writeRaster(flux_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_flux08.tif"))
+# writeRaster(settle_08,          overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_settle08.tif"))
+# writeRaster(settle_08_500,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_settle08.tif"))
+# writeRaster(settle_08_500_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_settle08.tif"))
+# writeRaster(susp_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_susp08.tif"))
+# writeRaster(susp_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_susp08.tif"))
+# writeRaster(susp_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_susp08.tif"))
+# writeRaster(flux_08,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"waom4k_test_flux08.tif"))
+# writeRaster(flux_08_500,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_waom4k_test_flux08.tif"))
+# writeRaster(flux_08_500_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"500m_shelf_waom4k_test_flux08.tif"))
 
 
-## resample to standard 500m resolution of other environmental variables
-mean.uv_2k <- resample(mean.uv,r2k.depth)
-abs.uv_2k <-  resample(abs.uv,r2k.depth)
-res.uv_2k <-  resample(res.uv,r2k.depth)
+## resample to 2km resolution of other environmental variables
+uv.mean_2k <- resample(uv.mean,r2k.depth)
+uv.abs_2k <-  resample(uv.abs.mean,r2k.depth)
+uv.res_2k <-  resample(uv.res,r2k.depth)
+uv.max_2k <-  resample(uv.max,r2k.depth)
+uv.sd_2k <-   resample(uv.sd,r2k.depth)
 t_2k <-       resample(te,r2k.depth)
 s_2k <-       resample(sa,r2k.depth)
-settle_08_2k<-resample(se,r2k.depth)
-susp_08_2k <- resample(su,r2k.depth)
-flux_08_2k <- resample(fl,r2k.depth)
+# settle_08_2k<-resample(se,r2k.depth)
+# susp_08_2k <- resample(su,r2k.depth)
+# flux_08_2k <- resample(fl,r2k.depth)
 
 ## shelf only
-mean.uv_2k_shelf <- mean.uv_2k
-abs.uv_2k_shelf <- abs.uv_2k
-res.uv_2k_shelf <- res.uv_2k
+uv.mean_2k_shelf <- uv.mean_2k
+uv.abs_2k_shelf  <- uv.abs_2k
+uv.res_2k_shelf  <- uv.res_2k
+uv.max_2k_shelf  <- uv.max_2k
+uv.sd_2k_shelf   <- uv.sd_2k
 t_2k_shelf <- t_2k
 s_2k_shelf <- s_2k
-settle_08_2k_shelf <- settle_08_2k
-susp_08_2k_shelf <- susp_08_2k
-flux_08_2k_shelf <- flux_08_2k
+# settle_08_2k_shelf <- settle_08_2k
+# susp_08_2k_shelf <- susp_08_2k
+# flux_08_2k_shelf <- flux_08_2k
 
-mean.uv_2k_shelf[is.na(r2k.depth)] <- NA
-abs.uv_2k_shelf[is.na(r2k.depth)] <- NA
-res.uv_2k_shelf[is.na(r2k.depth)] <- NA
+uv.mean_2k_shelf[is.na(r2k.depth)] <- NA
+uv.abs_2k_shelf[is.na(r2k.depth)] <- NA
+uv.res_2k_shelf[is.na(r2k.depth)] <- NA
+uv.max_2k_shelf[is.na(r2k.depth)] <- NA
+uv.sd_2k_shelf[is.na(r2k.depth)] <- NA
 t_2k_shelf[is.na(r2k.depth)] <- NA
 s_2k_shelf[is.na(r2k.depth)] <- NA
-settle_08_2k_shelf[is.na(r2k.depth)] <- NA
-susp_08_2k_shelf[is.na(r2k.depth)] <- NA
-flux_08_2k_shelf[is.na(r2k.depth)] <- NA
+# settle_08_2k_shelf[is.na(r2k.depth)] <- NA
+# susp_08_2k_shelf[is.na(r2k.depth)] <- NA
+# flux_08_2k_shelf[is.na(r2k.depth)] <- NA
 
 ## write rasters to file
-writeRaster(mean.uv_2k,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_mean.tif"))
-writeRaster(mean.uv_2k_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_mean.tif"))
-writeRaster(abs.uv_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_absolute.tif"))
-writeRaster(abs.uv_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_absolute.tif"))
-writeRaster(res.uv_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_residual.tif"))
-writeRaster(res.uv_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(uv.mean_2k,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(uv.mean_2k_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_mean.tif"))
+writeRaster(uv.abs_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(uv.abs_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_absolute.tif"))
+writeRaster(uv.res_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(uv.res_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_residual.tif"))
+writeRaster(uv.max_2k,       overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_max.tif"))
+writeRaster(uv.max_2k_shelf, overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_max.tif"))
+writeRaster(uv.sd_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorcurrents_sd.tif"))
+writeRaster(uv.sd_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorcurrents_sd.tif"))
 writeRaster(t_2k,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloortemperature.tif"))
 writeRaster(t_2k_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloortemperature.tif"))
 writeRaster(s_2k,            overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_seafloorsalinity.tif"))
 writeRaster(s_2k_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_seafloorsalinity.tif"))
-writeRaster(settle_08_2k,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_settle08.tif"))
-writeRaster(settle_08_2k_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_settle08.tif"))
-writeRaster(susp_08_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_susp08.tif"))
-writeRaster(susp_08_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_susp08.tif"))
-writeRaster(flux_08_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_flux08.tif"))
-writeRaster(flux_08_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_flux08.tif"))
+# writeRaster(settle_08_2k,      overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_settle08.tif"))
+# writeRaster(settle_08_2k_shelf,overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_settle08.tif"))
+# writeRaster(susp_08_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_susp08.tif"))
+# writeRaster(susp_08_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_susp08.tif"))
+# writeRaster(flux_08_2k,        overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_waom4k_test_flux08.tif"))
+# writeRaster(flux_08_2k_shelf,  overwrite=TRUE, filename=paste0(env.derived,string.chr,"2km_shelf_waom4k_test_flux08.tif"))
 
 
 # #NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  

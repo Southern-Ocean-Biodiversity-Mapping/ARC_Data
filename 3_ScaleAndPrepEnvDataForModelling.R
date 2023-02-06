@@ -1,6 +1,7 @@
 ##########
 ## WHAT THIS SCRIPT DOES:
 ## - loading and cleaning biological and environmental data
+## - removing correlated environmental variables
 ## - scaling environmental data (at the sampling locations)
 ## - setting up derivatives of biological data, such as cover, richness etc, and saving for analysis later
 ## - scaling and adding polynomials to environmental rasters (circumpolar)
@@ -46,7 +47,7 @@ biodiv.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Benthic_Mappi
 ## Running this script for both data at 500m res and at 2km res
 
 #res <- "500m"
-res <- "2km"
+#res <- "2km"
 
 ######################################
 ##### load biological and environmental data
@@ -88,20 +89,23 @@ cell_metadata_env$cover_points_scorable <- rowSums(cover_cells)-cover_cells$Unsc
 # ## together: note that npp_mean-susp08 are correlated, and tpi-tpi11
 env.remove <- c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",
                 "ice_prop", "ice_mean", "ice_max", "ice_su_sd",
-                "ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean","test_flux08")
-# env.sel.plot <- which(names(cell_metadata_env[,21:70])%in%env.remove)
-# chart.Correlation(cell_metadata_env[,21:70][,-c(env.sel,15)])
+                "ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean",
+                "seafloorcurrents_absolute", "seafloorcurrents_max")
+env.sel.remove <- which(names(cell_metadata_env)%in%env.remove)
+env.sel.remove.metadata <- c(1:22,72,73)
+# chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,1:15])
+# chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,16:29])
 
 '%!in%' <- function(x,y)!('%in%'(x,y))
 env.sel <- which(names(cell_metadata_env)%!in%env.remove)
-sel.not.correlated <- c(23:26,29,32,33,36,37,41:46,48:51,53,56,61:66,68:74)
+sel.not.correlated <- (1:length(names(cell_metadata_env)))[-c(env.sel.remove.metadata,env.sel.remove)]
 
 ######################################################################################################
 ##### scale environmental data
 cell_metadata_env_scaled <- cell_metadata_env
 scale.means <- NA
 scale.sd <- NA
-sel.not.to.be.scaled <- c(1:22,37,73:74)
+sel.not.to.be.scaled <- c(env.sel.remove.metadata,37)
 for(i in (1:ncol(cell_metadata_env_scaled))[-sel.not.to.be.scaled]){
   scale.means[i] <- mean(cell_metadata_env_scaled[,i], na.rm=TRUE)
   scale.sd[i] <- sd(cell_metadata_env_scaled[,i], na.rm=TRUE)
@@ -124,36 +128,37 @@ save(cell_metadata_env, transect.xy, sel.not.correlated,
 ##### scaling rasters and preparing circumpolar cell data for predictions
 ######################################################################################################
 ## we only need res, env.derived and cell_metadata_env:
-rm(list=setdiff(ls(), c("res","scale.means","scale.sd","env.derived","cell_metadata_env_scaled")))
+rm(list=setdiff(ls(), c("res","scale.means","scale.sd","env.derived","cell_metadata_env_scaled","sel.not.correlated","env.sel.remove.metadata")))
 
 ## get file names of all environmental rasters and bricks and load into one big stack----
 pred_stack <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"),
                     paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_polynomials_etc.tif")))
 
-#names(cell_metadata_env)[-sel.not.to.be.scaled]
-
-## only select rasters we actually need
-#plot(pred_stack)
+## matching up metadata with pred-layers
+names(cell_metadata_env_scaled)[sel.not.correlated]
+names(pred_stack)[sel.not.correlated-22]
+pred_stack.nc <- subset(pred_stack,sel.not.correlated-22)
+names(pred_stack.nc)
 
 ## split scaling into runs of 5:
-seq_split <- split(1:nlyr(pred_stack), ceiling(seq_along(1:nlyr(pred_stack))/5))
+seq_split <- split(1:nlyr(pred_stack.nc), ceiling(seq_along(1:nlyr(pred_stack.nc))/5))
 for(j in 1:length(seq_split)){
   ## creating an empty stack of 10 layers
-  pred_stack_scaled <- rast(pred_stack[[seq_split[[j]]]])
+  pred_stack_scaled <- rast(pred_stack.nc[[seq_split[[j]]]])
   for(i in 1:5){
     l <- seq_split[[j]][i]
     print(l)
-    k <- names(pred_stack)[l]
+    k <- names(pred_stack.nc)[l]
     ## we don't want to scale geomorphology
     if(k=="geomorphology"){
-      pred_stack_scaled[[i]] <- pred_stack[[l]]
+      pred_stack_scaled[[i]] <- pred_stack.nc[[l]]
     }else{
       ## select which layers match between the stack and the cell_metadata
       c.sel <- which(names(cell_metadata_env_scaled)==k)
-      s.sel <- which(names(pred_stack)==k)
-      # pred_stack_scaled[[i]] <- rast(pred_stack$depth)
+      s.sel <- which(names(pred_stack.nc)==k)
+      # pred_stack_scaled[[i]] <- rast(pred_stack.nc$depth)
       ## scale the raster
-      pred_stack_scaled[[i]] <- (pred_stack[[s.sel]]-scale.means[c.sel])/scale.sd[c.sel]
+      pred_stack_scaled[[i]] <- (pred_stack.nc[[s.sel]]-scale.means[c.sel])/scale.sd[c.sel]
     }
   }
   writeRaster(pred_stack_scaled, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled_temporaryfile",j,".tif"), overwrite=TRUE)
@@ -163,8 +168,8 @@ for(j in 1:length(seq_split)){
 file_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
 #subset to  "shelf" files
 file_list<-file_list[grep(paste0(".",res,"_shelf_mask_scaled_temporary"), file_list)]
-## we need to reorder the list so that #10 comes after 9...
-file_list <- file_list[c(1,3:10,2)]
+# ## we need to reorder the list so that #10 comes after 9...
+# file_list <- file_list[c(1,3:10,2)]
 ## read in and save as one file
 all_temporary_files <- rast(file_list)
 writeRaster(all_temporary_files, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"), overwrite=TRUE)
@@ -175,7 +180,7 @@ writeRaster(all_temporary_files, filename=paste0(env.derived,"Circumpolar_EnvDat
 env_stack_scaled <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"))
 sel <- which(!is.na(env_stack_scaled$depth[]))
 
-## res=="2km" takes about 5min
+## res=="2km" takes about 2min
 ## res=="500m" takes about 1-2hrs
 ## split into groups of 3:
 seq_split <- split(1:nlyr(env_stack_scaled), ceiling(seq_along(1:nlyr(env_stack_scaled))/3))
@@ -189,15 +194,14 @@ tempdat7 <- cbind(env_stack_scaled[[seq_split[[7]]]][sel])
 tempdat8 <- cbind(env_stack_scaled[[seq_split[[8]]]][sel])
 tempdat9 <- cbind(env_stack_scaled[[seq_split[[9]]]][sel])
 tempdat10 <- cbind(env_stack_scaled[[seq_split[[10]]]][sel])
-tempdat11 <- cbind(env_stack_scaled[[seq_split[[11]]]][sel])
-tempdat12 <- cbind(env_stack_scaled[[seq_split[[12]]]][sel])
-tempdat13 <- cbind(env_stack_scaled[[seq_split[[13]]]][sel])
-tempdat14 <- cbind(env_stack_scaled[[seq_split[[14]]]][sel])
-tempdat15 <- cbind(env_stack_scaled[[seq_split[[15]]]][sel])
-tempdat16 <- cbind(env_stack_scaled[[seq_split[[16]]]][sel])
-tempdat17 <- cbind(env_stack_scaled[[seq_split[[17]]]][sel])
-pred_stack.dat <- data.frame(cbind(tempdat1,tempdat2,tempdat3,tempdat4,tempdat5,tempdat6,tempdat7,tempdat8,tempdat9,
-                                   tempdat10,tempdat11,tempdat12,tempdat13,tempdat14,tempdat15,tempdat16,tempdat17))
+# tempdat11 <- cbind(env_stack_scaled[[seq_split[[11]]]][sel])
+# tempdat12 <- cbind(env_stack_scaled[[seq_split[[12]]]][sel])
+# tempdat13 <- cbind(env_stack_scaled[[seq_split[[13]]]][sel])
+# tempdat14 <- cbind(env_stack_scaled[[seq_split[[14]]]][sel])
+# tempdat15 <- cbind(env_stack_scaled[[seq_split[[15]]]][sel])
+# tempdat16 <- cbind(env_stack_scaled[[seq_split[[16]]]][sel])
+# tempdat17 <- cbind(env_stack_scaled[[seq_split[[17]]]][sel])
+pred_stack.dat <- data.frame(cbind(tempdat1,tempdat2,tempdat3,tempdat4,tempdat5,tempdat6,tempdat7,tempdat8,tempdat9,tempdat10)) #,tempdat11,tempdat12,tempdat13,tempdat14,tempdat15,tempdat16,tempdat17))
 pred_stack.dat$gear <- "OFOS"
 pred_stack.dat$cover_cells_survey <- "PS96"
 pred_stack.dat$cover_cells_transect1 <- "PS96_001"

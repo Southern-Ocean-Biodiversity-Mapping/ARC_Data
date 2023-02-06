@@ -97,14 +97,15 @@ dat_cover <- dat_cover.raw[,-c(4,8,11)]
 names(dat_cover)[8] <- "Label"
 
 ## metadata for each image, including cellIDs (things like filename, full_path, surveyID, transectID, cellID, lon, lat, x, y, area, CoralNet, Biigle)
-image_metadata <- dplyr::select(dat.list.clean[[1]],Filename.standardised,lon,lat,transectID)
-for(i in 2:length(dat.list.clean)){
+## dat.list.clean contains only the images on the shelf, but if we remove the seamount images here we can't test against them later!!!
+image_metadata <- dplyr::select(dat.list[[1]],Filename.standardised,lon,lat,transectID)
+for(i in 2:length(dat.list)){
   message(i)
-  print(names(dat.list.clean[[i]]))
-  if("lon" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,lon,lat,transectID) }
-  if("Lon" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,Lon,Lat,transectID) }
-  if("Longitude" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,Longitude,Latitude,transectID) }
-  if("GPS_lon" %in% names(dat.list.clean[[i]])){ dat.temp <- dplyr::select(dat.list.clean[[i]],Filename.standardised,GPS_lon,GPS_lat,transectID) }  
+  print(names(dat.list[[i]]))
+  if("lon" %in% names(dat.list[[i]])){ dat.temp <- dplyr::select(dat.list[[i]],Filename.standardised,lon,lat,transectID) }
+  if("Lon" %in% names(dat.list[[i]])){ dat.temp <- dplyr::select(dat.list[[i]],Filename.standardised,Lon,Lat,transectID) }
+  if("Longitude" %in% names(dat.list[[i]])){ dat.temp <- dplyr::select(dat.list[[i]],Filename.standardised,Longitude,Latitude,transectID) }
+  if("GPS_lon" %in% names(dat.list[[i]])){ dat.temp <- dplyr::select(dat.list[[i]],Filename.standardised,GPS_lon,GPS_lat,transectID) }  
   names(dat.temp) <- c("Filename.standardised","lon","lat","transectID")
   image_metadata <- rbind(image_metadata,dat.temp)
 }
@@ -148,28 +149,28 @@ ids <- unique(image_metadata$cellID)
 image_metadata$area <- NA
 image_metadata$area_source <- NA
 # Pulling area info from metadata
-for (survey_current in names(dat.list.clean)) {
-  if ("Area" %in% names(dat.list.clean[[survey_current]])) {
-    for (fname_current in dat.list.clean[[survey_current]]$Filename.standardised) {
-      area_current <- dat.list.clean[[survey_current]][dat.list.clean[[survey_current]]$Filename.standardised == fname_current, ]$Area
+for (survey_current in names(dat.list)) {
+  if ("Area" %in% names(dat.list[[survey_current]])) {
+    for (fname_current in dat.list[[survey_current]]$Filename.standardised) {
+      area_current <- dat.list[[survey_current]][dat.list[[survey_current]]$Filename.standardised == fname_current, ]$Area
       if (!is.na(area_current)) {
         image_metadata[image_metadata$Filename.standardised == fname_current, "area"] <- area_current
         image_metadata[image_metadata$Filename.standardised == fname_current, "area_source"] <- "metadata"
       }
     }
   }
-  if ("Area_from_metadata" %in% names(dat.list.clean[[survey_current]])) {
-    for (fname_current in dat.list.clean[[survey_current]]$Filename.standardised) {
-      area_current <- dat.list.clean[[survey_current]][dat.list.clean[[survey_current]]$Filename.standardised == fname_current, ]$Area_from_metadata
+  if ("Area_from_metadata" %in% names(dat.list[[survey_current]])) {
+    for (fname_current in dat.list[[survey_current]]$Filename.standardised) {
+      area_current <- dat.list[[survey_current]][dat.list[[survey_current]]$Filename.standardised == fname_current, ]$Area_from_metadata
       if (!is.na(area_current)) {
         image_metadata[image_metadata$Filename.standardised == fname_current, "area"] <- area_current
         image_metadata[image_metadata$Filename.standardised == fname_current, "area_source"] <- "metadata"
       }
     }
   }
-  if ("area" %in% names(dat.list.clean[[survey_current]])) {
-    for (fname_current in dat.list.clean[[survey_current]]$Filename.standardised) {
-      area_current <- dat.list.clean[[survey_current]][dat.list.clean[[survey_current]]$Filename.standardised == fname_current, ]$area
+  if ("area" %in% names(dat.list[[survey_current]])) {
+    for (fname_current in dat.list[[survey_current]]$Filename.standardised) {
+      area_current <- dat.list[[survey_current]][dat.list[[survey_current]]$Filename.standardised == fname_current, ]$area
       if (!is.na(area_current)) {
         image_metadata[image_metadata$Filename.standardised == fname_current, "area"] <- area_current
         image_metadata[image_metadata$Filename.standardised == fname_current, "area_source"] <- "metadata"
@@ -311,10 +312,10 @@ image_metadata$gear[image_metadata$survey=="JR17001"] <- "SUCS"
 image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
 
 # ## CRS surveys are from multiple years
-dates <- unique(dat.list.clean$WAP$Date)
+dates <- unique(dat.list$WAP$Date)
 dates
-sel.dates <- which(dat.list.clean$WAP$Date==dates[14])
-dat.list.clean$WAP$transectID[sel.dates]
+sel.dates <- which(dat.list$WAP$Date==dates[14])
+dat.list$WAP$transectID[sel.dates]
   
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1207"] <- 2009
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1208"] <- 2009
@@ -564,94 +565,83 @@ save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, coun
      file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
 
 
-
-
-
-
-
-
-
-
-### 6) Inspect resulting dataframes ----
-
-### 6a) locations across a region
-
-## check if things are correct:
-plot(r2, xlim=c(0,300000),ylim=c(-2100000,-1800000))
-points(image_metadata[,5:6])
-
-
-### 6b) a single transect
-
-plot(r2, xlim=c(282500,283500),ylim=c(-2011500,-2010000))
-points(image_metadata[,5:6])
-points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
-points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
-text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
-
-### 6c) transects that were faulty before: (e.g. CRS 1207, 1217)
-sel <- which(image_metadata$transectID_full=="CRS_1207")
-sel.cov <- which(image_metadata$cover[sel]=="yes")
-sel.cts <- which(image_metadata$counts[sel]=="yes")
-plot(r2, xlim=c(-2378000,-2374000), ylim=c(876000,880000))
-points(image_metadata[sel,5:6])
-points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
-points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
-#text(image_metadata[sel[sel.cov],5:6], labels=image_metadata[sel[sel.cov],1], adj=-0.2)
-
-sel <- which(image_metadata$transectID_full=="CRS_1217")
-sel.cov <- which(image_metadata$cover[sel]=="yes")
-sel.cts <- which(image_metadata$counts[sel]=="yes")
-plot(r2, xlim=c(-2443000,-2441000), ylim=c(1021000,1023000))
-points(image_metadata[sel,5:6])
-points(image_metadata[sel,5:6])
-points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
-points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
-## add other transects
-points(image_metadata[,5:6])
-points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
-points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
-#text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
-
-sel <- which(image_metadata$transectID_full=="LMG1311_3")
-sel.cov <- which(image_metadata$cover[sel]=="yes")
-sel.cts <- which(image_metadata$counts[sel]=="yes")
-plot(r2, xlim=c(-2492000,-2487000), ylim=c(1268000,1273000))
-points(image_metadata[sel,5:6])
-points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
-points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
-## add other transects
-points(image_metadata[,5:6])
-points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
-points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
-#text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
-
-#### aggregated cover of some living things on a single transect
-
-## projected coordinates for plotting
-img.coord <- SpatialPoints(coords=image_metadata[,5:6], proj4string=crs(stereo))
-
-#### create subset of data to plot
-## all images in that transect
-sel <- which(str_detect(image_metadata$Filename.standardised,"tan1901_065"))
-## annotated images in that transect
-sel2 <- which(str_detect(image_metadata$Filename.standardised,"tan1901_065")&image_metadata$cover=="yes")
-# unique(image_metadata$cellID[sel])
-# unique(image_metadata$cellID[sel2])
-
-#### just one transect
-sel.images <- grep("tan1901_065", rownames(cover_images))
-val <- rowSums(cover_images[sel.images,-c(1,3,4,6,7,10)])
-
-
-plot(r2, xlim=c(282500,283500),ylim=c(-2011500,-2010000))
-points(image_metadata[,5:6])
-points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=0.5)
-points(img.coord[sel2], cex=log(val), col="blue")
-
-
-
-
+# ### 6) Inspect resulting dataframes ----
+# 
+# ### 6a) locations across a region
+# 
+# ## check if things are correct:
+# plot(r2, xlim=c(0,300000),ylim=c(-2100000,-1800000))
+# points(image_metadata[,5:6])
+# 
+# 
+# ### 6b) a single transect
+# 
+# plot(r2, xlim=c(282500,283500),ylim=c(-2011500,-2010000))
+# points(image_metadata[,5:6])
+# points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
+# points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
+# text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
+# 
+# ### 6c) transects that were faulty before: (e.g. CRS 1207, 1217)
+# sel <- which(image_metadata$transectID_full=="CRS_1207")
+# sel.cov <- which(image_metadata$cover[sel]=="yes")
+# sel.cts <- which(image_metadata$counts[sel]=="yes")
+# plot(r2, xlim=c(-2378000,-2374000), ylim=c(876000,880000))
+# points(image_metadata[sel,5:6])
+# points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
+# points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
+# #text(image_metadata[sel[sel.cov],5:6], labels=image_metadata[sel[sel.cov],1], adj=-0.2)
+# 
+# sel <- which(image_metadata$transectID_full=="CRS_1217")
+# sel.cov <- which(image_metadata$cover[sel]=="yes")
+# sel.cts <- which(image_metadata$counts[sel]=="yes")
+# plot(r2, xlim=c(-2443000,-2441000), ylim=c(1021000,1023000))
+# points(image_metadata[sel,5:6])
+# points(image_metadata[sel,5:6])
+# points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
+# points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
+# ## add other transects
+# points(image_metadata[,5:6])
+# points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
+# points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
+# #text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
+# 
+# sel <- which(image_metadata$transectID_full=="LMG1311_3")
+# sel.cov <- which(image_metadata$cover[sel]=="yes")
+# sel.cts <- which(image_metadata$counts[sel]=="yes")
+# plot(r2, xlim=c(-2492000,-2487000), ylim=c(1268000,1273000))
+# points(image_metadata[sel,5:6])
+# points(image_metadata[sel[sel.cov],5:6],col="red",cex=2)
+# points(image_metadata[sel[sel.cts],5:6],col="blue",cex=3)
+# ## add other transects
+# points(image_metadata[,5:6])
+# points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=2)
+# points(image_metadata[which(image_metadata$counts=="yes"),5:6],col="blue",cex=3)
+# #text(image_metadata[which(image_metadata$cover=="yes"),5:6], labels=image_metadata[which(image_metadata$cover=="yes"),1], adj=-0.2)
+# 
+# #### aggregated cover of some living things on a single transect
+# 
+# ## projected coordinates for plotting
+# img.coord <- SpatialPoints(coords=image_metadata[,5:6], proj4string=crs(stereo))
+# 
+# #### create subset of data to plot
+# ## all images in that transect
+# sel <- which(str_detect(image_metadata$Filename.standardised,"tan1901_065"))
+# ## annotated images in that transect
+# sel2 <- which(str_detect(image_metadata$Filename.standardised,"tan1901_065")&image_metadata$cover=="yes")
+# # unique(image_metadata$cellID[sel])
+# # unique(image_metadata$cellID[sel2])
+# 
+# #### just one transect
+# sel.images <- grep("tan1901_065", rownames(cover_images))
+# val <- rowSums(cover_images[sel.images,-c(1,3,4,6,7,10)])
+# 
+# 
+# plot(r2, xlim=c(282500,283500),ylim=c(-2011500,-2010000))
+# points(image_metadata[,5:6])
+# points(image_metadata[which(image_metadata$cover=="yes"),5:6],col="red",cex=0.5)
+# points(img.coord[sel2], cex=log(val), col="blue")
+# 
 
 ##########################################################
 library(lubridate)
@@ -681,129 +671,129 @@ csv.names <- c("Filename","Filename.standardised","Survey.ID","Transect.ID","Lon
                "Date","Date_start","Date_end","Source.link","License",
                "Depth","Depth_start","Depth_end","Image_area","Image_area_source")
 
-csv.list$CRS <- cbind(dat.list.clean$WAP[,c('Filename','Filename.standardised')], 
-                      "CRS", dat.list.clean$WAP[,c('transectID','lon','lat')],
-                      ymd(dat.list.clean$WAP$Date), NA, NA, 
+csv.list$CRS <- cbind(dat.list$WAP[,c('Filename','Filename.standardised')], 
+                      "CRS", dat.list$WAP[,c('transectID','lon','lat')],
+                      ymd(dat.list$WAP$Date), NA, NA, 
                       NA, NA,
-                      dat.list.clean$WAP[,c('depth.mean')], NA, NA, 3, "metadata")
+                      dat.list$WAP[,c('depth.mean')], NA, NA, 3, "metadata")
 
-csv.list$PS06 <- cbind(dat.list.clean$PS06[,c('Filename','Filename.standardised')], 
-                       "PS06", dat.list.clean$PS06[,c('transectID','lon','lat')],
-                       NA, ymd_hms(dat.list.clean$PS06$time_start), ymd_hms(dat.list.clean$PS06$time_end), 
+csv.list$PS06 <- cbind(dat.list$PS06[,c('Filename','Filename.standardised')], 
+                       "PS06", dat.list$PS06[,c('transectID','lon','lat')],
+                       NA, ymd_hms(dat.list$PS06$time_start), ymd_hms(dat.list$PS06$time_end), 
                        NA, "CC-BY-3.0",
-                       dat.list.clean$PS06[,c('depth')], NA, NA, NA, NA)
+                       dat.list$PS06[,c('depth')], NA, NA, NA, NA)
 
-csv.list$PS14 <- cbind(dat.list.clean$PS14[,c('Filename','Filename.standardised')], 
-                       "PS14",dat.list.clean$PS14[,c('transectID','lon','lat')],
-                       NA, ymd_hms(dat.list.clean$PS14$time_start), ymd_hms(dat.list.clean$PS14$time_end), 
+csv.list$PS14 <- cbind(dat.list$PS14[,c('Filename','Filename.standardised')], 
+                       "PS14",dat.list$PS14[,c('transectID','lon','lat')],
+                       NA, ymd_hms(dat.list$PS14$time_start), ymd_hms(dat.list$PS14$time_end), 
                        NA, "CC-BY-3.0",
-                       NA, dat.list.clean$PS14[,c('depth_start','depth_end')], 0.56, "metadata")
+                       NA, dat.list$PS14[,c('depth_start','depth_end')], 0.56, "metadata")
 
-csv.list$PS18 <- cbind(dat.list.clean$PS18[,c('Filename','Filename.standardised')],
-                       "PS18",dat.list.clean$PS18[,c('transectID','lon','lat')],
-                       NA, ymd_hms(dat.list.clean$PS18$time_start), ymd_hms(dat.list.clean$PS18$time_end),
+csv.list$PS18 <- cbind(dat.list$PS18[,c('Filename','Filename.standardised')],
+                       "PS18",dat.list$PS18[,c('transectID','lon','lat')],
+                       NA, ymd_hms(dat.list$PS18$time_start), ymd_hms(dat.list$PS18$time_end),
                        NA,"CC-BY-3.0",
-                       NA,dat.list.clean$PS18[,c('depth_start','depth_end')],0.9, "metadata")
+                       NA,dat.list$PS18[,c('depth_start','depth_end')],0.9, "metadata")
 
-csv.list$PS61 <- cbind(dat.list.clean$PS61[,c('Filename','Filename.standardised')],
-                       "PS61",dat.list.clean$PS61[,c('transectID','lon','lat')],
-                       NA, ymd_hms(dat.list.clean$PS61$time_start), ymd_hms(dat.list.clean$PS61$time_end),
+csv.list$PS61 <- cbind(dat.list$PS61[,c('Filename','Filename.standardised')],
+                       "PS61",dat.list$PS61[,c('transectID','lon','lat')],
+                       NA, ymd_hms(dat.list$PS61$time_start), ymd_hms(dat.list$PS61$time_end),
                        NA,"CC-BY-3.0",
-                       NA,as.numeric(substr(dat.list.clean$PS61$depth_start,1,6)),
-                       as.numeric(substr(dat.list.clean$PS61$depth_end,1,6)),1, "metadata")
+                       NA,as.numeric(substr(dat.list$PS61$depth_start,1,6)),
+                       as.numeric(substr(dat.list$PS61$depth_end,1,6)),1, "metadata")
 
-temp.PS81 <- cbind(dat.list.clean$PS81[,c('Filename','Filename.standardised')],
-                   "PS81", dat.list.clean$PS81[,c('transectID','Longitude','Latitude')],
-                   ymd_hms(dat.list.clean$PS81$Date.Time), NA, NA,
+temp.PS81 <- cbind(dat.list$PS81[,c('Filename','Filename.standardised')],
+                   "PS81", dat.list$PS81[,c('transectID','Longitude','Latitude')],
+                   ymd_hms(dat.list$PS81$Date.Time), NA, NA,
                    "doi.pangaea.de/10.1594/PANGAEA.872719", "CC-BY-3.0",
-                   dat.list.clean$PS81[,c('Bathy.depth..m.')], NA, NA, dat.list.clean$PS81$Area_from_metadata, "metadata")
-temp.PS81_s <- cbind(dat.list.clean$PS81_shallow[,c('Filename','Filename.standardised')],
-                     "PS81", dat.list.clean$PS81_shallow[,c('transectID','Longitude','Latitude')],
-                     ymd_hms(dat.list.clean$PS81_shallow$Date.Time), NA, NA,
+                   dat.list$PS81[,c('Bathy.depth..m.')], NA, NA, dat.list$PS81$Area_from_metadata, "metadata")
+temp.PS81_s <- cbind(dat.list$PS81_shallow[,c('Filename','Filename.standardised')],
+                     "PS81", dat.list$PS81_shallow[,c('transectID','Longitude','Latitude')],
+                     ymd_hms(dat.list$PS81_shallow$Date.Time), NA, NA,
                      "doi.pangaea.de/10.1594/PANGAEA.872719", "CC-BY-3.0",
-                     dat.list.clean$PS81_shallow[,c('Bathy.depth..m.')], NA, NA, dat.list.clean$PS81_shallow$Area_from_metadata, "metadata")
+                     dat.list$PS81_shallow[,c('Bathy.depth..m.')], NA, NA, dat.list$PS81_shallow$Area_from_metadata, "metadata")
 names(temp.PS81) <- names(temp.PS81_s) <- csv.names
 csv.list$PS81 <- rbind(temp.PS81,temp.PS81_s)
 
-csv.list$PS96 <- cbind(dat.list.clean$PS96[,c('Filename','Filename.standardised')],
-                       "PS96", dat.list.clean$PS96[,c('transectID','Longitude','Latitude')],
-                       ymd_hms(dat.list.clean$PS96$Date.Time), NA, NA,
+csv.list$PS96 <- cbind(dat.list$PS96[,c('Filename','Filename.standardised')],
+                       "PS96", dat.list$PS96[,c('transectID','Longitude','Latitude')],
+                       ymd_hms(dat.list$PS96$Date.Time), NA, NA,
                        "doi.pangaea.de/10.1594/PANGAEA.862097", "CC-BY-3.0",
-                       dat.list.clean$PS96[,c('Depth.water..m.')], NA, NA, dat.list.clean$PS96[,c('Area')], "laserpoints")
+                       dat.list$PS96[,c('Depth.water..m.')], NA, NA, dat.list$PS96[,c('Area')], "laserpoints")
 
-csv.list$PS118 <- cbind(dat.list.clean$PS118[,c('Filename','Filename.standardised')],
-                        "PS118", dat.list.clean$PS118[,c('transectID','Longitude','Latitude')], 
-                        ymd_hms(dat.list.clean$PS118$Date.Time), NA, NA,
+csv.list$PS118 <- cbind(dat.list$PS118[,c('Filename','Filename.standardised')],
+                        "PS118", dat.list$PS118[,c('transectID','Longitude','Latitude')], 
+                        ymd_hms(dat.list$PS118$Date.Time), NA, NA,
                         "doi.pangaea.de/10.1594/PANGAEA.911904", "CC-BY-4.0",
-                        dat.list.clean$PS118[,c('Depth.water..m.')], NA, NA, dat.list.clean$PS118[,c('Area')], "metadata")
-csv.list$PS118[1875:1972,7] <- ymd_hm(substr(dat.list.clean$PS118$Date.Time[1875:1972],1,19))
+                        dat.list$PS118[,c('Depth.water..m.')], NA, NA, dat.list$PS118[,c('Area')], "metadata")
+csv.list$PS118[1875:1972,7] <- ymd_hm(substr(dat.list$PS118$Date.Time[1875:1972],1,19))
 
-csv.list$TAN0802 <- cbind(dat.list.clean$TAN0802[,c('FileName','Filename.standardised')],
-                          "TAN0802", dat.list.clean$TAN0802[,c('transectID','GPS_lon','GPS_lat')],
-                          ymd_hm(dat.list.clean$TAN0802$time), NA, NA,
+csv.list$TAN0802 <- cbind(dat.list$TAN0802[,c('FileName','Filename.standardised')],
+                          "TAN0802", dat.list$TAN0802[,c('transectID','GPS_lon','GPS_lat')],
+                          ymd_hm(dat.list$TAN0802$time), NA, NA,
                           NA ,NA,
-                          dat.list.clean$TAN0802[,c('depth')], NA, NA, NA, NA)
+                          dat.list$TAN0802[,c('depth')], NA, NA, NA, NA)
 
-csv.list$TAN1802 <- cbind(dat.list.clean$TAN1802[,c('FileName','Filename.standardised')],
-                          "TAN1802", dat.list.clean$TAN1802[,c('transectID','GPS_lon','GPS_lat')],
-                          ymd_hm(dat.list.clean$TAN1802$time), NA, NA,
+csv.list$TAN1802 <- cbind(dat.list$TAN1802[,c('FileName','Filename.standardised')],
+                          "TAN1802", dat.list$TAN1802[,c('transectID','GPS_lon','GPS_lat')],
+                          ymd_hm(dat.list$TAN1802$time), NA, NA,
                           NA, NA,
-                          dat.list.clean$TAN1802[,c('depth')], NA, NA, NA, NA)
+                          dat.list$TAN1802[,c('depth')], NA, NA, NA, NA)
 
-csv.list$TAN1901 <- cbind(dat.list.clean$TAN1901[,c('FileName','Filename.standardised')],
-                          "TAN1901",dat.list.clean$TAN1901[,c('transectID','GPS_lon','GPS_lat')],
-                          ymd_hm(dat.list.clean$TAN1901$time), NA, NA,
+csv.list$TAN1901 <- cbind(dat.list$TAN1901[,c('FileName','Filename.standardised')],
+                          "TAN1901",dat.list$TAN1901[,c('transectID','GPS_lon','GPS_lat')],
+                          ymd_hm(dat.list$TAN1901$time), NA, NA,
                           NA, NA,
-                          dat.list.clean$TAN1901[,c('depth')], NA, NA, NA, NA)
+                          dat.list$TAN1901[,c('depth')], NA, NA, NA, NA)
 
-csv.list$NBP1402 <- cbind(dat.list.clean$NBP1402[,c('FileName','Filename.standardised')],
-                          "NBP1402", dat.list.clean$NBP1402[,c('transectID','GPS_lon','GPS_lat')],
-                          ymd_hms(dat.list.clean$NBP1402$time), NA, NA,
+csv.list$NBP1402 <- cbind(dat.list$NBP1402[,c('FileName','Filename.standardised')],
+                          "NBP1402", dat.list$NBP1402[,c('transectID','GPS_lon','GPS_lat')],
+                          ymd_hms(dat.list$NBP1402$time), NA, NA,
                           "www.usap-dc.org/view/dataset/601310", "CC-BY-NC 4.0",
-                          dat.list.clean$NBP1402[,c('Depth')], NA, NA, 4.8, "metadata")
+                          dat.list$NBP1402[,c('Depth')], NA, NA, 4.8, "metadata")
 
-csv.list$NBP1502 <- cbind(dat.list.clean$NBP1502[,c('FileName','Filename.standardised')],
-                          "NBP1502", dat.list.clean$NBP1502[,c('transectID','GPS_lon','GPS_lat')],
-                          ymd(dat.list.clean$NBP1502$Date), NA, NA,
+csv.list$NBP1502 <- cbind(dat.list$NBP1502[,c('FileName','Filename.standardised')],
+                          "NBP1502", dat.list$NBP1502[,c('transectID','GPS_lon','GPS_lat')],
+                          ymd(dat.list$NBP1502$Date), NA, NA,
                           "doi.org/10.15784/601182", "CC-BY-NC 4.0",
                           NA, NA, NA, NA, NA)
 
-csv.list$AA2011 <- cbind(dat.list.clean$AA2011[,c('Filename','Filename.standardised')],
-                         "AA2011",dat.list.clean$AA2011[,c('transectID','lon','lat')],
-                         dmy_hms(dat.list.clean$AA2011$DateTime),
+csv.list$AA2011 <- cbind(dat.list$AA2011[,c('Filename','Filename.standardised')],
+                         "AA2011",dat.list$AA2011[,c('transectID','lon','lat')],
+                         dmy_hms(dat.list$AA2011$DateTime),
                          NA, NA,
                          "doi.org/doi:10.4225/15/59acda196ccfb", "CC-BY-4.0",
-                         dat.list.clean$AA2011[,c('altimeter')], NA, NA, NA, NA)
+                         dat.list$AA2011[,c('altimeter')], NA, NA, NA, NA)
 
-csv.list$JR262 <- cbind(dat.list.clean$JR262[,c('filename','Filename.standardised')],
-                        "JR262",dat.list.clean$JR262[,c('transectID','lon','lat')],
-                        ymd(dat.list.clean$JR262$time), NA, NA,
+csv.list$JR262 <- cbind(dat.list$JR262[,c('filename','Filename.standardised')],
+                        "JR262",dat.list$JR262[,c('transectID','lon','lat')],
+                        ymd(dat.list$JR262$time), NA, NA,
                         NA,NA,
-                        dat.list.clean$JR262[,c('depth')], NA, NA, 0.51, "metadata")
+                        dat.list$JR262[,c('depth')], NA, NA, 0.51, "metadata")
 
-csv.list$JR15005 <- cbind(dat.list.clean$JR15005[,c('filename','Filename.standardised')],
-                          "JR15005", dat.list.clean$JR15005[,c('transectID','lon','lat')],
-                          dat.list.clean$JR15005$time, NA, NA,
+csv.list$JR15005 <- cbind(dat.list$JR15005[,c('filename','Filename.standardised')],
+                          "JR15005", dat.list$JR15005[,c('transectID','lon','lat')],
+                          dat.list$JR15005$time, NA, NA,
                           NA,NA,
-                          dat.list.clean$JR15005[,c('depth')],NA,NA,0.51, "metadata")
+                          dat.list$JR15005[,c('depth')],NA,NA,0.51, "metadata")
 
-csv.list$JR17001 <- cbind(dat.list.clean$JR17001[,c('filename','Filename.standardised')],
-                          "JR17001", dat.list.clean$JR17001[,c('transectID','lon','lat')],
-                          dat.list.clean$JR17001$time, NA, NA,
+csv.list$JR17001 <- cbind(dat.list$JR17001[,c('filename','Filename.standardised')],
+                          "JR17001", dat.list$JR17001[,c('transectID','lon','lat')],
+                          dat.list$JR17001$time, NA, NA,
                           NA, NA,
-                          dat.list.clean$JR17001[,c('depth')], NA, NA, 0.51, "metadata")
+                          dat.list$JR17001[,c('depth')], NA, NA, 0.51, "metadata")
 
-csv.list$JR17003 <- cbind(dat.list.clean$JR17003[,c('filename','Filename.standardised')],
-                          "JR17003", dat.list.clean$JR17003[,c('transectID','lon','lat')],
-                          dat.list.clean$JR17003$time, NA, NA,
+csv.list$JR17003 <- cbind(dat.list$JR17003[,c('filename','Filename.standardised')],
+                          "JR17003", dat.list$JR17003[,c('transectID','lon','lat')],
+                          dat.list$JR17003$time, NA, NA,
                           "doi.org/10.5285/48dcef16-6719-45e5-a335-3a97f099e451", "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-                          dat.list.clean$JR17003[,c('depth')], NA, NA, 0.51, "metadata")
+                          dat.list$JR17003[,c('depth')], NA, NA, 0.51, "metadata")
 
-csv.list$LMG1311 <- cbind(dat.list.clean$LMG1311[,c('filename','Filename.standardised')],
-                          "LMG1311",dat.list.clean$LMG1311[,c('transectID','lon','lat')],
-                          ymd_hms(dat.list.clean$LMG1311$DateTime), NA, NA,
+csv.list$LMG1311 <- cbind(dat.list$LMG1311[,c('filename','Filename.standardised')],
+                          "LMG1311",dat.list$LMG1311[,c('transectID','lon','lat')],
+                          ymd_hms(dat.list$LMG1311$DateTime), NA, NA,
                           "doi.org/10.15784/601311", "CC-BY-NC 4.0",
-                          NA, dat.list.clean$LMG1311[,c('depth.start','depth.end')], NA, NA)
+                          NA, dat.list$LMG1311[,c('depth.start','depth.end')], NA, NA)
 
 for(i in 1:length(csv.list)){
   names(csv.list[[i]]) <- csv.names

@@ -97,6 +97,7 @@ if(ext(ice_stack)!=ext(bathy_shelf)){
   ice_stack <- crop(ice_stack, bathy_shelf)
 }
 if(res=="500m"){
+  ice_stack<-terra::project(ice_stack, bathy_shelf)
   ice_stack <- resample(ice_stack, bathy_shelf)
   ice_stack_shelf<-mask(ice_stack, bathy_shelf)
 }else{
@@ -124,7 +125,6 @@ writeRaster(ssh_stack_shelf, filename=paste0(savestring2,"SSH.tif"), overwrite=T
 ##### - limit to 2500m depth
 ##### - mask
 #######################################################
-library(raster)
 ## load bathy file:
 bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
 
@@ -212,15 +212,15 @@ env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE)
 #subset to  "shelf" files
 env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
 # env_list<-env_list[-grep(paste0(".",res,"_shelf_mask_scaled"), env_list)]
-# env_list<-env_list[-grep(paste0(".",res,"_shelf_mask_polynomials"), env_list)]
+# env_list<-env_list[-grep("polynomials", env_list)]
 
-env_stack <- rast(env_list)
+env_stack <- rast(env_list[-c(13)])
 writeRaster(env_stack, filename=paste0(savestring2,"unscaled_variables.tif"), overwrite=TRUE)
 
 ## remove files, commented to stop accidently deleting things
 #file.remove(env_list)
 
-
+#env_stack2 <- c(subset(test,1:25),subset(env_stack,1:2),subset(test,28:39),subset(env_stack,3:9))
 
 
 

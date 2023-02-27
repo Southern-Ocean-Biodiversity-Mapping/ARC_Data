@@ -186,3 +186,28 @@ ann.count.dat <- ann.count.dat3
 save(ann.count.dat, file=paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202301.Rdata"))
 
 ####################################################################################
+
+## to check annotation numbers for the data paper:
+
+## load annotation file
+load(paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202301.Rdata"))
+load(paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202301.Rdata"))
+
+
+seamount_transects <- c("TAN1802_160","TAN1802_170","TAN1802_179","TAN1802_180","TAN1802_183",
+                        "TAN1802_184","TAN1802_185","TAN1802_191","TAN1802_193","TAN1802_195",
+                        "TAN1802_196","TAN1802_197","TAN1802_207","TAN1802_208","TAN1802_209",
+                        "TAN1802_213","tan1901_209")
+
+seamounts.remove <- which(ann.cover.dat$TransectID%in%seamount_transects)
+table(ann.cover.dat$SurveyID[-seamounts.remove])
+sum(table(ann.cover.dat$SurveyID[-seamounts.remove]))
+length(table(ann.cover.dat$Name[-seamounts.remove]))
+
+seamounts.remove2 <- which(ann.count.dat$TransectID%in%seamount_transects)
+table(ann.count.dat$SurveyID[-seamounts.remove2])
+sum(table(ann.count.dat$SurveyID[-seamounts.remove2]))
+
+
+
+

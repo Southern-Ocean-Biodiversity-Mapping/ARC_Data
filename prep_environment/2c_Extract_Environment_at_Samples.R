@@ -107,3 +107,32 @@ save(cell_metadata_env, cover_cells_env, count_cells_env,
 
 
 ##########################################
+## check where NAs are
+
+#### ice:
+plot(env_stack$ice_mean)
+points(cell_metadata_env[,4:5])
+points(cell_metadata_env[which(is.na(cell_metadata_env$ice_mean)),4:5], col="blue", pch=16)
+
+## Ross Sea: cutoff from mask/depth-range, seamounts are gone
+plot(env_stack$ice_mean, xlim=c(-500000,500000), ylim=c(-2500000,-2000000))
+points(cell_metadata_env[,4:5])
+points(cell_metadata_env[which(is.na(cell_metadata_env$ice_mean)),4:5], col="blue")
+
+## Mertz: Satellite-land-mask?
+plot(env_stack$ice_mean, xlim=c(1000000,2000000), ylim=c(-2500000,-2000000))
+points(cell_metadata_env[,4:5])
+points(cell_metadata_env[which(is.na(cell_metadata_env$ice_mean)),4:5], col="blue", pch=16)
+
+## AP: Satellite-land-mask?
+plot(env_stack$ice_mean, xlim=c(-2700000,-2200000), ylim=c(1100000,1900000))
+points(cell_metadata_env[,4:5])
+points(cell_metadata_env[which(is.na(cell_metadata_env$ice_mean)),4:5], col="blue", pch=16)
+
+## Lazarev: Satellite-land-mask?
+plot(env_stack$ice_mean, xlim=c(-700000,500000), ylim=c(1500000,2300000))
+points(cell_metadata_env[,4:5])
+points(cell_metadata_env[which(is.na(cell_metadata_env$ice_mean)),4:5], col="blue", pch=16)
+
+
+

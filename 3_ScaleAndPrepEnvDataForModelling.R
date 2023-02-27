@@ -47,7 +47,7 @@ biodiv.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Benthic_Mappi
 ## Running this script for both data at 500m res and at 2km res
 
 #res <- "500m"
-#res <- "2km"
+res <- "2km"
 
 ######################################
 ##### load biological and environmental data

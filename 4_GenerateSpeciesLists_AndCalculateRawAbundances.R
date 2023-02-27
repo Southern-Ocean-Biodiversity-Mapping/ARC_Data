@@ -425,6 +425,7 @@ sel.metadat <- match(rownames(cover_images),image_metadata$Filename.standardised
 img.metadata <- image_metadata[sel.metadat,]
 
 save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio.Rdata"))
+#save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio_500mcellid.Rdata"))
 ###
 
 #################################

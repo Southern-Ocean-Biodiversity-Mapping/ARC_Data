@@ -84,7 +84,7 @@ cell_metadata_env$cover_points_scorable <- rowSums(cover_cells)-cover_cells$Unsc
 # ## third batch:
 # chart.Correlation(cell_metadata_env[,48:70])
 # #remove ssh summer mean & sd, ssh spring mean, sst seasonal means, yearly sd and spring sd,  flux
-# chart.Correlation(dplyr::select(cell_metadata_env[,48:70],-c("ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean","test_flux08")))
+# chart.Correlation(dplyr::select(cell_metadata_env[,48:70],-c("ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean")))
 
 # ## together: note that npp_mean-susp08 are correlated, and tpi-tpi11
 env.remove <- c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",

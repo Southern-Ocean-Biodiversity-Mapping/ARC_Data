@@ -54,10 +54,14 @@ if (user == "nicole") {
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_500m.Rdata"))
 cover_cells_500m <- cover_cells
 count_cells_500m <- count_cells
+cell_metadata_500m <- cell_metadata
+image_metadata_500m <- image_metadata
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_2km.Rdata"))
 cover_cells_2km <- cover_cells
 count_cells_2km <- count_cells
-rm(cell_metadata, count_cells, cover_cells)
+cell_metadata_2km <- cell_metadata
+image_metadata_2km <- image_metadata
+rm(cell_metadata, image_metadata, count_cells, cover_cells)
 
 ## COVER - Prevalence
 cover_prev<-data.frame(count=colSums(cover_images>0)) %>%
@@ -276,8 +280,8 @@ count_prev3$prev_2km   <- count_prev.2km$prev_2km
 
 ##### 4: read back in the species excel-sheet and make groupings for modelling of COVER data
 ## read in excel sheets
-cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_01.xlsx"),sheet=1)
-count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_01.xlsx"),sheet=2)
+cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_06.xlsx"),sheet=1)
+count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_06.xlsx"),sheet=2)
 
 ## read in cell-metadata
 load(paste0(ARC_Data.dir,"Cell_level_env_500m.Rdata"))
@@ -291,9 +295,19 @@ sc.img <- 108-cover_mod$Unscorable
 sc.500m <- meta_env_500m$cover_points_scorable
 sc.2km  <- meta_env_2km$cover_points_scorable
 
-#### group morphospecies in 500m and 2km data as decided in the excel file
+#### group morphospecies in img, 500m and 2km data as decided in the excel file
 ### reformat data to long, merge, change names and convert back to wide
 ## Cover data
+cover_images_long <- cover_mod[,-1] %>%
+  mutate(cellID=cover_mod$cellID)  %>% #add cellID
+  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked,
+               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(cover_list[,c("Label", "Merge_With_1pc_img")])
+cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_1pc_img), cover_images_long$Merge_With_1pc_img, cover_images_long$Label)
+cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+cover_mod <- cover_images_renamed
+cover_mod$cellID <- as.factor(cover_mod$cellID)
+
 cover_images_long <- cover_mod.500m[,-1] %>%
   mutate(cellID=cover_mod.500m$cellID)  %>% #add cellID
   pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, 
@@ -315,6 +329,18 @@ cover_mod.2km <- cover_images_renamed
 cover_mod.2km$cellID <- as.factor(cover_mod.2km$cellID)
 
 ## Count data
+count_images_long <- count_mod[,-1] %>%
+  mutate(cellID=count_mod$cellID)  %>% #add cellID
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
+  left_join(count_list[,c("Label", "Merge_With_1pc_img")])
+count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_1pc_img), count_images_long$Merge_With_1pc_img, count_images_long$Label)
+count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+#remove species to exclude
+count_mod <- count_images_renamed %>%
+  dplyr::select( - count_list$Label[which(count_list$Exclude_img =='x')])
+count_mod$cellID <- as.factor(count_mod$cellID)
+
 count_images_long <- count_mod.500m[,-1] %>%
   mutate(cellID=count_mod.500m$cellID)  %>% #add cellID
   pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
@@ -421,11 +447,13 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 
 #########################
 # save outputs, but first add metadata of images
-sel.metadat <- match(rownames(cover_images),image_metadata$Filename.standardised)
-img.metadata <- image_metadata[sel.metadat,]
+sel.metadat <- match(rownames(cover_images),image_metadata_500m$Filename.standardised)
+img.metadata <- image_metadata_500m[sel.metadat,1:7]
+names(img.metadata)[7] <- "cellID_500m"
+img.metadata$cellID_2km <- image_metadata_2km$cellID[sel.metadat]
+img.metadata[,9:(ncol(image_metadata_500m)+1)] <- image_metadata_500m[sel.metadat,8:ncol(image_metadata_500m)]
 
 save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio.Rdata"))
-#save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio_500mcellid.Rdata"))
 ###
 
 #################################

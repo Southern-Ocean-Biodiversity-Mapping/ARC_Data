@@ -296,15 +296,16 @@ sc.500m <- meta_env_500m$cover_points_scorable
 sc.2km  <- meta_env_2km$cover_points_scorable
 
 #### group morphospecies in img, 500m and 2km data as decided in the excel file
-### reformat data to long, merge, change names and convert back to wide
+### reformat data to long, merge, change names und update labels to publishable names and convert back to wide
 ## Cover data
 cover_images_long <- cover_mod[,-1] %>%
   mutate(cellID=cover_mod$cellID)  %>% #add cellID
   pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked,
                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(cover_list[,c("Label", "Merge_With_1pc_img")])
+  left_join(cover_list[,c("Label", "Final_labels_img", "Merge_With_1pc_img")])
 cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_1pc_img), cover_images_long$Merge_With_1pc_img, cover_images_long$Label)
-cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+# cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum, values_fill = 0)
+cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = Final_labels_img, values_from = count, values_fn=sum, values_fill = 0)
 cover_mod <- cover_images_renamed
 cover_mod$cellID <- as.factor(cover_mod$cellID)
 
@@ -333,9 +334,10 @@ count_images_long <- count_mod[,-1] %>%
   mutate(cellID=count_mod$cellID)  %>% #add cellID
   pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(count_list[,c("Label", "Merge_With_1pc_img")])
+  left_join(count_list[,c("Label", "Final_labels_img", "Merge_With_1pc_img")])
 count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_1pc_img), count_images_long$Merge_With_1pc_img, count_images_long$Label)
-count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+#count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = Final_labels_img, values_from = count, values_fn=sum, values_fill = 0)
 #remove species to exclude
 count_mod <- count_images_renamed %>%
   dplyr::select( - count_list$Label[which(count_list$Exclude_img =='x')])
@@ -343,7 +345,7 @@ count_mod$cellID <- as.factor(count_mod$cellID)
 
 count_images_long <- count_mod.500m[,-1] %>%
   mutate(cellID=count_mod.500m$cellID)  %>% #add cellID
-  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell, 
                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
   left_join(count_list[,c("Label", "Merge_With_2pc_500m")])
 count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_500m), count_images_long$Merge_With_2pc_500m, count_images_long$Label)
@@ -355,7 +357,7 @@ count_mod.500m$cellID <- as.factor(count_mod.500m$cellID)
 
 count_images_long <- count_mod.2km[,-1] %>%
   mutate(cellID=count_mod.2km$cellID)  %>% #add cellID
-  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell, 
                names_to ="Label", values_to = "count") %>%           #long format and merge names to change
   left_join(count_list[,c("Label", "Merge_With_2pc_2km")])
 count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_2km), count_images_long$Merge_With_2pc_2km, count_images_long$Label)
@@ -389,16 +391,17 @@ sel_B <- grep("Bry",substr(dataset.names,1,3))
 sel_M <- grep("Mo",substr(dataset.names,1,2))
 sel_E <- grep("Ech",substr(dataset.names,1,3))
 sel_Asc <- grep("Asc",substr(dataset.names,1,3))
-sel_TW <- grep("Worms_Polychaetes_T",dataset.names)
+sel_TW <- grep("Worms...Polychaetes...T",dataset.names)
 sel_Hy <- grep("Hyd",dataset.names)
 ## selector for functional group
 sel_SF <- c(sel_S,sel_O,sel_B,sel_Asc,sel_TW,sel_Hy)
 ## selector for sediment class etc
-sel_sed_soft <- c(grep("Fine",dataset.names),grep("PbGrv",dataset.names))
-sel_sed_loose <- c(grep("Cbble",dataset.names),grep("BioRu",dataset.names),grep("BioShl",dataset.names),grep("BioOth",dataset.names)) 
+sel_sed_soft <- c(grep("Sand",dataset.names),grep("Pebble",dataset.names))
+sel_sed_loose <- c(grep("Cobble",dataset.names),grep("Biologenic",dataset.names)) 
 sel_sed_hard <- c(grep("Bould",dataset.names),grep("Rock",dataset.names))
-sel_sed <- grep("Sub_",dataset.names)
-sel_noid.cov <- grep("NoID",dataset.names)
+sel_sed <- c(sel_sed_soft,sel_sed_loose,sel_sed_hard)
+
+sel_noid.cov <- grep("Unidentif",dataset.names)
 sel_unsc.cov <- grep("Unscorable",dataset.names)
 
 ## calculating species richness etc, keeping in mind that the first column is the cellID

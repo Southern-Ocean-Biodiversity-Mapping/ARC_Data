@@ -84,9 +84,15 @@ cover_ims_PA<- cover_ims_PA %>%
   dplyr::select( ., - `Unidentified Biological Matrix - Bryozoan associated`)
 
 #Combine Unidentified biological matrix to Hydroid Matrix
-cover_ims_PA$Hydroid_Matrix<- cover_ims_PA$Hydroid_Matrix + cover_ims_PA$`Unidentified Biological Matrix`
+cover_ims_PA$`Hydroid Matrix`<- cover_ims_PA$`Hydroid Matrix` + cover_ims_PA$`Unidentified Biological Matrix`
 cover_ims_PA<- cover_ims_PA %>%
   dplyr::select( ., -`Unidentified Biological Matrix` ) 
+
+#combine 2 taxa that are same but slightly different name
+cover_ims_PA$`Sponge - Massive forms - Simple - Other`<-cover_ims_PA$`Sponge - Massive forms - Simple - Other` + 
+          cover_ims_PA$`Sponge - Massive forms - Simple -Other`
+cover_ims_PA<- cover_ims_PA %>%
+  dplyr::select( ., -`Sponge - Massive forms - Simple -Other` ) 
 
 # convert bio to presence-absence data
 cover_ims_PA[cover_ims_PA >0] <- 1

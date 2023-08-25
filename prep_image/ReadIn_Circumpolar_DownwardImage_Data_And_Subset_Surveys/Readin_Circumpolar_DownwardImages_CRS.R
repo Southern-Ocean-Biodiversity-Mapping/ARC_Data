@@ -363,18 +363,19 @@ dat$Date[dat$transectID=="1219"] <- ymd("2009:02:28")
 dat$Date[dat$transectID=="1255"] <- ymd("2009:03:05")
 dat$Date[dat$transectID=="1267"] <- ymd("2009:03:06")
 
-## still missing:
-# 1069
-# 1072
-# 1091
-# 1103
-# 1130
-# 1132
-# 1315
-# 1320
-# 1323
-# 1324
-# 1325
+## added later (August 2023)
+dat$Date[dat$transectID=="1069"] <- ymd("2008:07:19")
+dat$Date[dat$transectID=="1072"] <- ymd("2008:07:19")
+dat$Date[dat$transectID=="1091"] <- ymd("2008:07:21")
+dat$Date[dat$transectID=="1103"] <- ymd("2008:07:22")
+dat$Date[dat$transectID=="1130"] <- ymd("2008:07:26")
+dat$Date[dat$transectID=="1132"] <- ymd("2008:07:26")
+dat$Date[dat$transectID=="1315"] <- ymd("2010:02:08")
+dat$Date[dat$transectID=="1320"] <- ymd("2010:02:15")
+dat$Date[dat$transectID=="1323"] <- ymd("2010:02:15")
+dat$Date[dat$transectID=="1324"] <- ymd("2010:02:15")
+dat$Date[dat$transectID=="1325"] <- ymd("2010:02:16")
+
 
 ## SAVE OUTPUT FOR FUTURE REFENCE (i.e. start here to add more images to the analysis)
 # save(dat,total.t.length.v, file="C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/CRS_dat.Rdata")

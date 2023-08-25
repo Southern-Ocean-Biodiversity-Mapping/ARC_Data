@@ -280,8 +280,8 @@ count_prev3$prev_2km   <- count_prev.2km$prev_2km
 
 ##### 4: read back in the species excel-sheet and make groupings for modelling of COVER data
 ## read in excel sheets
-cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_06.xlsx"),sheet=1)
-count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_06.xlsx"),sheet=2)
+cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=1)
+count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=2)
 
 ## read in cell-metadata
 load(paste0(ARC_Data.dir,"Cell_level_env_500m.Rdata"))

@@ -317,6 +317,12 @@ dates
 sel.dates <- which(dat.list$WAP$Date==dates[14])
 dat.list$WAP$transectID[sel.dates]
   
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1069"] <- 2008
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1072"] <- 2008
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1091"] <- 2008
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1103"] <- 2008
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1130"] <- 2008
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1132"] <- 2008
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1207"] <- 2009
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1208"] <- 2009
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1217"] <- 2009
@@ -338,6 +344,11 @@ image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1295"] <- 2010
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1297"] <- 2010
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1300"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1315"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1320"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1323"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1324"] <- 2010
+image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1325"] <- 2010
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1337"] <- 2010
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1338"] <- 2010
 
@@ -912,12 +923,35 @@ for(i in 1:19){
   write.csv(ann.csv.list[[i]], file=paste0(r.dir,"metadata_annotated_dataset_",survID,".csv"), row.names=FALSE)
 }
 
+### add height above seafloor to PS96 data
+csv.dat <- read.csv(paste0(r.dir,"metadata_full_dataset_PS96.csv"))
 
+## using code from Readin_Circumpolar_DownwardImages_PS96.R in the prep_image folder
+data.start <- c(26,26,26,25,25,24,25,25,25,26,25,26,25)
+image.dir <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/PS96_Piepenburg2016/"
+link <- "_links-to-photographs.tab"
+pre.chars <- "PS96_"
+transect.names <- c(
+  "001-4","007-1","008-2","010-3","026-3","027-2","037-3","048-2","057-3","061-1","072-4","090-4","106-2"
+)
+dat.header <- names(read.table(paste0(image.dir,pre.chars,transect.names[1],link), skip=24, header=TRUE, sep="\t", stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)])
+dat <- read.table(paste0(image.dir,pre.chars,transect.names[1],link), skip=data.start[1]-1, header=FALSE, sep="\t", stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)]
+dat[,9] <- as.character(transect.names[1])
+for(i in 2:length(transect.names)){
+  dat.temp <- read.table(paste0(image.dir,pre.chars,transect.names[i],link), skip=data.start[i]-1, header=FALSE, sep="\t",stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)]
+  dat.temp[,9] <- as.character(transect.names[i])
+  dat <- rbind(dat, dat.temp)
+}
+names(dat) <- c(dat.header[1:5], "Area","Type","Filename","transectID")
+PS96.dat <- cbind(dat[,c(3,2,4,6,7)],NA,dat[,c(9,8,1,5)])
+names(PS96.dat)[6] <- "SurveyID"
+PS96.dat[6] <- "PS96"
+PS96.dat$SurveyID <- as.factor(PS96.dat$SurveyID)
+PS96.dat$transectID <- as.factor(PS96.dat$transectID)
+PS96.dat$Type <- as.factor(PS96.dat$Type)
 
+## now add height to csv data
+csv.dat$HeigthAboveSeafloor <- PS96.dat$Height..m.[match(csv.dat$Filename, PS96.dat$Filename)]
+head(csv.dat)
 
-
-
-
-
-
-
+write.csv(csv.dat, file=paste0(r.dir,"metadata_full_dataset_PS96.csv"), row.names=FALSE)

@@ -21,7 +21,7 @@ img.count.dir <- paste0(r.dir,"Counts/")
 # data.dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/"
 
 ## load annotation file
-load(paste0(img.count.dir,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202301.Rdata"))
+load(paste0(img.count.dir,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202307.Rdata"))
 ann.count.dat$Name_to_publish <- as.factor(ann.count.dat$Name_to_publish)
 ann.count.dat$img.path <- paste0(ann.count.dat$Folder.path,ann.count.dat$Name)
 
@@ -69,6 +69,7 @@ load_and_plot <- function(label.idx=1, img.count=9){  ## default is 6 example im
   ## labels to display
   cat(paste0("### ",unique(temp.dat$Name_to_publish)," {-} \n \n"))
   print(knitr::kable(data.frame("CATAMI"=unique(temp.dat$CATAMI),
+                                "AMC_ID"=unique(temp.dat$AMC_ID),
                                 "CAAB"=unique(temp.dat$CAAB),
                                 "Found_in_surveys"=paste(unique(lab.dat$SurveyID), collapse=", "),
                                 "Total_annotations"= l,
@@ -95,6 +96,7 @@ This Classification Catalog shows example images for all labels used in the exha
 Up to nine randomly selected images are presented for each classification, alongside a table with the following information:  
   
 * CATAMI: matching label in the CATAMI classification. For more information, the CATAMI paper can be found under this [link](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0141039)  
+* AMC_ID: matching identifier in the Australian Morphospecies Catalog, and extension of the CATAMI classification.  
 * CAAB codes: [Codes for Australian Aquatic Biota](https://www.cmar.csiro.au/data/caab/)  
 * Found_in_surveys: a list of all surveys in AS-AID in which this organism has been detected  
 * Total_annotations: the total number of annotations for this label  

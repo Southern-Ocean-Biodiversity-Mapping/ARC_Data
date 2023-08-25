@@ -10,7 +10,6 @@ __"Circumpolar_DownwardImages_metadata.Rdata"__
 and standardised/consistent __metadata csv-files for each individual survey__  
 
 TO DO FOR THE CSV-FILES:  
-- transect-dates for CRS-data
 - license-information for CRS, all TAN, all JR except 17003
 - data-links for CRS, all TAN, all JR except 17003
 
@@ -1091,6 +1090,60 @@ for(i in 1:length(dat.list.clean)){
 
 ```
 
+### adding dates for the CRS cruises after email from Craig Smith on 15th August 2023
+### now it's been directly corrected in the dat.CRS file (survey metadata)
+
+```{r}
+# dat.list$WAP$Date[dat.list$WAP$transectID==1069] <- "2008-07-19"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1072] <- "2008-07-19"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1091] <- "2008-07-21"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1103] <- "2008-07-22"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1130] <- "2008-07-26"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1132] <- "2008-07-26"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1315] <- "2010-02-08"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1320] <- "2010-02-15"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1323] <- "2010-02-15"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1324] <- "2010-02-15"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1325] <- "2010-02-16"
+# 
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1069] <- "2008-07-19"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1072] <- "2008-07-19"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1091] <- "2008-07-21"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1103] <- "2008-07-22"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1130] <- "2008-07-26"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1132] <- "2008-07-26"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1315] <- "2010-02-08"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1320] <- "2010-02-15"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1323] <- "2010-02-15"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1324] <- "2010-02-15"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1325] <- "2010-02-16"
+# 
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1069] <- "2008-07-19"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1072] <- "2008-07-19"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1091] <- "2008-07-21"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1103] <- "2008-07-22"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1130] <- "2008-07-26"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1132] <- "2008-07-26"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1315] <- "2010-02-08"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1320] <- "2010-02-15"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1323] <- "2010-02-15"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1324] <- "2010-02-15"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1325] <- "2010-02-16"
+# 
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1069] <- "2008-07-19"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1072] <- "2008-07-19"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1091] <- "2008-07-21"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1103] <- "2008-07-22"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1130] <- "2008-07-26"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1132] <- "2008-07-26"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1315] <- "2010-02-08"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1320] <- "2010-02-15"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1323] <- "2010-02-15"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1324] <- "2010-02-15"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1325] <- "2010-02-16"
+
+```
+
 
 ### save output for analysis
 
@@ -1129,3 +1182,17 @@ save(polar.dat.0802,
 ```
 
 ### standardise image metadata for csv-files IS DONE IN annotation/1_Circumpolar_Annotation_Data_prep.R TO INCLUDE LASER POINTS
+
+```{r, eval=FALSE, echo=FALSE}
+## starting positions of each transect
+dat.start.list.simple <- list()
+for(i in 1:length(dat.start.list)){
+  print(i)
+  if(i %in% c(1:5,15:20)) dat.start.list.simple[[i]] <- dat.start.list[[i]][,c('transectID','lon','lat')]
+  if(i %in% 6:9) dat.start.list.simple[[i]] <- dat.start.list[[i]][,c('transectID','Longitude','Latitude')]
+  if(i %in% 10:14) dat.start.list.simple[[i]] <- dat.start.list[[i]][,c('transectID','GPS_lon','GPS_lat')]
+  names(dat.start.list.simple[[i]]) <- c('transectID','lon','lat')
+  dat.start.list.simple[[i]]$transectID_full <- paste0(names(dat.start.list)[i],"_",dat.start.list.simple[[i]]$transectID)
+}
+```
+

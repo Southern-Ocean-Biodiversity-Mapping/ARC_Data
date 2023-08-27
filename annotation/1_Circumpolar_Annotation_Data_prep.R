@@ -46,7 +46,7 @@ if (user == "nicole") {
 
 ###############
 ## choose resolution of environmental variables:
-#res <- "500m"
+res <- "500m"
 res <- "2km"
 ###############
 
@@ -314,8 +314,8 @@ image_metadata$gear[image_metadata$survey=="JR17003"] <- "SUCS"
 # ## CRS surveys are from multiple years
 dates <- unique(dat.list$WAP$Date)
 dates
-sel.dates <- which(dat.list$WAP$Date==dates[14])
-dat.list$WAP$transectID[sel.dates]
+# sel.dates <- which(dat.list$WAP$Date==dates[14])
+# dat.list$WAP$transectID[sel.dates]
   
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1069"] <- 2008
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1072"] <- 2008
@@ -522,7 +522,7 @@ cell_metadata$year[cell_metadata$cover_cells_survey=="tan0802"] <- 2008
 cell_metadata$year[cell_metadata$cover_cells_survey=="TAN1802"] <- 2018
 cell_metadata$year[cell_metadata$cover_cells_survey=="tan1901"] <- 2019
 cell_metadata$year[cell_metadata$cover_cells_survey=="AA2011"] <- 2011
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- NA
 cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1402"] <- 2014
 cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1502"] <- 2015
 cell_metadata$year[cell_metadata$cover_cells_survey=="LMG1311"] <- 2013
@@ -550,6 +550,41 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR262"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR15005"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
+
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1069"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1072"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1091"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1103"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1130"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1132"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1207"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1208"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1217"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1219"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1255"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1267"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1276"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1278"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1279"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1280"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1281"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1282"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1283"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1284"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1285"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1286"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1289"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1290"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1295"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1297"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1300"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1315"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1320"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1323"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1324"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1325"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1337"] <- 2010
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1338"] <- 2010
 
 ## change character data to factors
 for(i in c(1,10:19,22)){

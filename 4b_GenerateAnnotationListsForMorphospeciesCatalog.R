@@ -39,8 +39,8 @@ if (user == "nicole") {
 cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2023_01.xlsx"),sheet=1)
 count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_2023_01.xlsx"),sheet=2)
 ## read in CATAMI reference sheets
-cover_list2<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=1)
-count_list2<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=2)
+cover_list2<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_10.xlsx"),sheet=1)
+count_list2<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_10.xlsx"),sheet=2)
 
 ## copied from "AnnotationQualityControl_CoralNet_AllSurveys_03_final_library.R":
 ## specify survey and folder names
@@ -85,9 +85,9 @@ ann.cover.dat.temp <- ann.cover.dat %>%
 ann.cover.dat.temp$Label_after_review_clean <- ifelse(!is.na(ann.cover.dat.temp$Merge_With), ann.cover.dat.temp$Merge_With, ann.cover.dat.temp$Label_after_review)
 ann.cover.dat2 <- ann.cover.dat.temp[,1:10]
 
-## add publishable labels, CATAMI labels and CAAB code
+## add publishable labels, CATAMI and AMC labels
 ann.cover.dat.temp <- ann.cover.dat2 %>%
-  left_join(cover_list2[,c("Label", "Name_to_publish", "AMC", "AMC_ID", "CATAMI_broad", "CATAMI", "CAAB")], by=c("Label_after_review_clean"="Label"))
+  left_join(cover_list2[,c("Label", "Name_to_publish", "AMC", "AMC_ID", "CATAMI_broad", "CATAMI")], by=c("Label_after_review_clean"="Label"))
 ann.cover.dat.temp$CATAMI_broad[ann.cover.dat.temp$CATAMI_broad=="NA"] <- ""
 ann.cover.dat.temp$CATAMI[is.na(ann.cover.dat.temp$CATAMI)] <- ""
 # ann.cover.dat.temp$Name_to_publish <- ifelse(!is.na(ann.cover.dat.temp$Name_to_publish), ann.cover.dat.temp$Name_to_publish, ann.cover.dat.temp$Label_after_review_clean)
@@ -96,7 +96,7 @@ ann.cover.dat.temp$CATAMI[is.na(ann.cover.dat.temp$CATAMI)] <- ""
 ann.cover.dat.temp$CATAMI <- paste0(ann.cover.dat.temp$CATAMI_broad," ",ann.cover.dat.temp$CATAMI)
 ann.cover.dat3 <- ann.cover.dat.temp#[,c(1:11,13,14)]
 
-write.csv(ann.cover.dat3,file=paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202307_rawforpublication.csv"))
+write.csv(ann.cover.dat3,file=paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202312_rawforpublication.csv"))
 
 
 ## for building the classification catalog, add the folder path to each image
@@ -118,11 +118,11 @@ ann.cover.dat4$Folder.path[which(ann.cover.dat4$Name%in%files.PS81shallow)] <- p
 ## add CAAB data and make character vectors a factor
 options(scipen = 999) ## we don't want scientifi abbreviations in the CAAB code
 ann.cover.dat4$CAAB <- paste0("CAAB ", ann.cover.dat4$CAAB)
-factor.cols <- c("Annotator","Label","Label_after_review","Label_after_review_clean","Name_to_publish","AMC","AMC_ID","CATAMI","CAAB","SurveyID")
+factor.cols <- c("Annotator","Label","Label_after_review","Label_after_review_clean","Name_to_publish","AMC","AMC_ID","CATAMI","SurveyID")
 ann.cover.dat4[,factor.cols] <- lapply(ann.cover.dat4[,factor.cols], factor)
 ann.cover.dat <- ann.cover.dat4
 
-save(ann.cover.dat, file=paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202307.Rdata"))
+save(ann.cover.dat, file=paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202312.Rdata"))
 
 
 ##### Exhaustive-search data #####
@@ -173,7 +173,7 @@ ann.count.dat2 <- ann.count.dat.temp[,c(3,10:12,6,2,1,14,9,7,8)]
 
 ## add publishable labels, CATAMI labels and CAAB code
 ann.count.dat.temp <- ann.count.dat2 %>%
-  left_join(count_list2[,c("Label", "Name_to_publish","AMC","AMC_ID", "CATAMI_broad", "CATAMI", "CAAB")], by=c("Label_clean"="Label"))
+  left_join(count_list2[,c("Label", "Name_to_publish","AMC","AMC_ID", "CATAMI_broad", "CATAMI")], by=c("Label_clean"="Label"))
 ann.count.dat.temp$CATAMI_broad[ann.count.dat.temp$CATAMI_broad=="NA"] <- ""
 ann.count.dat.temp$CATAMI[is.na(ann.count.dat.temp$CATAMI)] <- ""
 # ann.count.dat.temp$Name_to_publish <- ifelse(!is.na(ann.count.dat.temp$Name_to_publish), ann.count.dat.temp$Name_to_publish, ann.count.dat.temp$Label_after_review_clean)
@@ -183,15 +183,15 @@ ann.count.dat.temp$CATAMI <- paste0(ann.count.dat.temp$CATAMI_broad," ",ann.coun
 ann.count.dat3 <- ann.count.dat.temp#[,c(1:12,14,15)]
 
 ann.count.dat <- ann.count.dat3
-save(ann.count.dat, file=paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202307.Rdata"))
+save(ann.count.dat, file=paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202312.Rdata"))
 
 ####################################################################################
 
 ## to check annotation numbers for the data paper:
 
 ## load annotation file
-load(paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202307.Rdata"))
-load(paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202307.Rdata"))
+load(paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202312.Rdata"))
+load(paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202312.Rdata"))
 
 
 seamount_transects <- c("TAN1802_160","TAN1802_170","TAN1802_179","TAN1802_180","TAN1802_183",

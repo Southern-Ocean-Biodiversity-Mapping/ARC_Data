@@ -711,53 +711,53 @@ head(image_metadata)
 # * License  
 
 
-##### first, read in all metadata and store as a list
+##### first, read in all metadata and store as a list. Standardise depth to be a positive value
 csv.list <- list()
 csv.names <- c("Filename","Filename.standardised","Survey.ID","Transect.ID","Longitude","Latitude",
                "Date","Date_start","Date_end","Source.link","License",
-               "Depth","Depth_start","Depth_end","Image_area","Image_area_source")
+               "Depth","Depth_start","Depth_end","HeightAboveSeafloor","Image_area","Image_area_source")
 
 csv.list$CRS <- cbind(dat.list$WAP[,c('Filename','Filename.standardised')], 
                       "CRS", dat.list$WAP[,c('transectID','lon','lat')],
                       ymd(dat.list$WAP$Date), NA, NA, 
                       NA, NA,
-                      dat.list$WAP[,c('depth.mean')], NA, NA, 3, "metadata")
+                      dat.list$WAP[,c('depth.mean')], NA, NA, NA, 3, "metadata")
 
 csv.list$PS06 <- cbind(dat.list$PS06[,c('Filename','Filename.standardised')], 
                        "PS06", dat.list$PS06[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list$PS06$time_start), ymd_hms(dat.list$PS06$time_end), 
                        NA, "CC-BY-3.0",
-                       dat.list$PS06[,c('depth')], NA, NA, NA, NA)
+                       dat.list$PS06[,c('depth')]*-1, NA, NA, NA, NA, NA)
 
 csv.list$PS14 <- cbind(dat.list$PS14[,c('Filename','Filename.standardised')], 
                        "PS14",dat.list$PS14[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list$PS14$time_start), ymd_hms(dat.list$PS14$time_end), 
                        NA, "CC-BY-3.0",
-                       NA, dat.list$PS14[,c('depth_start','depth_end')], 0.56, "metadata")
+                       NA, dat.list$PS14[,c('depth_start','depth_end')]*-1, NA, 0.56, "metadata")
 
 csv.list$PS18 <- cbind(dat.list$PS18[,c('Filename','Filename.standardised')],
                        "PS18",dat.list$PS18[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list$PS18$time_start), ymd_hms(dat.list$PS18$time_end),
                        NA,"CC-BY-3.0",
-                       NA,dat.list$PS18[,c('depth_start','depth_end')],0.9, "metadata")
+                       NA,dat.list$PS18[,c('depth_start','depth_end')]*-1, NA,0.9, "metadata")
 
 csv.list$PS61 <- cbind(dat.list$PS61[,c('Filename','Filename.standardised')],
                        "PS61",dat.list$PS61[,c('transectID','lon','lat')],
                        NA, ymd_hms(dat.list$PS61$time_start), ymd_hms(dat.list$PS61$time_end),
                        NA,"CC-BY-3.0",
-                       NA,as.numeric(substr(dat.list$PS61$depth_start,1,6)),
-                       as.numeric(substr(dat.list$PS61$depth_end,1,6)),1, "metadata")
+                       NA,as.numeric(substr(dat.list$PS61$depth_start,1,6))*-1,
+                       as.numeric(substr(dat.list$PS61$depth_end,1,6))*-1, NA,1, "metadata")
 
 temp.PS81 <- cbind(dat.list$PS81[,c('Filename','Filename.standardised')],
                    "PS81", dat.list$PS81[,c('transectID','Longitude','Latitude')],
                    ymd_hms(dat.list$PS81$Date.Time), NA, NA,
                    "doi.pangaea.de/10.1594/PANGAEA.872719", "CC-BY-3.0",
-                   dat.list$PS81[,c('Bathy.depth..m.')], NA, NA, dat.list$PS81$Area_from_metadata, "metadata")
+                   dat.list$PS81[,c('Bathy.depth..m.')], NA, NA, NA, dat.list$PS81$Area_from_metadata, "metadata")
 temp.PS81_s <- cbind(dat.list$PS81_shallow[,c('Filename','Filename.standardised')],
                      "PS81", dat.list$PS81_shallow[,c('transectID','Longitude','Latitude')],
                      ymd_hms(dat.list$PS81_shallow$Date.Time), NA, NA,
                      "doi.pangaea.de/10.1594/PANGAEA.872719", "CC-BY-3.0",
-                     dat.list$PS81_shallow[,c('Bathy.depth..m.')], NA, NA, dat.list$PS81_shallow$Area_from_metadata, "metadata")
+                     dat.list$PS81_shallow[,c('Bathy.depth..m.')], NA, NA, NA, dat.list$PS81_shallow$Area_from_metadata, "metadata")
 names(temp.PS81) <- names(temp.PS81_s) <- csv.names
 csv.list$PS81 <- rbind(temp.PS81,temp.PS81_s)
 
@@ -765,81 +765,81 @@ csv.list$PS96 <- cbind(dat.list$PS96[,c('Filename','Filename.standardised')],
                        "PS96", dat.list$PS96[,c('transectID','Longitude','Latitude')],
                        ymd_hms(dat.list$PS96$Date.Time), NA, NA,
                        "doi.pangaea.de/10.1594/PANGAEA.862097", "CC-BY-3.0",
-                       dat.list$PS96[,c('Depth.water..m.')], NA, NA, dat.list$PS96[,c('Area')], "laserpoints")
+                       dat.list$PS96[,c('Depth.water..m.')], NA, NA, dat.list$PS96[,c('Height..m.','Area')], "laserpoints")
 
 csv.list$PS118 <- cbind(dat.list$PS118[,c('Filename','Filename.standardised')],
                         "PS118", dat.list$PS118[,c('transectID','Longitude','Latitude')], 
                         ymd_hms(dat.list$PS118$Date.Time), NA, NA,
                         "doi.pangaea.de/10.1594/PANGAEA.911904", "CC-BY-4.0",
-                        dat.list$PS118[,c('Depth.water..m.')], NA, NA, dat.list$PS118[,c('Area')], "metadata")
+                        dat.list$PS118[,c('Depth.water..m.')], NA, NA, NA, dat.list$PS118[,c('Area')], "metadata")
 csv.list$PS118[1875:1972,7] <- ymd_hm(substr(dat.list$PS118$Date.Time[1875:1972],1,19))
 
 csv.list$TAN0802 <- cbind(dat.list$TAN0802[,c('FileName','Filename.standardised')],
                           "TAN0802", dat.list$TAN0802[,c('transectID','GPS_lon','GPS_lat')],
                           ymd_hm(dat.list$TAN0802$time), NA, NA,
                           NA ,NA,
-                          dat.list$TAN0802[,c('depth')], NA, NA, NA, NA)
+                          dat.list$TAN0802[,c('depth')], NA, NA, NA, NA, NA)
 
 csv.list$TAN1802 <- cbind(dat.list$TAN1802[,c('FileName','Filename.standardised')],
                           "TAN1802", dat.list$TAN1802[,c('transectID','GPS_lon','GPS_lat')],
                           ymd_hm(dat.list$TAN1802$time), NA, NA,
                           NA, NA,
-                          dat.list$TAN1802[,c('depth')], NA, NA, NA, NA)
+                          dat.list$TAN1802[,c('depth')], NA, NA, NA, NA, NA)
 
 csv.list$TAN1901 <- cbind(dat.list$TAN1901[,c('FileName','Filename.standardised')],
                           "TAN1901",dat.list$TAN1901[,c('transectID','GPS_lon','GPS_lat')],
                           ymd_hm(dat.list$TAN1901$time), NA, NA,
                           NA, NA,
-                          dat.list$TAN1901[,c('depth')], NA, NA, NA, NA)
+                          dat.list$TAN1901[,c('depth')], NA, NA, NA, NA, NA)
 
 csv.list$NBP1402 <- cbind(dat.list$NBP1402[,c('FileName','Filename.standardised')],
                           "NBP1402", dat.list$NBP1402[,c('transectID','GPS_lon','GPS_lat')],
                           ymd_hms(dat.list$NBP1402$time), NA, NA,
                           "www.usap-dc.org/view/dataset/601310", "CC-BY-NC 4.0",
-                          dat.list$NBP1402[,c('Depth')], NA, NA, 4.8, "metadata")
+                          dat.list$NBP1402[,c('Depth')], NA, NA, NA, 4.8, "metadata")
 
 csv.list$NBP1502 <- cbind(dat.list$NBP1502[,c('FileName','Filename.standardised')],
                           "NBP1502", dat.list$NBP1502[,c('transectID','GPS_lon','GPS_lat')],
                           ymd(dat.list$NBP1502$Date), NA, NA,
                           "doi.org/10.15784/601182", "CC-BY-NC 4.0",
-                          NA, NA, NA, NA, NA)
+                          NA, NA, NA, NA, NA, NA)
 
 csv.list$AA2011 <- cbind(dat.list$AA2011[,c('Filename','Filename.standardised')],
                          "AA2011",dat.list$AA2011[,c('transectID','lon','lat')],
                          dmy_hms(dat.list$AA2011$DateTime),
                          NA, NA,
                          "doi.org/doi:10.4225/15/59acda196ccfb", "CC-BY-4.0",
-                         dat.list$AA2011[,c('altimeter')], NA, NA, NA, NA)
+                         dat.list$AA2011[,c('pressure')], NA, NA, dat.list$AA2011[,c('altimeter')], NA, NA)
 
 csv.list$JR262 <- cbind(dat.list$JR262[,c('filename','Filename.standardised')],
                         "JR262",dat.list$JR262[,c('transectID','lon','lat')],
                         ymd(dat.list$JR262$time), NA, NA,
                         NA,NA,
-                        dat.list$JR262[,c('depth')], NA, NA, 0.51, "metadata")
+                        dat.list$JR262[,c('depth')], NA, NA, NA, 0.51, "metadata")
 
 csv.list$JR15005 <- cbind(dat.list$JR15005[,c('filename','Filename.standardised')],
                           "JR15005", dat.list$JR15005[,c('transectID','lon','lat')],
                           dat.list$JR15005$time, NA, NA,
                           NA,NA,
-                          dat.list$JR15005[,c('depth')],NA,NA,0.51, "metadata")
+                          dat.list$JR15005[,c('depth')],NA,NA, NA,0.51, "metadata")
 
 csv.list$JR17001 <- cbind(dat.list$JR17001[,c('filename','Filename.standardised')],
                           "JR17001", dat.list$JR17001[,c('transectID','lon','lat')],
                           dat.list$JR17001$time, NA, NA,
                           NA, NA,
-                          dat.list$JR17001[,c('depth')], NA, NA, 0.51, "metadata")
+                          dat.list$JR17001[,c('depth')], NA, NA, NA, 0.51, "metadata")
 
 csv.list$JR17003 <- cbind(dat.list$JR17003[,c('filename','Filename.standardised')],
                           "JR17003", dat.list$JR17003[,c('transectID','lon','lat')],
                           dat.list$JR17003$time, NA, NA,
                           "doi.org/10.5285/48dcef16-6719-45e5-a335-3a97f099e451", "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-                          dat.list$JR17003[,c('depth')], NA, NA, 0.51, "metadata")
+                          dat.list$JR17003[,c('depth')], NA, NA, NA, 0.51, "metadata")
 
 csv.list$LMG1311 <- cbind(dat.list$LMG1311[,c('filename','Filename.standardised')],
                           "LMG1311",dat.list$LMG1311[,c('transectID','lon','lat')],
                           ymd_hms(dat.list$LMG1311$DateTime), NA, NA,
                           "doi.org/10.15784/601311", "CC-BY-NC 4.0",
-                          NA, dat.list$LMG1311[,c('depth.start','depth.end')], NA, NA)
+                          NA, dat.list$LMG1311[,c('depth.start','depth.end')], NA, NA, NA)
 
 for(i in 1:length(csv.list)){
   names(csv.list[[i]]) <- csv.names
@@ -910,7 +910,7 @@ for(i in 1:19){
 for(i in 1:19){
   message(names(csv.list)[i])
   ## merge csv_list and image_metadata by filename and replace area values in csv_list
-  csv.list[[i]][c('Image_area','Image_area_source')] <- merge(csv.list[[i]][,c(2,15)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)[,3:4]
+  csv.list[[i]][c('Image_area','Image_area_source')] <- merge(csv.list[[i]][,c(2,16)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)[,3:4]
   print(head(csv.list[[i]]))
 }
 
@@ -958,35 +958,33 @@ for(i in 1:19){
   write.csv(ann.csv.list[[i]], file=paste0(r.dir,"metadata_annotated_dataset_",survID,".csv"), row.names=FALSE)
 }
 
-### add height above seafloor to PS96 data
-csv.dat <- read.csv(paste0(r.dir,"metadata_full_dataset_PS96.csv"))
-
-## using code from Readin_Circumpolar_DownwardImages_PS96.R in the prep_image folder
-data.start <- c(26,26,26,25,25,24,25,25,25,26,25,26,25)
-image.dir <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/PS96_Piepenburg2016/"
-link <- "_links-to-photographs.tab"
-pre.chars <- "PS96_"
-transect.names <- c(
-  "001-4","007-1","008-2","010-3","026-3","027-2","037-3","048-2","057-3","061-1","072-4","090-4","106-2"
-)
-dat.header <- names(read.table(paste0(image.dir,pre.chars,transect.names[1],link), skip=24, header=TRUE, sep="\t", stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)])
-dat <- read.table(paste0(image.dir,pre.chars,transect.names[1],link), skip=data.start[1]-1, header=FALSE, sep="\t", stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)]
-dat[,9] <- as.character(transect.names[1])
-for(i in 2:length(transect.names)){
-  dat.temp <- read.table(paste0(image.dir,pre.chars,transect.names[i],link), skip=data.start[i]-1, header=FALSE, sep="\t",stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)]
-  dat.temp[,9] <- as.character(transect.names[i])
-  dat <- rbind(dat, dat.temp)
-}
-names(dat) <- c(dat.header[1:5], "Area","Type","Filename","transectID")
-PS96.dat <- cbind(dat[,c(3,2,4,6,7)],NA,dat[,c(9,8,1,5)])
-names(PS96.dat)[6] <- "SurveyID"
-PS96.dat[6] <- "PS96"
-PS96.dat$SurveyID <- as.factor(PS96.dat$SurveyID)
-PS96.dat$transectID <- as.factor(PS96.dat$transectID)
-PS96.dat$Type <- as.factor(PS96.dat$Type)
-
-## now add height to csv data
-csv.dat$HeigthAboveSeafloor <- PS96.dat$Height..m.[match(csv.dat$Filename, PS96.dat$Filename)]
-head(csv.dat)
-
-write.csv(csv.dat, file=paste0(r.dir,"metadata_full_dataset_PS96.csv"), row.names=FALSE)
+# ### add height above seafloor to PS96 data
+# csv.dat <- read.csv(paste0(r.dir,"metadata_full_dataset_PS96.csv"))
+# ## using code from Readin_Circumpolar_DownwardImages_PS96.R in the prep_image folder
+# data.start <- c(26,26,26,25,25,24,25,25,25,26,25,26,25)
+# image.dir <- "E:/ARC_DP_data/a_RawData_DirectFromContributors/PS96_Piepenburg2016/"
+# link <- "_links-to-photographs.tab"
+# pre.chars <- "PS96_"
+# transect.names <- c(
+#   "001-4","007-1","008-2","010-3","026-3","027-2","037-3","048-2","057-3","061-1","072-4","090-4","106-2"
+# )
+# dat.header <- names(read.table(paste0(image.dir,pre.chars,transect.names[1],link), skip=24, header=TRUE, sep="\t", stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)])
+# dat <- read.table(paste0(image.dir,pre.chars,transect.names[1],link), skip=data.start[1]-1, header=FALSE, sep="\t", stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)]
+# dat[,9] <- as.character(transect.names[1])
+# for(i in 2:length(transect.names)){
+#   dat.temp <- read.table(paste0(image.dir,pre.chars,transect.names[i],link), skip=data.start[i]-1, header=FALSE, sep="\t",stringsAsFactors=FALSE, fill = TRUE)[,c(1:8)]
+#   dat.temp[,9] <- as.character(transect.names[i])
+#   dat <- rbind(dat, dat.temp)
+# }
+# names(dat) <- c(dat.header[1:5], "Area","Type","Filename","transectID")
+# PS96.dat <- cbind(dat[,c(3,2,4,6,7)],NA,dat[,c(9,8,1,5)])
+# names(PS96.dat)[6] <- "SurveyID"
+# PS96.dat[6] <- "PS96"
+# PS96.dat$SurveyID <- as.factor(PS96.dat$SurveyID)
+# PS96.dat$transectID <- as.factor(PS96.dat$transectID)
+# PS96.dat$Type <- as.factor(PS96.dat$Type)
+# 
+# ## now add height to csv data
+# csv.dat$HeigthAboveSeafloor <- PS96.dat$Height..m.[match(csv.dat$Filename, PS96.dat$Filename)]
+# head(csv.dat)
+# write.csv(csv.dat, file=paste0(r.dir,"metadata_full_dataset_PS96.csv"), row.names=FALSE)

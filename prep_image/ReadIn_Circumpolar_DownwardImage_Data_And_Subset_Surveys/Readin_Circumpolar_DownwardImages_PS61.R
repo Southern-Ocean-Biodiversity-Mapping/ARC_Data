@@ -117,7 +117,7 @@ bad_images <- list.files(path.bad.images)
 dat <- PS61_image_metadata[which(PS61_image_metadata$Filename%!in%bad_images),]
 dat$transectID <- factor(dat$transectID)
 
-## sort out badly illumianted images, calculate transect length, define how many images to select and give images a random number
+## sort out badly illuminated images, calculate transect length, define how many images to select and give images a random number
 dat$image.select <- NA
 dat$dist.from.start <- NA
 total.t.length.v <- NA

@@ -94,20 +94,26 @@ ann.cover.dat.temp$CATAMI[is.na(ann.cover.dat.temp$CATAMI)] <- ""
 # ann.cover.dat.temp$CATAMI_broad <- ifelse(!is.na(ann.cover.dat.temp$CATAMI_broad), ann.cover.dat.temp$CATAMI_broad, ann.cover.dat.temp$Label_after_review_clean)
 # ann.cover.dat.temp$CATAMI_fine <- ifelse(!is.na(ann.cover.dat.temp$CATAMI), ann.cover.dat.temp$CATAMI, ann.cover.dat.temp$Label_after_review_clean)
 ann.cover.dat.temp$CATAMI <- paste0(ann.cover.dat.temp$CATAMI_broad," ",ann.cover.dat.temp$CATAMI)
-ann.cover.dat3 <- ann.cover.dat.temp#[,c(1:11,13,14)]
+#ann.cover.dat3 <- ann.cover.dat.temp#[,c(1:11,13,14)]
+
+## add survey names:
+load(paste0(ARC_Data.dir,"Image_level_bio_202312.Rdata"))
+ann.cover.dat3 <- ann.cover.dat.temp %>% left_join(img.metadata[,c("Filename.standardised", "survey")], by=c("Name"="Filename.standardised"))
+names(ann.cover.dat3)[16] <- "SurveyID"
+ann.cover.dat3$SurveyID <- sub("tan","TAN",ann.cover.dat3$SurveyID)
 
 write.csv(ann.cover.dat3,file=paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202312_rawforpublication.csv"))
-
 
 ## for building the classification catalog, add the folder path to each image
 ann.cover.dat4 <- ann.cover.dat3
 ## create lookup-table to find full images in the folders
 ann.cover.dat4$TransectID <- sub("(^[^_]+[_][^_]+)(.+$)","\\1",ann.cover.dat4$Name)
-ann.cover.dat4$SurveyID <- sub("_.*","",ann.cover.dat4$Name)
-ann.cover.dat4$SurveyID <- sub("tan","TAN",ann.cover.dat4$SurveyID)
+survey_lookup <- sub("_.*","",ann.cover.dat4$Name)
+survey_lookup <- sub("tan","TAN",survey_lookup)
+
 ann.cover.dat4$Folder.path <- NA
 for(i in 1:length(survey.IDs)){
-  sel.temp <- which(ann.cover.dat4$SurveyID==survey.IDs[i])
+  sel.temp <- which(survey_lookup==survey.IDs[i])
   ann.cover.dat4$Folder.path[sel.temp] <- paste0(r.path,survey.IDs[i],"/",folder.IDs[i],"/")
 }
 ## PS81_shallow is annoying...:
@@ -116,10 +122,10 @@ ann.cover.dat4$Folder.path[which(ann.cover.dat4$Name%in%files.PS81shallow)] <- p
 #head(ann.cover.dat4)
 
 ## add CAAB data and make character vectors a factor
-options(scipen = 999) ## we don't want scientifi abbreviations in the CAAB code
-ann.cover.dat4$CAAB <- paste0("CAAB ", ann.cover.dat4$CAAB)
-factor.cols <- c("Annotator","Label","Label_after_review","Label_after_review_clean","Name_to_publish","AMC","AMC_ID","CATAMI","SurveyID")
-ann.cover.dat4[,factor.cols] <- lapply(ann.cover.dat4[,factor.cols], factor)
+# options(scipen = 999) ## we don't want scientific abbreviations in the CAAB code
+# ann.cover.dat4$CAAB <- paste0("CAAB ", ann.cover.dat4$CAAB)
+# factor.cols <- c("Annotator","Label","Label_after_review","Label_after_review_clean","Name_to_publish","AMC","AMC_ID","CATAMI","SurveyID")
+# ann.cover.dat4[,factor.cols] <- lapply(ann.cover.dat4[,factor.cols], factor)
 ann.cover.dat <- ann.cover.dat4
 
 save(ann.cover.dat, file=paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_202312.Rdata"))
@@ -133,28 +139,31 @@ ann.count.dat.raw <- ldply(ann.files.csv, read_csv)
 
 ## lookup table to find images to generate crops from
 ann.count.dat.raw$TransectID <- sub("(^[^_]+[_][^_]+)(.+$)","\\1",ann.count.dat.raw$filename)
-ann.count.dat.raw$SurveyID <- sub("_.*","",ann.count.dat.raw$filename)
-ann.count.dat.raw$SurveyID <- sub("tan","TAN",ann.count.dat.raw$SurveyID)
+ann.count.dat.raw2 <- ann.count.dat.raw %>% left_join(img.metadata[,c("Filename.standardised", "survey")], by=c("filename"="Filename.standardised"))
+names(ann.count.dat.raw2)[16] <- "SurveyID"
+ann.count.dat.raw2$SurveyID <- sub("tan","TAN",ann.count.dat.raw2$SurveyID)
+Survey_lookup2 <- sub("_.*","",ann.count.dat.raw$filename)
+Survey_lookup2 <- sub("tan","TAN",Survey_lookup2)
 #unique(ann.count.dat.raw$SurveyID)
-ann.count.dat.raw$Folder.path <- NA
+ann.count.dat.raw2$Folder.path <- NA
 for(i in 1:length(survey.IDs)){
-  sel.temp <- which(ann.count.dat.raw$SurveyID==survey.IDs[i])
-  ann.count.dat.raw$Folder.path[sel.temp] <- paste0(r.path,survey.IDs[i],"/",folder.IDs[i],"/")
+  sel.temp <- which(Survey_lookup2==survey.IDs[i])
+  ann.count.dat.raw2$Folder.path[sel.temp] <- paste0(r.path,survey.IDs[i],"/",folder.IDs[i],"/")
 }
 ## PS81_shallow is annoying...:
 files.PS81shallow <- list.files(paste0(r.path,survey.IDs[15],"/",folder.IDs[15],"/"), pattern=".jpg")
-ann.count.dat.raw$Folder.path[which(ann.count.dat.raw$filename%in%files.PS81shallow)] <- paste0(r.path,survey.IDs[15],"/",folder.IDs[15],"/")
+ann.count.dat.raw2$Folder.path[which(ann.count.dat.raw2$filename%in%files.PS81shallow)] <- paste0(r.path,survey.IDs[15],"/",folder.IDs[15],"/")
 
 ## change character-string of points into a readable format
-ann.count.dat.raw$points  <- as.character(ann.count.dat.raw$points)
-ann.count.dat.raw$points <- gsub("\\[","",ann.count.dat.raw$points)
-ann.count.dat.raw$points <- gsub("\\]","",ann.count.dat.raw$points)
-pointvector <- as.numeric(unlist(strsplit(ann.count.dat.raw$points,",")))
-ann.count.dat.raw$x      <- pointvector[seq(1,length(pointvector),3)]
-ann.count.dat.raw$y      <- pointvector[seq(2,length(pointvector),3)]
-ann.count.dat.raw$radius <- pointvector[seq(3,length(pointvector),3)]
+ann.count.dat.raw2$points  <- as.character(ann.count.dat.raw2$points)
+ann.count.dat.raw2$points <- gsub("\\[","",ann.count.dat.raw2$points)
+ann.count.dat.raw2$points <- gsub("\\]","",ann.count.dat.raw2$points)
+pointvector <- as.numeric(unlist(strsplit(ann.count.dat.raw2$points,",")))
+ann.count.dat.raw2$x      <- pointvector[seq(1,length(pointvector),3)]
+ann.count.dat.raw2$y      <- pointvector[seq(2,length(pointvector),3)]
+ann.count.dat.raw2$radius <- pointvector[seq(3,length(pointvector),3)]
 
-ann.count.dat <- ann.count.dat.raw[names(ann.count.dat.raw)%in%c("label_hierarchy","filename","image_longitude","image_latitude","shape_name","x","y","radius","Folder.path", "lastname","TransectID","SurveyID")]
+ann.count.dat <- ann.count.dat.raw2[names(ann.count.dat.raw2)%in%c("label_hierarchy","filename","image_longitude","image_latitude","shape_name","x","y","radius","Folder.path", "lastname","TransectID","SurveyID")]
 names(ann.count.dat)[1] <- "Label"
 names(ann.count.dat)[2] <- "Annotator"
 names(ann.count.dat)[3] <- "Name"

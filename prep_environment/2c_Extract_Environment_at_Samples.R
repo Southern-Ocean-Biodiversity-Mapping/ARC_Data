@@ -61,7 +61,7 @@ env_stack <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_u
 
 ## 3) Match environmental data to image data (at cell level) ----
 #can run a image level too if needed
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_",res,".RData"))
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_",res,"_202312.RData"))
 
 
  #for some reason nearly every column of cell_metadata are now character strings
@@ -103,7 +103,7 @@ count_cells_env<- right_join(cell_metadata_env,
 
 
 save(cell_metadata_env, cover_cells_env, count_cells_env,
-           file =paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data_",res,".RData"))
+           file =paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data_",res,"_202312.RData"))
 
 
 ##########################################

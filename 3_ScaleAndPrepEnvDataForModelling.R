@@ -51,11 +51,11 @@ res <- "2km"
 
 ######################################
 ##### load biological and environmental data
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
+load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,"_202312.Rdata"))
 ## cell_metadata, count_cells, cover_cells
 ## image_metadata, count_images, cover_images
 
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,".Rdata"))
+load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,"_202312.Rdata"))
 ## cell_metadata_env, count_cells_env, cover_cells_env
 ## image_metadata_env
 
@@ -92,7 +92,7 @@ env.remove <- c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",
                 "ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean",
                 "seafloorcurrents_absolute", "seafloorcurrents_max")
 env.sel.remove <- which(names(cell_metadata_env)%in%env.remove)
-env.sel.remove.metadata <- c(1:22,72,73)
+env.sel.remove.metadata <- c(1:23,73,74)
 # chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,1:15])
 # chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,16:29])
 
@@ -105,7 +105,7 @@ sel.not.correlated <- (1:length(names(cell_metadata_env)))[-c(env.sel.remove.met
 cell_metadata_env_scaled <- cell_metadata_env
 scale.means <- NA
 scale.sd <- NA
-sel.not.to.be.scaled <- c(env.sel.remove.metadata,37)
+sel.not.to.be.scaled <- c(env.sel.remove.metadata,38)
 for(i in (1:ncol(cell_metadata_env_scaled))[-sel.not.to.be.scaled]){
   scale.means[i] <- mean(cell_metadata_env_scaled[,i], na.rm=TRUE)
   scale.sd[i] <- sd(cell_metadata_env_scaled[,i], na.rm=TRUE)
@@ -121,7 +121,7 @@ names(transect.xy) <- c("transectID_full", "proj_coord_x", "proj_coord_y")
 ######################################################################################################
 save(cell_metadata_env, transect.xy, sel.not.correlated,
      cell_metadata_env_scaled, scale.means, scale.sd,
-     file=paste0(ARC_Data.dir,"Cell_level_env_",res,".Rdata"))
+     file=paste0(ARC_Data.dir,"Cell_level_env_",res,"_202312.Rdata"))
 
 
 ######################################################################################################

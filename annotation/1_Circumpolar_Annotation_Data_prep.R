@@ -352,11 +352,66 @@ image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1337"] <- 2010
 image_metadata$year[image_metadata$survey=="CRS" & image_metadata$transectID=="1338"] <- 2010
 
+
+## add transect location names where available
+image_metadata$transect_location <- NA
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1130] <- "StationB2"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1132] <- "StationB2"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1255] <- "StationB3"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1267] <- "StationB3"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1091] <- "StationE2"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1103] <- "StationE2"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1217] <- "StationE3"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1219] <- "StationE3"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1069] <- "StationF2"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1072] <- "StationF2"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1207] <- "StationF3"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1208] <- "StationF3"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1315] <- "Lockyer"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1320] <- "Hughes"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1323] <- "Hughes"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1324] <- "Hughes"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1325] <- "Hughes"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1285] <- "Andvord_Inner"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1286] <- "Andvord_Inner"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1337] <- "Andvord_Middle"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1338] <- "Andvord_Middle"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1289] <- "Andvord_Mouth"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1290] <- "Andvord_Mouth"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1283] <- "Andvord_Outer"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1284] <- "Andvord_Outer"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1295] <- "Barilari_Inner"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1297] <- "Barilari_Inner"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1300] <- "Barilari_Outer"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1279] <- "Flandres_InnerA"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1280] <- "Flandres_InnerA"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1276] <- "Flandres_InnerB"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1278] <- "Flandres_InnerB"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1281] <- "Flandres_Mouth"
+image_metadata$transect_location[image_metadata$survey=="CRS" & image_metadata$transectID==1282] <- "Flandres_Mouth"
+
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="AI"] <- "AnversIsland"
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="KGI"] <- "KingGeorgeIsland"
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="MT1"] <- "MargueriteBayTrough1"
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="MT2"] <- "MargueriteBayTrough2"
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="MT3"] <- "MargueriteBayTrough3"
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="MT4"] <- "MargueriteBayTrough4"
+image_metadata$transect_location[image_metadata$survey=="JR17001" & image_metadata$transectID=="MT5"] <- "MargueriteBayTrough5"
+
+image_metadata$transect_location[image_metadata$survey=="LMG1311" & image_metadata$transectID=="2"] <- "GerlacheStrait"
+image_metadata$transect_location[image_metadata$survey=="LMG1311" & image_metadata$transectID=="3"] <- "GerlacheStrait"
+
+## change survey names for CRS cruises to the actual cruise-names where available
+NBP0808_transects <- c("1069","1072","1091","1103","1130","1132")
+NBP1001_transects <- c("1276","1278","1279","1280","1281","1282","1283","1284","1285","1286","1289","1290","1295","1297","1300","1315","1320","1323","1324","1325","1337","1338")
+image_metadata$survey[image_metadata$survey=="CRS" & image_metadata$transectID%in%NBP0808_transects] <- "NBP0808"
+image_metadata$survey[image_metadata$survey=="CRS" & image_metadata$transectID%in%NBP1001_transects] <- "NBP1001"
+
 # image_metadata$year[image_metadata$survey=="CRS"] <- NA
 
-# for(i in c(1,8,15)){
-#   image_metadata[,i] <- as.factor(image_metadata[,i])
-# }
+for(i in c(1,8,15,17)){
+  image_metadata[,i] <- as.factor(image_metadata[,i])
+}
 
 
 ### 3) Generate Counts data  ----
@@ -405,7 +460,7 @@ for(i in 1:length(ids)){
   counts_cells_mean_image_quality_score[i] <- mean(image_metadata$image_quality_score[sel.r]) # ave quality across these images
   dat_counts_cell_by_species[i,] <- colSums(dat.temp) # how many individuals per species
   ## check if all images are from the same survey
-  counts_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
+  counts_cells_survey1[i] <- as.character(unique(image_metadata$survey[sel.r])[1])
   print(counts_cells_survey1[i])
   if(length(unique(image_metadata$survey[sel.r]))>1){
     message("TWO surveys!")
@@ -474,7 +529,7 @@ for(i in 1:length(ids)){
   cover_cells_mean_image_quality_score[i] <- mean(image_metadata$image_quality_score[sel.r]) # ave quality across these images
   dat_cover_cell_by_species[i,] <- colSums(dat.temp)
   ## check if all images are from the same survey
-  cover_cells_survey1[i] <- unique(image_metadata$survey[sel.r])[1]
+  cover_cells_survey1[i] <- as.character(unique(image_metadata$survey[sel.r])[1])
   if(length(unique(image_metadata$survey[sel.r]))>1){
     message("Two surveys!")
     cover_cells_survey2[i] <- unique(image_metadata$survey[sel.r])[2]
@@ -522,7 +577,9 @@ cell_metadata$year[cell_metadata$cover_cells_survey=="tan0802"] <- 2008
 cell_metadata$year[cell_metadata$cover_cells_survey=="TAN1802"] <- 2018
 cell_metadata$year[cell_metadata$cover_cells_survey=="tan1901"] <- 2019
 cell_metadata$year[cell_metadata$cover_cells_survey=="AA2011"] <- 2011
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- NA
+cell_metadata$year[cell_metadata$cover_cells_survey=="NBP0808"] <- 2008
+cell_metadata$year[cell_metadata$cover_cells_survey=="CRS"] <- 2009
+cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1001"] <- 2010
 cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1402"] <- 2014
 cell_metadata$year[cell_metadata$cover_cells_survey=="NBP1502"] <- 2015
 cell_metadata$year[cell_metadata$cover_cells_survey=="LMG1311"] <- 2013
@@ -542,7 +599,9 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="tan0802"] <- "DTIS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="TAN1802"] <- "DTIS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="tan1901"] <- "DTIS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="AA2011"] <- "CTD"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="NBP0808"] <- "YOYO"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="CRS"] <- "YOYO"
+cell_metadata$gear[cell_metadata$cover_cells_survey=="NBP1001"] <- "YOYO"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="NBP1402"] <- "YOYO"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="NBP1502"] <- "YOYO"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="LMG1311"] <- "YOYO"
@@ -551,43 +610,56 @@ cell_metadata$gear[cell_metadata$cover_cells_survey=="JR15005"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17001"] <- "SUCS"
 cell_metadata$gear[cell_metadata$cover_cells_survey=="JR17003"] <- "SUCS"
 
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1069"] <- 2008
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1072"] <- 2008
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1091"] <- 2008
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1103"] <- 2008
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1130"] <- 2008
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1132"] <- 2008
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1207"] <- 2009
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1208"] <- 2009
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1217"] <- 2009
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1219"] <- 2009
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1255"] <- 2009
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1267"] <- 2009
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1276"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1278"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1279"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1280"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1281"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1282"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1283"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1284"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1285"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1286"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1289"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1290"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1295"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1297"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1300"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1315"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1320"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1323"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1324"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1325"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1337"] <- 2010
-cell_metadata$year[cell_metadata$cover_cells_survey=="CRS" & cell_metadata$cover_cells_transect1=="CRS_1338"] <- 2010
+## add transect location names where available
+cell_metadata$transect_location <- ""
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1130"] <- "StationB2"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1132"] <- "StationB2"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1255"] <- "StationB3"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1267"] <- "StationB3"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1091"] <- "StationE2"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1103"] <- "StationE2"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1217"] <- "StationE3"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1219"] <- "StationE3"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1069"] <- "StationF2"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1072"] <- "StationF2"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1207"] <- "StationF3"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1208"] <- "StationF3"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1315"] <- "Lockyer"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1320"] <- "Hughes"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1323"] <- "Hughes"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1324"] <- "Hughes"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1325"] <- "Hughes"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1285"] <- "Andvord_Inner"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1286"] <- "Andvord_Inner"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1337"] <- "Andvord_Middle"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1338"] <- "Andvord_Middle"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1289"] <- "Andvord_Mouth"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1290"] <- "Andvord_Mouth"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1283"] <- "Andvord_Outer"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1284"] <- "Andvord_Outer"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1295"] <- "Barilari_Inner"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1297"] <- "Barilari_Inner"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1300"] <- "Barilari_Outer"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1279"] <- "Flandres_InnerA"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1280"] <- "Flandres_InnerA"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1276"] <- "Flandres_InnerB"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1278"] <- "Flandres_InnerB"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1281"] <- "Flandres_Mouth"
+cell_metadata$transect_location[cell_metadata$cover_cells_transect1=="CRS_1282"] <- "Flandres_Mouth"
+
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="AI"] <- "AnversIsland"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="KGI"] <- "KingGeorgeIsland"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="MT1"] <- "MargueriteBayTrough1"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="MT2"] <- "MargueriteBayTrough2"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="MT3"] <- "MargueriteBayTrough3"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="MT4"] <- "MargueriteBayTrough4"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="JR17001" & cell_metadata$cover_cells_transect1=="MT5"] <- "MargueriteBayTrough5"
+
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="LMG1311" & cell_metadata$cover_cells_transect1=="3"] <- "GerlacheStrait"
+cell_metadata$transect_location[cell_metadata$cover_cells_survey=="LMG1311" & cell_metadata$cover_cells_transect1=="2"] <- "GerlacheStrait"
 
 ## change character data to factors
-for(i in c(1,10:19,22)){
+for(i in c(1,10:19,22,23)){
   cell_metadata[,i] <- as.factor(cell_metadata[,i])
 }
 for(i in c(1,8,15)){
@@ -608,7 +680,7 @@ head(image_metadata)
 head(cell_metadata)
 
 save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, count_images,
-     file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,".Rdata"))
+     file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,"_202312.Rdata"))
 
 
 # ### 6) Inspect resulting dataframes ----
@@ -692,7 +764,7 @@ save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, coun
 ##########################################################
 library(lubridate)
 load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
-load(file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_500m.Rdata"))
+load(file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_500m_202312.Rdata"))
 
 head(image_metadata)
 
@@ -721,7 +793,13 @@ csv.list$CRS <- cbind(dat.list$WAP[,c('Filename','Filename.standardised')],
                       "CRS", dat.list$WAP[,c('transectID','lon','lat')],
                       ymd(dat.list$WAP$Date), NA, NA, 
                       NA, NA,
-                      dat.list$WAP[,c('depth.mean')], NA, NA, NA, 3, "metadata")
+                      dat.list$WAP[,c('depth.mean')], NA, NA, 2.5, 3, "metadata")
+
+csv.list$NBP0808 <- csv.list$CRS[-which(csv.list$CRS$transectID%!in%NBP0808_transects),]
+csv.list$NBP0808[,3] <- "NBP0808"
+csv.list$NBP1001 <- csv.list$CRS[-which(csv.list$CRS$transectID%!in%NBP1001_transects),]
+csv.list$NBP1001[,3] <- "NBP1001"
+csv.list$CRS <- csv.list$CRS[-which(csv.list$CRS$transectID%in%c(NBP0808_transects,NBP1001_transects)),]
 
 csv.list$PS06 <- cbind(dat.list$PS06[,c('Filename','Filename.standardised')], 
                        "PS06", dat.list$PS06[,c('transectID','lon','lat')],
@@ -796,7 +874,7 @@ csv.list$NBP1402 <- cbind(dat.list$NBP1402[,c('FileName','Filename.standardised'
                           "NBP1402", dat.list$NBP1402[,c('transectID','GPS_lon','GPS_lat')],
                           ymd_hms(dat.list$NBP1402$time), NA, NA,
                           "www.usap-dc.org/view/dataset/601310", "CC-BY-NC 4.0",
-                          dat.list$NBP1402[,c('Depth')], NA, NA, NA, 4.8, "metadata")
+                          dat.list$NBP1402[,c('Depth')], NA, NA, 2.5, 4.8, "metadata")
 
 csv.list$NBP1502 <- cbind(dat.list$NBP1502[,c('FileName','Filename.standardised')],
                           "NBP1502", dat.list$NBP1502[,c('transectID','GPS_lon','GPS_lat')],
@@ -815,31 +893,31 @@ csv.list$JR262 <- cbind(dat.list$JR262[,c('filename','Filename.standardised')],
                         "JR262",dat.list$JR262[,c('transectID','lon','lat')],
                         ymd(dat.list$JR262$time), NA, NA,
                         NA,NA,
-                        dat.list$JR262[,c('depth')], NA, NA, NA, 0.51, "metadata")
+                        dat.list$JR262[,c('depth')], NA, NA, 1.2, 0.51, "metadata")
 
 csv.list$JR15005 <- cbind(dat.list$JR15005[,c('filename','Filename.standardised')],
                           "JR15005", dat.list$JR15005[,c('transectID','lon','lat')],
                           dat.list$JR15005$time, NA, NA,
                           NA,NA,
-                          dat.list$JR15005[,c('depth')],NA,NA, NA,0.51, "metadata")
+                          dat.list$JR15005[,c('depth')],NA,  NA, 1.2, 0.51, "metadata")
 
 csv.list$JR17001 <- cbind(dat.list$JR17001[,c('filename','Filename.standardised')],
                           "JR17001", dat.list$JR17001[,c('transectID','lon','lat')],
                           dat.list$JR17001$time, NA, NA,
                           NA, NA,
-                          dat.list$JR17001[,c('depth')], NA, NA, NA, 0.51, "metadata")
+                          dat.list$JR17001[,c('depth')], NA, NA, 1.2, 0.51, "metadata")
 
 csv.list$JR17003 <- cbind(dat.list$JR17003[,c('filename','Filename.standardised')],
                           "JR17003", dat.list$JR17003[,c('transectID','lon','lat')],
                           dat.list$JR17003$time, NA, NA,
                           "doi.org/10.5285/48dcef16-6719-45e5-a335-3a97f099e451", "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
-                          dat.list$JR17003[,c('depth')], NA, NA, NA, 0.51, "metadata")
+                          dat.list$JR17003[,c('depth')], NA, NA, 1.2, 0.51, "metadata")
 
 csv.list$LMG1311 <- cbind(dat.list$LMG1311[,c('filename','Filename.standardised')],
                           "LMG1311",dat.list$LMG1311[,c('transectID','lon','lat')],
                           ymd_hms(dat.list$LMG1311$DateTime), NA, NA,
                           "doi.org/10.15784/601311", "CC-BY-NC 4.0",
-                          NA, dat.list$LMG1311[,c('depth.start','depth.end')], NA, NA, NA)
+                          NA, dat.list$LMG1311[,c('depth.start','depth.end')], 2.5, NA, NA)
 
 for(i in 1:length(csv.list)){
   names(csv.list[[i]]) <- csv.names
@@ -900,22 +978,25 @@ csv.list$PS61$Source.link[csv.list$PS61$Transect.ID=="235-1"] <- "doi.org/10.159
 csv.list$PS61$Source.link[csv.list$PS61$Transect.ID=="249-1"] <- "doi.org/10.1594/PANGAEA.220747"
 
 
-for(i in 1:19){
+for(i in 1:21){
   message(names(csv.list)[i])
   print(head(csv.list[[i]]))
 }
 
 
 ### replace area with annotated area where available and record this
-for(i in 1:19){
+for(i in 1:21){
   message(names(csv.list)[i])
   ## merge csv_list and image_metadata by filename and replace area values in csv_list
-  csv.list[[i]][c('Image_area','Image_area_source')] <- merge(csv.list[[i]][,c(2,16)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)[,3:4]
+  dat.merged <- merge(csv.list[[i]][,c(2,16,17)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)
+  csv.list[[i]]['Image_area']        <- ifelse(!is.na(dat.merged[,4]), dat.merged[,4], dat.merged[,2])
+  csv.list[[i]]['Image_area_source'] <- ifelse(!is.na(dat.merged[,4]), dat.merged[,5], dat.merged[,3])
+  # csv.list[[i]][c('Image_area','Image_area_source')] <- merge(csv.list[[i]][,c(2,16,17)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)[,3:4]
   print(head(csv.list[[i]]))
 }
 
 ## check if all dim are the same (tan0802 and tan1901 are in caps vs lowercase...)
-for(i in 1:19){
+for(i in 1:21){
   survID <- names(csv.list)[i]
   message(survID)
   metadat.sel <- which(image_metadata$survey==survID)
@@ -925,9 +1006,9 @@ for(i in 1:19){
 
 ### limit csv-files to annotated images only:
 sel.names <- names(csv.list)
-sel.names[c(9,11)] <- c("tan0802","tan1901")
+sel.names[c(11,13)] <- c("tan0802","tan1901")
 ann.csv.list <- list()
-for(i in 1:19){
+for(i in 1:21){
   survID <- sel.names[i]
   message(survID)
   metadat.sel <- which(image_metadata$survey==survID&image_metadata$cover=="yes")
@@ -937,7 +1018,7 @@ for(i in 1:19){
 names(ann.csv.list) <- names(csv.list)
 
 ## check if correct
-for(i in 1:19){
+for(i in 1:21){
   message(names(csv.list)[i])
   print(dim(ann.csv.list[[i]]))
   print(dim(csv.list[[i]]))
@@ -951,7 +1032,7 @@ dat.subset.list$TAN1901$Filename.standardised[which(dat.subset.list$TAN1901$File
 
 ### save individual csv files
 r.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
-for(i in 1:19){
+for(i in 1:21){
   survID <- sel.names[i]
   message(survID)
   write.csv(csv.list[[i]], file=paste0(r.dir,"metadata_full_dataset_",survID,".csv"), row.names=FALSE)

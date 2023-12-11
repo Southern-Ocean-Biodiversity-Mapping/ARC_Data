@@ -51,12 +51,12 @@ if (user == "nicole") {
 ##### 1: load image data and create table of count/prevalence per morphotype
 
 ## load image data (saved within the annotation data files for the 500m and 2km data)
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_500m.Rdata"))
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_500m_202312.Rdata"))
 cover_cells_500m <- cover_cells
 count_cells_500m <- count_cells
 cell_metadata_500m <- cell_metadata
 image_metadata_500m <- image_metadata
-load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_2km.Rdata"))
+load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_2km_202312.Rdata"))
 cover_cells_2km <- cover_cells
 count_cells_2km <- count_cells
 cell_metadata_2km <- cell_metadata
@@ -284,9 +284,9 @@ cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATA
 count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=2)
 
 ## read in cell-metadata
-load(paste0(ARC_Data.dir,"Cell_level_env_500m.Rdata"))
+load(paste0(ARC_Data.dir,"Cell_level_env_500m_202312.Rdata"))
 meta_env_500m <- cell_metadata_env
-load(paste0(ARC_Data.dir,"Cell_level_env_2km.Rdata"))
+load(paste0(ARC_Data.dir,"Cell_level_env_2km_202312.Rdata"))
 meta_env_2km <- cell_metadata_env
 rm(cell_metadata_env, cell_metadata_env_scaled, transect.xy)
 
@@ -456,7 +456,7 @@ names(img.metadata)[7] <- "cellID_500m"
 img.metadata$cellID_2km <- image_metadata_2km$cellID[sel.metadat]
 img.metadata[,9:(ncol(image_metadata_500m)+1)] <- image_metadata_500m[sel.metadat,8:ncol(image_metadata_500m)]
 
-save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio.Rdata"))
+save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio_202312.Rdata"))
 ###
 
 #################################
@@ -545,7 +545,7 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod.500m, count_mod.500m, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_500m.Rdata"))
+save(cover_mod.500m, count_mod.500m, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_500m_202312.Rdata"))
 
 
 #################################
@@ -634,7 +634,7 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod.2km, count_mod.2km, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_2km.Rdata"))
+save(cover_mod.2km, count_mod.2km, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_2km_202312.Rdata"))
 
 
 

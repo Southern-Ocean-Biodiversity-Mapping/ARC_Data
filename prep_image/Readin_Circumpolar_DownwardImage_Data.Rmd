@@ -37,10 +37,10 @@ This summary file contains the following objects:
 
 
 ```{r, warning=FALSE, message=FALSE}
-library(raadtools)
+#library(raadtools)
 library(readxl)
-library(raster)
-library(maptools)
+#library(raster)
+#library(maptools)
 library(lubridate)
 library(plyr)
 ```
@@ -49,7 +49,7 @@ library(plyr)
 
 ```{r, warning=FALSE, message=FALSE}
 ## Jan's local machine:
-sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
 env.derived <-  paste0(sci.dir,"data_environmental/derived/")
 
 ## remote repository (DOESN'T WORK YET):

@@ -1,0 +1,35 @@
+---
+title: "ROMS FAM 2km analysis"
+author: "Jan Jansen"
+output: html_document
+---
+
+###########################################
+########## Evaluate ROMS outputs ##########
+###########################################
+
+```{r setup, include=FALSE}
+#### setup environment
+library(terra)
+fam.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/FAM_outputs"
+
+```
+
+########## Prepare data ##########
+
+```{r, fig.dim=10}
+npp.ra.list <- list()
+track3D.ra.list <- list()
+for(i in 1:10){
+  npp.ra.list[[i]] <- rast(list.files(fam.dir, full.names=TRUE)[i])
+  track3D.ra.list[[i]] <- rast(list.files(fam.dir, full.names=TRUE)[i+10])
+}
+```
+
+```{r}
+for(i in 1:10){
+par(mfrow=c(1,2))
+plot(npp.ra.list[[i]], range=c(0,1500), main=paste0("Region ",i," surface NPP"))
+plot(track3D.ra.list[[i]], range=c(0,1500), main=paste0("Region ",i," sinking model output"))
+}
+```

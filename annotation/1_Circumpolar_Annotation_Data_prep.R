@@ -13,7 +13,7 @@ user = "Jan"
 
 if (user == "Jan") {
   
-  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   #bio.dir <-      paste0(sci.dir,"data_biological/")
   

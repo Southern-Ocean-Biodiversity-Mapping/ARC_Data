@@ -1,0 +1,1283 @@
+---
+title: "Read and clean up circumpolar image metadata"
+author: "Jan Jansen"
+date: "19/07/2021"
+output: html_document
+---
+
+This script is to create the summary data:  
+__"Circumpolar_DownwardImages_metadata.Rdata"__  
+and standardised/consistent __metadata csv-files for each individual survey__  
+
+TO DO FOR THE CSV-FILES:  
+- license-information for CRS, all TAN, all JR except 17003
+- data-links for CRS, all TAN, all JR except 17003
+
+This summary file contains the following objects:  
+
+*  starting positions for each transect in each survey:
+    + unprojected dataframes: __dat.start.list__
+    + projected SpatialPoints: __polar.dat.start.list__
+  
+*  metadata:
+    + original dataframes for each survey: __dat.list__
+    + total transect lengths: __total.t.length.list__
+    + clean data only including useful images: __dat.list.clean__
+    + & clean projected SpatialPoints: __polar.dat.list.clean__
+    + & clean total transect lengths: __total.t.length.list.clean__
+  
+*  images selected for annotation only:
+    + unprojected dataframes: __dat.subset.list__
+    + projected SpatialPoints: __polar.dat.subset.list__
+  
+*  individual surveys:
+    + __polar.dat.XXX__  
+
+*  polar stereographic projection used: __stereo__
+
+
+```{r, warning=FALSE, message=FALSE}
+#library(raadtools)
+library(readxl)
+library(terra)
+#library(raster)
+library(sp)
+library(lubridate)
+library(plyr)
+```
+
+### Setting up the environment
+
+```{r, warning=FALSE, message=FALSE}
+## Jan's local machine:
+sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
+env.derived <-  paste0(sci.dir,"data_environmental/derived/")
+
+## remote repository (DOESN'T WORK YET):
+# env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
+
+## common paths (after "sci.dir")
+tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
+ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+image.dir <-      paste0(ARC_Data.dir,"prep_image/ReadIn_Circumpolar_DownwardImage_Data_And_Subset_Surveys/")
+
+## polar stereographic projection:
+stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+# stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0"
+```
+
+```{r, warning=FALSE, message=FALSE}
+# #### load depth
+# r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_shelf_bathy_gebco_depth.grd"))
+# 
+# # #### load diatom data
+# # load(file=paste0(image.dir,"Circumpolar_Diatom_locations.Rdata"))
+# 
+# #### load coastline
+# load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+```
+
+### load image area information
+```{r}
+R.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
+area.xlsx <- list.files(R.dir,pattern=".xlsx", full.names=TRUE)
+area.raw <- ldply(area.xlsx, read_excel, skip=1)
+```
+
+
+### prepare data
+
+```{r, warning=FALSE, message=FALSE}
+#### Entire continental shelf
+# par(mar=c(2,2,1,1))
+# #png("diatom_overview.png",width=1250,height=1250)
+# plot(r2, xlim=c(-3000000,3000000), ylim=c(-3000000,3000000),col=terrain.colors(99), main="Sample sites for sediment cores/grabs")
+# plot(coast.proj, add=TRUE)
+# scalebar(500000, type="bar", label=c("0","250","500"), below="km")
+# points(polar.dat.diatom, pch=16, col="blue")
+# legend("topright","Sample-sites",pch=16, col="blue")
+#dev.off()
+
+#### load image data
+## Ross Sea
+load(paste0(image.dir,"TAN0802_dat.Rdata"))
+dat.0802 <- dat
+total.t.length.v.0802 <- total.t.length.v
+total.t.length.v.0802[c(13,16,17,28,32:34,45,46)] <- t.l[c(13,16,17,28,32:34,45,46)] #used distance to start for these transects, not distance along transect
+
+load(paste0(image.dir,"TAN1802_dat.Rdata"))
+dat.1802 <- dat
+t.l.1802 <- t.l
+total.t.length.v.1802 <- total.t.length.v
+
+load(paste0(image.dir,"TAN1901_dat.Rdata"))
+dat.1901 <- dat
+t.l.1901 <- t.l
+total.t.length.v.1901 <- total.t.length.v
+
+load(file=paste0(image.dir,"NBP1502_dat.Rdata"))
+dat.NBP1502 <- dat
+total.t.length.v.NBP1502 <- total.t.length.v
+t.l.NBP1502 <- t.l
+
+## West Antarctic
+load(file=paste0(image.dir,"PS81_dat_FINAL.Rdata"))
+dat.PS81 <- PS81.dat
+total.t.length.v.PS81 <- total.t.length.v
+
+load(file=paste0(image.dir,"PS81_dat_shallow.Rdata"))
+dat.PS81_shallow <- dat
+total.t.length.v.PS81_shallow <- total.t.length.v
+
+load(file=paste0(image.dir,"PS96_dat_FINAL.Rdata"))
+dat.PS96 <- PS96.dat
+total.t.length.v.PS96 <- total.t.length.v
+
+load(file=paste0(image.dir,"PS118_dat.Rdata"))
+dat.PS118 <- dat
+total.t.length.v.PS118 <- total.t.length.v
+
+## CRS
+load(file=paste0(image.dir,"CRS_dat.Rdata"))
+dat.WAP <- dat
+total.t.length.v.WAP <- total.t.length.v
+
+## East Antarctic
+load(file=paste0(image.dir,"NBP1402_dat.Rdata"))
+dat.NBP1402 <- dat
+total.t.length.v.NBP1402 <- total.t.length.v
+rm(dat,t.l,total.t.length.v)
+
+## old Weddell Sea surveys
+load(file=paste0(image.dir,"PS06_dat.Rdata"))
+dat.PS06 <- dat
+
+load(file=paste0(image.dir,"PS14_dat.Rdata"))
+dat.PS14 <- dat
+total.t.length.v.PS14 <- total.t.length.v
+
+load(file=paste0(image.dir,"PS18_dat.Rdata"))
+dat.PS18 <- dat
+total.t.length.v.PS18 <- total.t.length.v
+
+load(file=paste0(image.dir,"PS61_dat.Rdata"))
+dat.PS61 <- dat
+total.t.length.v.PS61 <- total.t.length.v
+
+## Mertz
+load(file=paste0(image.dir,"AA2011_dat.Rdata"))
+dat.AA2011 <- dat
+
+## SUCS
+load(file=paste0(image.dir,"JR262_dat.Rdata"))
+dat.JR262 <- dat
+
+load(file=paste0(image.dir,"JR15005_dat.Rdata"))
+dat.JR15005 <- dat
+total.t.length.v.JR15005 <- total.t.length.v
+
+load(file=paste0(image.dir,"JR17001_dat.Rdata"))
+dat.JR17001 <- dat
+total.t.length.v.JR17001 <- total.t.length.v
+
+load(file=paste0(image.dir,"JR17003_dat.Rdata"))
+dat.JR17003 <- dat
+total.t.length.v.JR17003 <- total.t.length.v
+
+## LMG1311
+load(file=paste0(image.dir,"LMG1311_dat.Rdata"))
+dat.LMG1311 <- dat
+total.t.length.v.LMG1311 <- total.t.length.v
+```
+
+### Fixing image_select #1
+
+```{r, warning=FALSE, message=FALSE}
+##### PS81: something went wrong with the "image_select"-values when redoing the subsetting and replacing shitty images. Only happened to images from image.select>=50
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T12_51_09_5010.jpg"] <- 50
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T14_21_26_5190.jpg"] <- 53
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T13_58_10_5143.jpg"] <- 56
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T12_34_31_4977.jpg"] <- 62
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T13_09_49_5047.jpg"] <- 64
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T13_18_23_5064.jpg"] <- 65
+dat.PS81$image.select[dat.PS81$Filename=="PS81_116-3_2013-01-26T12_28_30_4964.jpg"] <- 66
+
+##### TAN1901: something went really wrong with saving the image subsetting.
+#####   - Couldn't figure out why the difference between list of annotated images and stored TAN1901_dat.Rdata
+#####   - Only one version of TAN1901_dat.Rdata exists and the reproducing the annotated subset using the R-code is not possible
+#####   - Seems to be often off by 1 or 2 images, bu most transect are not affected
+
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_039.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_227.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_036.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_095_229.jpg"] <- 5
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_054.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_196.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_140.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_245.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_264.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_084.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_206.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_159.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_066.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_197.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_141.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_242.jpg"] <- 5
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_265.jpg"] <- 9
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_086.jpg"] <- 10
+dat.1901$image.select[dat.1901$FileName=="tan1901_096_208.jpg"] <- 11
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_098_228.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_098_226.jpg"] <- 5
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_090.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_056.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_116.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_221.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_088.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_057.jpg"] <- 6
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_115.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_102_222.jpg"] <- 9
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_093.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_122.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_092.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_105_121.jpg"] <- 7
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_068.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_182.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_139.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_212.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_067.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_185.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_140.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_113_213.jpg"] <- 5
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_051.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_189.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_134.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_224.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_104.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_162.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_241.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_053.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_185.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_133.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_223.jpg"] <- 5
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_103.jpg"] <- 6
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_160.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_149_243.jpg"] <- 9
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_257.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_020.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_157.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_100.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_129.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_237.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_174.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_114.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_082.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_254.jpg"] <- 1
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_017.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_155.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_096.jpg"] <- 4
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_128.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_238.jpg"] <- 9
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_171.jpg"] <- 11
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_113.jpg"] <- 12
+dat.1901$image.select[dat.1901$FileName=="tan1901_157_083.jpg"] <- 14
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_107.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_222.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_033.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_151.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_108.jpg"] <- 8
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_223.jpg"] <- 9
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_031.jpg"] <- 10
+dat.1901$image.select[dat.1901$FileName=="tan1901_165_150.jpg"] <- 11
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_245.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_018.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_148.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_063.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_244.jpg"] <- 1
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_025.jpg"] <- 2
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_151.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_166_065.jpg"] <- 6
+##
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_207.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_127.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_170.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_053.jpg"] <- 999
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_206.jpg"] <- 1
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_128.jpg"] <- 3
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_168.jpg"] <- 5
+dat.1901$image.select[dat.1901$FileName=="tan1901_168_054.jpg"] <- 6
+```
+
+### add standardised filenames to data
+
+```{r, warning=FALSE, message=FALSE}
+## PS06,14,18,61,81,96:
+dat <- dat.PS06
+dat.PS06$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS14
+dat.PS14$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS18
+dat.PS18$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS61
+dat.PS61$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS81
+dat.PS81$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS81_shallow
+dat.PS81_shallow$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat <- dat.PS96
+dat.PS96$Filename.standardised <- paste0(substr(dat$Filename,1,8),"_",sprintf("%04d",dat$image.select),"__",dat$Filename,".jpg")
+## PS118:
+dat <- dat.PS118
+dat.PS118$Filename.standardised <- paste0("PS118_",dat$transectID.forfile,"_",sprintf("%04d",dat$image.select),"__",dat$Filename,".jpg")
+## TAN0802 & 1901:
+dat <- dat.0802
+dat.0802$Filename.standardised <- paste0(substr(dat$FileName,1,12),sprintf("%04d",dat$image.select),"__",dat$FileName)
+dat <- dat.1901
+dat.1901$Filename.standardised <- paste0(substr(dat$FileName,1,12),sprintf("%04d",dat$image.select),"__",dat$FileName)
+## TAN1802:
+dat <- dat.1802
+dat.1802$Filename.standardised <- paste0("TAN1802_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$FileName)
+## NBP1402
+dat <- dat.NBP1402
+dat.NBP1402$Filename.standardised <- paste0("NBP1402_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$FileName)
+## NBP1402
+dat <- dat.NBP1502
+dat.NBP1502$Filename.standardised <- paste0("NBP1502_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$FileName)
+## CRS:
+dat <- dat.WAP
+dat.WAP$Filename.standardised <- paste0("CRS_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+dat.WAP$Filename.standardised <- gsub(".tif",".jpg",dat.WAP$Filename.standardised)
+## AA2011
+dat <- dat.AA2011
+dat.AA2011$Filename.standardised <- paste0("AA2011_",dat$transectID_folder,"_",sprintf("%04d",dat$image.select),"__",dat$Filename)
+## SUCS
+dat <- dat.JR262
+dat.JR262$Filename.standardised <- paste0("JR262_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+dat <- dat.JR15005
+dat.JR15005$Filename.standardised <- paste0("JR15005_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+dat <- dat.JR17001
+dat.JR17001$Filename.standardised <- paste0("JR17001_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+dat.JR17001$Filename.standardised <- gsub(" ","",dat.JR17001$Filename.standardised)
+dat <- dat.JR17003
+dat.JR17003$Filename.standardised <- paste0("JR17003_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+## LMG1311
+dat <- dat.LMG1311
+dat.LMG1311$Filename.standardised <- paste0("LMG1311_",dat$transectID,"_",sprintf("%04d",dat$image.select),"__",dat$filename)
+
+rm(dat)
+```
+
+### fixing image_select #2
+set.seed() didn't run as expected across all transects. Some images might have been moved to the "bad quality" folder and then the subset rerun again. In short, some transect metadata show different images selected than we actually annotated.  
+This chunk is to identify those transects and images and correct the image-names with the correct image number from the subset.
+
+```{r}
+'%!in%' <- function(x,y)!('%in%'(x,y))
+r.drive <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
+
+## which survey to do: CRS
+dat <- dat.WAP
+
+## first, read in the names of the images that we annotated:
+img.names.wap <- list.files(paste0(r.drive,"CRS/CRS_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+## and here are the names in the metadata
+dat.WAP$Filename.standardised
+## compare the two
+img.names.wap[which(img.names.wap%!in%dat.WAP$Filename.standardised)]
+## transects with issues:
+#c(1207,1217,1276,1282,1289,1300)
+
+#########################################
+##### 1207:
+ann.sel <- grep("CRS_1207",img.names.wap)
+img.names.wap[ann.sel]
+##### all images with a number greater than 10 are wrong
+## select the images:
+sel <- which(dat.WAP$transectID==1207&dat.WAP$image.select>10)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.WAP$Filename.standardised[sel],1,9),
+                                             sprintf("%04d",dat.WAP$image.select[sel]),
+                                             substr(dat.WAP$Filename.standardised[sel],14,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.wap[ann.sel],10,13)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.wap[ann.sel],16,50)[11:15]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.WAP$Filename.standardised[sel],16,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.WAP$Filename.standardised[sel][repl.sel2],1,9),
+                                             substr(img.names.wap[ann.sel],10,13)[11:15],
+                                             substr(dat.WAP$Filename.standardised[sel][repl.sel2],14,50))
+## test if everything correct:
+img.names.wap[which(img.names.wap%!in%dat$Filename.standardised)]
+
+################################################
+##### 1217:
+ann.sel <- grep("CRS_1217",img.names.wap)
+img.names.wap[ann.sel]
+##### images with numbers 10 to ... are wrong
+## select the images:
+sel <- which(dat.WAP$transectID==1217&dat.WAP$image.select>=10)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.WAP$Filename.standardised[sel],1,9),
+                                             sprintf("%04d",dat.WAP$image.select[sel]),
+                                             substr(dat.WAP$Filename.standardised[sel],14,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.wap[ann.sel],10,13)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.wap[ann.sel],16,50)[10:12]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.WAP$Filename.standardised[sel],16,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.WAP$Filename.standardised[sel][repl.sel2],1,9),
+                                             substr(img.names.wap[ann.sel],10,13)[10:12],
+                                             substr(dat.WAP$Filename.standardised[sel][repl.sel2],14,50))
+## test if everything correct:
+img.names.wap[which(img.names.wap%!in%dat$Filename.standardised)]
+
+################################################
+##### 1276:
+ann.sel <- grep("CRS_1276",img.names.wap)
+img.names.wap[ann.sel]
+##### images with numbers 6 to ... are wrong
+## select the images:
+sel <- which(dat.WAP$transectID==1276&dat.WAP$image.select>=6)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.WAP$Filename.standardised[sel],1,9),
+                                             sprintf("%04d",dat.WAP$image.select[sel]),
+                                             substr(dat.WAP$Filename.standardised[sel],14,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.wap[ann.sel],10,13)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.wap[ann.sel],16,50)[6:9]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.WAP$Filename.standardised[sel],16,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.WAP$Filename.standardised[sel][repl.sel2],1,9),
+                                             substr(img.names.wap[ann.sel],10,13)[6:9],
+                                             substr(dat.WAP$Filename.standardised[sel][repl.sel2],14,50))
+## test if everything correct:
+img.names.wap[which(img.names.wap%!in%dat$Filename.standardised)]
+
+################################################
+##### 1282:
+ann.sel <- grep("CRS_1282",img.names.wap)
+img.names.wap[ann.sel]
+##### images with numbers 3 to ... are wrong
+## select the images:
+sel <- which(dat.WAP$transectID==1282&dat.WAP$image.select>=3)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.WAP$Filename.standardised[sel],1,9),
+                                             sprintf("%04d",dat.WAP$image.select[sel]),
+                                             substr(dat.WAP$Filename.standardised[sel],14,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.wap[ann.sel],10,13)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.wap[ann.sel],16,50)[3:7]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.WAP$Filename.standardised[sel],16,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.WAP$Filename.standardised[sel][repl.sel2],1,9),
+                                             substr(img.names.wap[ann.sel],10,13)[3:7],
+                                             substr(dat.WAP$Filename.standardised[sel][repl.sel2],14,50))
+## test if everything correct:
+img.names.wap[which(img.names.wap%!in%dat$Filename.standardised)]
+
+################################################
+##### 1289:
+ann.sel <- grep("CRS_1289",img.names.wap)
+img.names.wap[ann.sel]
+##### images with numbers 2 to ... are wrong
+## select the images:
+sel <- which(dat.WAP$transectID==1289&dat.WAP$image.select>=2)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.WAP$Filename.standardised[sel],1,9),
+                                             sprintf("%04d",dat.WAP$image.select[sel]),
+                                             substr(dat.WAP$Filename.standardised[sel],14,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.wap[ann.sel],10,13)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.wap[ann.sel],16,50)[2:6]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.WAP$Filename.standardised[sel],16,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.WAP$Filename.standardised[sel][repl.sel2],1,9),
+                                             substr(img.names.wap[ann.sel],10,13)[2:6],
+                                             substr(dat.WAP$Filename.standardised[sel][repl.sel2],14,50))
+## test if everything correct:
+img.names.wap[which(img.names.wap%!in%dat$Filename.standardised)]
+
+################################################
+##### 1300:
+ann.sel <- grep("CRS_1300",img.names.wap)
+img.names.wap[ann.sel]
+##### images with numbers 8 to ... are wrong
+## select the images:
+sel <- which(dat.WAP$transectID==1300&dat.WAP$image.select>=8)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.WAP$Filename.standardised[sel],1,9),
+                                             sprintf("%04d",dat.WAP$image.select[sel]),
+                                             substr(dat.WAP$Filename.standardised[sel],14,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.wap[ann.sel],10,13)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.wap[ann.sel],16,50)[8:18]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.WAP$Filename.standardised[sel],16,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.WAP$Filename.standardised[sel][repl.sel2],1,9),
+                                             substr(img.names.wap[ann.sel],10,13)[8:18],
+                                             substr(dat.WAP$Filename.standardised[sel][repl.sel2],14,50))
+## test if everything correct:
+img.names.wap[which(img.names.wap%!in%dat$Filename.standardised)]
+
+###############################################3
+dat.WAP <- dat
+```
+
+```{r}
+## check other surveys:
+img.names <- list.files(paste0(r.drive,"TAN0802/TAN0802_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.0802$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"TAN1802/TAN1802_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.1802$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"TAN1901/TAN1901_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.1901$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"AA2011/AA2011_3_colourcorrected_images_for_annotation"),pattern=".JPG")
+img.names[which(img.names%!in%dat.AA2011$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"JR15005/JR15005_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".png")
+img.names[which(img.names%!in%dat.JR15005$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"JR17001/JR17001_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".png")
+img.names[which(img.names%!in%dat.JR17001$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"JR17003/JR17003_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".png")
+img.names[which(img.names%!in%dat.JR17003$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"JR262/JR262_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".png")
+img.names[which(img.names%!in%dat.JR262$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"LMG1311/LMG1311_3_colourcorrected_images_for_annotation"),pattern=".JPG")
+img.names[which(img.names%!in%dat.LMG1311$Filename.standardised)]
+
+#########################################
+## which survey to do: LMG1311
+dat <- dat.LMG1311
+
+## first, read in the names of the images that we annotated:
+img.names.lmg <- list.files(paste0(r.drive,"LMG1311/LMG1311_3_colourcorrected_images_for_annotation"),pattern=".JPG")
+## and here are the names in the metadata
+dat$Filename.standardised
+## compare the two
+img.names.lmg[which(img.names.lmg%!in%dat$Filename.standardised)]
+## transects with issues: 3
+#####
+ann.sel <- grep("LMG1311_3",img.names.lmg)
+img.names.lmg[ann.sel]
+##### all images with a number greater than 34 are wrong
+## select the images:
+sel <- which(dat.LMG1311$transectID==3&dat.LMG1311$image.select>34)
+## set image_select to 999 for these images
+dat$image.select[sel] <- 999
+## change it in the filename as well
+dat$Filename.standardised[sel] <- paste0(substr(dat.LMG1311$Filename.standardised[sel],1,10),
+                                             sprintf("%04d",dat.LMG1311$image.select[sel]),
+                                             substr(dat.LMG1311$Filename.standardised[sel],15,50))
+## now set the correct image_select for the annotated images
+## first check image_select numbers from annotated images
+substr(img.names.lmg[ann.sel],11,14)
+## image names for missing/wrong numbers
+repl.sel <- substr(img.names.lmg[ann.sel],15,50)[35:43]
+## under which idx can we find these images in dat
+repl.sel2 <- match(repl.sel,substr(dat.LMG1311$Filename.standardised[sel],15,50))
+## correct the filenames and image_select values for the annotated images
+dat$Filename.standardised[sel][repl.sel2] <- paste0(substr(dat.LMG1311$Filename.standardised[sel][repl.sel2],1,10),
+                                             substr(img.names.lmg[ann.sel],11,14)[35:43],
+                                             substr(dat.LMG1311$Filename.standardised[sel][repl.sel2],15,50))
+## test if everything correct:
+img.names.lmg[which(img.names.lmg%!in%dat$Filename.standardised)]
+dat.LMG1311 <- dat
+######################################
+
+img.names <- list.files(paste0(r.drive,"NBP1402/NBP1402_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.NBP1402$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"NBP1502/NBP1502_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.NBP1502$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS06/PS06_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS06$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS14/PS14_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS14$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS18/PS18_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS18$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS61/PS61_3_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS61$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS81/PS81_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS81$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS81_shallow/PS81_shallow_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS81_shallow$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS96/PS96_3_cropped_images_for_annotation_NoColourCorrectionNeeded"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS96$Filename.standardised)]
+
+img.names <- list.files(paste0(r.drive,"PS118/PS118_3_cropped_and_colourcorrected_images_for_annotation"),pattern=".jpg")
+img.names[which(img.names%!in%dat.PS118$Filename.standardised)]
+```
+
+### reproject biological data
+
+```{r, warning=FALSE, message=FALSE}
+##
+spatial.dat <- vect(data.frame(Longitude=dat.0802$GPS_lon, Latitude=dat.0802$GPS_lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.0802 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.1802$GPS_lon, Latitude=dat.1802$GPS_lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.1802 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.1901$GPS_lon, Latitude=dat.1901$GPS_lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.1901 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS81$Longitude, Latitude=dat.PS81$Latitude), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS81 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS81_shallow$Longitude, Latitude=dat.PS81_shallow$Latitude), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS81_shallow <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS96$Longitude, Latitude=dat.PS96$Latitude), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS96 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS118$Longitude, Latitude=dat.PS118$Latitude), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS118 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.WAP$lon, Latitude=dat.WAP$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.WAP <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.NBP1402$GPS_lon, Latitude=dat.NBP1402$GPS_lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.NBP1402 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.NBP1502$GPS_lon, Latitude=dat.NBP1502$GPS_lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.NBP1502 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS06$lon, Latitude=dat.PS06$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS06 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS14$lon, Latitude=dat.PS14$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS14 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS18$lon, Latitude=dat.PS18$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS18 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.PS61$lon, Latitude=dat.PS61$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.PS61 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.AA2011$lon, Latitude=dat.AA2011$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.AA2011 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.JR262$lon, Latitude=dat.JR262$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.JR262 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.JR15005$lon, Latitude=dat.JR15005$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.JR15005 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.JR17001$lon, Latitude=dat.JR17001$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.JR17001 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.JR17003$lon, Latitude=dat.JR17003$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.JR17003 <- project(spatial.dat, stereo)
+##
+spatial.dat <- vect(data.frame(Longitude=dat.LMG1311$lon, Latitude=dat.LMG1311$lat), geom=c("Longitude","Latitude"), crs="+proj=longlat +datum=WGS84")
+polar.dat.LMG1311 <- project(spatial.dat, stereo)
+
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.0802$GPS_lon, Latitude=dat.0802$GPS_lat))
+# # spatial.dat <- data.frame(cbind(dat.0802$GPS_lon, dat.0802$GPS_lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.0802 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.1802$GPS_lon, Latitude=dat.1802$GPS_lat))
+# # spatial.dat <- data.frame(cbind(dat.1802$GPS_lon, dat.1802$GPS_lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.1802 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.1901$GPS_lon, Latitude=dat.1901$GPS_lat))
+# # spatial.dat <- data.frame(cbind(dat.1901$GPS_lon, dat.1901$GPS_lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.1901 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS81$Longitude, Latitude=dat.PS81$Latitude))
+# # spatial.dat <- data.frame(cbind(dat.PS81$Longitude, dat.PS81$Latitude))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS81 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS81_shallow$Longitude, Latitude=dat.PS81_shallow$Latitude))
+# # spatial.dat <- data.frame(cbind(dat.PS81_shallow$Longitude, dat.PS81_shallow$Latitude))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS81_shallow <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS96$Longitude, Latitude=dat.PS96$Latitude))
+# # spatial.dat <- data.frame(cbind(dat.PS96$Longitude, dat.PS96$Latitude))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS96 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS118$Longitude, Latitude=dat.PS118$Latitude))
+# # spatial.dat <- data.frame(cbind(dat.PS118$Longitude, dat.PS118$Latitude))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS118 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.WAP$lon, Latitude=dat.WAP$lat))
+# # spatial.dat <- data.frame(cbind(dat.WAP$lon, dat.WAP$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.WAP <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.NBP1402$GPS_lon, Latitude=dat.NBP1402$GPS_lat))
+# # spatial.dat <- data.frame(cbind(dat.NBP1402$GPS_lon, dat.NBP1402$GPS_lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.NBP1402 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.NBP1502$GPS_lon, Latitude=dat.NBP1502$GPS_lat))
+# # spatial.dat <- data.frame(cbind(dat.NBP1502$GPS_lon, dat.NBP1502$GPS_lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.NBP1502 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS06$lon, Latitude=dat.PS06$lat))
+# # spatial.dat <- data.frame(cbind(dat.PS06$lon, dat.PS06$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS06 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS14$lon, Latitude=dat.PS14$lat))
+# # spatial.dat <- data.frame(cbind(dat.PS14$lon, dat.PS14$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS14 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS18$lon, Latitude=dat.PS18$lat))
+# # spatial.dat <- data.frame(cbind(dat.PS18$lon, dat.PS18$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS18 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.PS61$lon, Latitude=dat.PS61$lat))
+# # spatial.dat <- data.frame(cbind(dat.PS61$lon, dat.PS61$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS61 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.AA2011$lon, Latitude=dat.AA2011$lat))
+# # spatial.dat <- data.frame(cbind(dat.AA2011$lon, dat.AA2011$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.AA2011 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.JR262$lon, Latitude=dat.JR262$lat))
+# # spatial.dat <- data.frame(cbind(dat.JR262$lon, dat.JR262$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.JR262 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.JR15005$lon, Latitude=dat.JR15005$lat))
+# # spatial.dat <- data.frame(cbind(dat.JR15005$lon, dat.JR15005$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.JR15005 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.JR17001$lon, Latitude=dat.JR17001$lat))
+# # spatial.dat <- data.frame(cbind(dat.JR17001$lon, dat.JR17001$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.JR17001 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.JR17003$lon, Latitude=dat.JR17003$lat))
+# # spatial.dat <- data.frame(cbind(dat.JR17003$lon, dat.JR17003$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.JR17003 <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- SpatialPoints(data.frame(Longitude=dat.LMG1311$lon, Latitude=dat.LMG1311$lat))
+# # spatial.dat <- data.frame(cbind(dat.LMG1311$lon, dat.LMG1311$lat))
+# # names(spatial.dat) <- c("Longitude","Latitude")
+# # coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.LMG1311 <- spTransform(spatial.dat, CRS(stereo))
+
+
+####
+# ## need start and end positions for PS14 and PS18
+# spatial.dat <- data.frame(cbind(dat.PS14$Longitude_Start, dat.PS14$Latitude_Start))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS14.start <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- data.frame(cbind(dat.PS14$Longitude_End, dat.PS14$Latitude_End))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS14.end <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- data.frame(cbind(dat.PS18$Longitude_Start, dat.PS18$Latitude_Start))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# spatial.dat <- spatial.dat[-which(is.na(rowSums(spatial.dat))),]
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS18.start <- spTransform(spatial.dat, CRS(stereo))
+# ##
+# spatial.dat <- data.frame(cbind(dat.PS18$Longitude_End, dat.PS18$Latitude_End))
+# names(spatial.dat) <- c("Longitude","Latitude")
+# spatial.dat <- spatial.dat[-which(is.na(rowSums(spatial.dat))),]
+# coordinates(spatial.dat) <- c("Longitude","Latitude")
+# proj4string(spatial.dat) <- CRS("+proj=longlat +datum=WGS84")
+# polar.dat.PS18.end <- spTransform(spatial.dat, CRS(stereo))
+```
+
+### create single files/lists for all surveys together
+
+```{r, warning=FALSE, message=FALSE}
+## start-points and ID for all transects:
+dat.start.list <- list()
+dat.start.list$WAP <- dat.WAP[!duplicated(dat.WAP$transectID),]
+dat.start.list$PS06 <- dat.PS06[!duplicated(dat.PS06$transectID),]
+dat.start.list$PS14 <- dat.PS14[!duplicated(dat.PS14$transectID),]
+dat.start.list$PS18 <- dat.PS18[!duplicated(dat.PS18$transectID),]
+dat.start.list$PS61 <- dat.PS61[!duplicated(dat.PS61$transectID),]
+dat.start.list$PS81 <- dat.PS81[!duplicated(dat.PS81$transectID),]
+dat.start.list$PS81_shallow <- dat.PS81_shallow[!duplicated(dat.PS81_shallow$transectID),]
+dat.start.list$PS96 <- dat.PS96[!duplicated(dat.PS96$transectID),]
+dat.start.list$PS118 <- dat.PS118[!duplicated(dat.PS118$transectID),]
+dat.start.list$TAN0802 <- dat.0802[!duplicated(dat.0802$transectID),]
+dat.start.list$TAN1802 <- dat.1802[!duplicated(dat.1802$transectID),]
+dat.start.list$TAN1901 <- dat.1901[!duplicated(dat.1901$transectID),]
+dat.start.list$NBP1402 <- dat.NBP1402[!duplicated(dat.NBP1402$transectID),]
+dat.start.list$NBP1502 <- dat.NBP1502[!duplicated(dat.NBP1502$transectID),]
+dat.start.list$AA2011 <- dat.AA2011[!duplicated(dat.AA2011$transectID),]
+dat.start.list$JR262 <- dat.JR262[!duplicated(dat.JR262$transectID),]
+dat.start.list$JR15005 <- dat.JR15005[!duplicated(dat.JR15005$transectID),]
+dat.start.list$JR17001 <- dat.JR17001[!duplicated(dat.JR17001$transectID),]
+dat.start.list$JR17003 <- dat.JR17003[!duplicated(dat.JR17003$transectID),]
+dat.start.list$LMG1311 <- dat.LMG1311[!duplicated(dat.LMG1311$transectID),]
+
+polar.dat.start.list <- list()
+polar.dat.start.list$WAP <- polar.dat.WAP[!duplicated(dat.WAP$transectID),]
+polar.dat.start.list$PS06 <- polar.dat.PS06[!duplicated(dat.PS06$transectID),]
+polar.dat.start.list$PS14 <- polar.dat.PS14[!duplicated(dat.PS14$transectID),]
+polar.dat.start.list$PS18 <- polar.dat.PS18[!duplicated(dat.PS18$transectID),]
+polar.dat.start.list$PS61 <- polar.dat.PS61[!duplicated(dat.PS61$transectID),]
+polar.dat.start.list$PS81 <- polar.dat.PS81[!duplicated(dat.PS81$transectID),]
+polar.dat.start.list$PS81_shallow <- polar.dat.PS81_shallow[!duplicated(dat.PS81_shallow$transectID),]
+polar.dat.start.list$PS96 <- polar.dat.PS96[!duplicated(dat.PS96$transectID),]
+polar.dat.start.list$PS118 <- polar.dat.PS118[!duplicated(dat.PS118$transectID),]
+polar.dat.start.list$TAN0802 <- polar.dat.0802[!duplicated(dat.0802$transectID),]
+polar.dat.start.list$TAN1802 <- polar.dat.1802[!duplicated(dat.1802$transectID),]
+polar.dat.start.list$TAN1901 <- polar.dat.1901[!duplicated(dat.1901$transectID),]
+polar.dat.start.list$NBP1402 <- polar.dat.NBP1402[!duplicated(dat.NBP1402$transectID),]
+polar.dat.start.list$NBP1502 <- polar.dat.NBP1502[!duplicated(dat.NBP1502$transectID),]
+polar.dat.start.list$AA2011 <- polar.dat.AA2011[!duplicated(dat.AA2011$transectID),]
+polar.dat.start.list$JR262 <- polar.dat.JR262[!duplicated(dat.JR262$transectID),]
+polar.dat.start.list$JR15005 <- polar.dat.JR15005[!duplicated(dat.JR15005$transectID),]
+polar.dat.start.list$JR17001 <- polar.dat.JR17001[!duplicated(dat.JR17001$transectID),]
+polar.dat.start.list$JR17003 <- polar.dat.JR17003[!duplicated(dat.JR17003$transectID),]
+polar.dat.start.list$LMG1311 <- polar.dat.LMG1311[!duplicated(dat.LMG1311$transectID),]
+
+dat.list <- list()
+dat.list$WAP <- dat.WAP
+dat.list$PS06 <- dat.PS06
+dat.list$PS14 <- dat.PS14
+dat.list$PS18 <- dat.PS18
+dat.list$PS61 <- dat.PS61
+dat.list$PS81 <- dat.PS81
+dat.list$PS81_shallow <- dat.PS81_shallow
+dat.list$PS96 <- dat.PS96
+dat.list$PS118 <- dat.PS118
+dat.list$TAN0802 <- dat.0802
+dat.list$TAN1802 <- dat.1802
+dat.list$TAN1901 <- dat.1901
+dat.list$NBP1402 <- dat.NBP1402
+dat.list$NBP1502 <- dat.NBP1502
+dat.list$AA2011 <- dat.AA2011
+dat.list$JR262 <- dat.JR262
+dat.list$JR15005 <- dat.JR15005
+dat.list$JR17001 <- dat.JR17001
+dat.list$JR17003 <- dat.JR17003
+dat.list$LMG1311 <- dat.LMG1311
+
+total.t.length.list <- list()
+total.t.length.list$WAP <- total.t.length.v.WAP
+total.t.length.list$PS06 <- NA
+total.t.length.list$PS14 <- total.t.length.v.PS14
+total.t.length.list$PS18 <- total.t.length.v.PS18
+total.t.length.list$PS61 <- total.t.length.v.PS61
+total.t.length.list$PS81 <- total.t.length.v.PS81
+total.t.length.list$PS81_shallow <- total.t.length.v.PS81_shallow
+total.t.length.list$PS96 <- total.t.length.v.PS96
+total.t.length.list$PS118 <- total.t.length.v.PS118
+total.t.length.list$TAN0802 <- total.t.length.v.0802
+total.t.length.list$TAN1802 <- total.t.length.v.1802
+total.t.length.list$TAN1901 <- total.t.length.v.1901
+total.t.length.list$NBP1402 <- total.t.length.v.NBP1402
+total.t.length.list$NBP1502 <- total.t.length.v.NBP1502
+total.t.length.list$AA2011 <- NA
+total.t.length.list$JR262 <- NA
+total.t.length.list$JR15005 <- total.t.length.v.JR15005
+total.t.length.list$JR17001 <- total.t.length.v.JR17001
+total.t.length.list$JR17003 <- total.t.length.v.JR17003
+total.t.length.list$LMG1311 <- total.t.length.v.LMG1311
+
+########## annotated subset only
+## following transects were disregarded:
+## CRS 1103 & CRS 1325              # not yet removed
+## PS06 288, 301-303, 307,309-311   # already removed
+## PS81 159                         # not yet removed
+## PS118 38                         # already removed
+## TAN0802 181-310                  # not yet removed
+## TAN1802 160-213                  # not yet removed
+## TAN1901 209                      # not yet removed
+## NBP1402 just a single image that is misplaced # not yet removed
+## AA2011 CTD53,CTD55,CTD57-58,CTD61-64,CTD85,TD90,CTD93,CTD98,CTD107,CTD115,CTD138 # already removed
+polar.dat.list.clean <- list(polar.dat.WAP[-which(dat.list$WAP$transectID%in%c(1103,1325))],
+                       polar.dat.PS06,
+                       polar.dat.PS14,
+                       polar.dat.PS18,
+                       polar.dat.PS61,
+                       polar.dat.PS81[-which(dat.list$PS81$transectID=="PS81_159")],
+                       polar.dat.PS81_shallow,
+                       polar.dat.PS96,
+                       polar.dat.PS118,
+                       polar.dat.0802[-which(as.numeric(as.character(dat.list$TAN0802$transectID))>=181)],
+                       polar.dat.1802[-which(as.numeric(as.character(dat.list$TAN1802$transectID))>=160)],
+                       polar.dat.1901[-which(dat.list$TAN1901$transectID=="209")],
+                       polar.dat.NBP1402,#[-2],
+                       polar.dat.NBP1502,
+                       polar.dat.AA2011,
+                       polar.dat.JR262,
+                       polar.dat.JR15005,
+                       polar.dat.JR17001,
+                       polar.dat.JR17003,
+                       polar.dat.LMG1311)
+names(polar.dat.list.clean) <- names(dat.list)
+dat.list.clean <- list()
+dat.list.clean$WAP <- dat.WAP[-which(dat.list$WAP$transectID%in%c(1103,1325)),]
+dat.list.clean$WAP$transectID <- factor(dat.list.clean$WAP$transectID)
+dat.list.clean$PS06 <- dat.PS06
+dat.list.clean$PS14 <- dat.PS14
+dat.list.clean$PS18 <- dat.PS18
+dat.list.clean$PS61 <- dat.PS61
+dat.list.clean$PS81 <- dat.PS81[-which(dat.list$PS81$transectID=="PS81_159"),]
+dat.list.clean$PS81$transectID <- factor(dat.list.clean$PS81$transectID)
+dat.list.clean$PS81_shallow <- dat.PS81_shallow
+dat.list.clean$PS96 <- dat.PS96
+dat.list.clean$PS118 <- dat.PS118
+dat.list.clean$TAN0802 <- dat.0802[-which(as.numeric(as.character(dat.list$TAN0802$transectID))>=181),]
+dat.list.clean$TAN0802$transectID <- factor(dat.list.clean$TAN0802$transectID)
+dat.list.clean$TAN1802 <- dat.1802[-which(as.numeric(as.character(dat.list$TAN1802$transectID))>=160),]
+dat.list.clean$TAN1802$transectID <- factor(dat.list.clean$TAN1802$transectID)
+dat.list.clean$TAN1901 <- dat.1901[-which(dat.list$TAN1901$transectID=="209"),]
+dat.list.clean$TAN1901$transectID <- factor(dat.list.clean$TAN1901$transectID)
+dat.list.clean$NBP1402 <- dat.NBP1402#[-2,]
+dat.list.clean$NBP1502 <- dat.NBP1502
+dat.list.clean$AA2011 <- dat.AA2011
+dat.list.clean$JR262 <- dat.JR262
+dat.list.clean$JR15005 <- dat.JR15005
+dat.list.clean$JR17001 <- dat.JR17001
+dat.list.clean$JR17003 <- dat.JR17003
+dat.list.clean$LMG1311 <- dat.LMG1311
+
+total.t.length.list.clean <- total.t.length.list
+total.t.length.list.clean$WAP <- total.t.length.list$WAP[-c(4,32)]
+total.t.length.list.clean$PS81 <- total.t.length.list$PS81[-3]
+total.t.length.list.clean$TAN0802 <- total.t.length.list$TAN0802[-c(18:53)]
+total.t.length.list.clean$TAN1802 <- total.t.length.list$TAN1802[-c(16:31)]
+total.t.length.list.clean$TAN1901 <- total.t.length.list$TAN1901[-34]
+
+##### create selector lookup for each dataframe
+col.select.list <- list(c("lon","lat","Filename.standardised","transectID","Filename","image.select","Date"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select",'time_start'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("Longitude","Latitude","Filename.standardised","transectID","Filename","image.select",'Date.Time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select",'time'),
+                        c("GPS_lon","GPS_lat","Filename.standardised","transectID","FileName","image.select","Date"),
+                        c("lon","lat","Filename.standardised","transectID","Filename","image.select","DateTime"),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select",'time'),
+                        c("lon","lat","Filename.standardised","transectID","filename","image.select","DateTime"))
+
+#### standardise date and time formats, add missing dates where necessary
+# for(i in 1:20){
+#   a <- select(dat.list.clean[[i]],col.select.list[[i]][7])[1,]
+#   print(a)
+# }
+# dat.list.clean[[16]]$time <- 2011 ## JR262
+# dat.list.clean[[19]]$time <- 2018 ## JR17003
+
+#### adding the total number of images, creating the image subset dataframes                         
+col.select2 <- c("lon","lat","Filename.standardised","transectID","Filename","image.select","DateTime")
+polar.dat.subset.list <- list()
+dat.subset.list <- list()
+for(i in 1:length(dat.list.clean)){
+  col.select <- col.select.list[[i]]
+  # message(names(dat.list.clean)[i])
+  t.images <- ceiling(total.t.length.list.clean[[i]]/100)
+  if(names(dat.list.clean)[i]=="PS06"){t.images <- c(5,4)}
+  if(names(dat.list.clean)[i]=="PS14"){t.images[t.images==0] <- 5}
+  if(names(dat.list.clean)[i]=="PS18"){t.images[t.images==0] <- 5}
+  if(names(dat.list.clean)[i]=="NBP1402"){t.images[7] <- 7}
+  if(names(dat.list.clean)[i]=="AA2011"){t.images <- rep(1,71)}
+  if(names(dat.list.clean)[i]=="PS118"){t.images <- t.images.straight}
+  if(names(dat.list.clean)[i]=="JR262"){t.images <- c(5,5,2,5)}
+  if(names(dat.list.clean)[i]=="JR17003"){t.images[1] <- 2}
+  if(names(dat.list.clean)[i]=="LMG1311"){t.images[1] <- 17}
+  dat <- dat.list.clean[[i]]
+  dat$transectID <- factor(dat$transectID)
+  # print(levels(dat$transectID))
+  pol.subset.dat <- polar.dat.AA2011[-c(1:435)]
+  subset.dat <- dat.AA2011[-c(1:435),col.select2]
+  t.levels <- levels(dat$transectID)
+  if(names(dat.list.clean)[i]=="PS81"){
+    dat$t.ID_temp <- factor(dat$t.ID_temp)
+    t.levels <- levels(dat$t.ID_temp)}  
+  for(k in 1:length(t.levels)){
+    message(t.levels[k])
+    if(names(dat.list.clean)[i]=="PS81"){
+      subset.v <- which(dat$t.ID_temp==t.levels[k])
+    }else subset.v <- which(dat$transectID==t.levels[k])
+    ## select the correct number of images for each transect
+    sel <- order(dat$image.select[subset.v])[1:t.images[k]]
+    if(names(dat.list.clean)[i]=="WAP" & t.images[i]>length(dat$image.select[subset.v])){
+      sel <- order(dat$image.select[subset.v])
+    }
+    ## create vector of selected images
+    if(i==1){dat.sel <<-  subset.v[sel]
+    }else dat.sel <-  c(dat.sel,subset.v[sel])
+    # print(polar.dat.list.clean[[i]][subset.v[sel]])
+    if(k==1){
+      pol.subset.dat <- polar.dat.list.clean[[i]][subset.v[sel]]
+    } else pol.subset.dat <- c(pol.subset.dat,polar.dat.list.clean[[i]][subset.v[sel]])
+    subset.dat <- rbind(subset.dat,dat.list.clean[[i]][subset.v[sel],col.select])
+  }
+  polar.dat.subset.list[[i]] <- pol.subset.dat
+  dat.subset.list[[i]] <- subset.dat
+  names(dat.subset.list[[i]]) <- col.select2
+}
+names(polar.dat.subset.list) <- names(dat.subset.list) <- names(dat.list)
+
+```
+
+
+```{r}
+## if available, add image area to data
+for(i in 1:length(dat.list.clean)){
+  dat.list.clean[[i]]$area <- NA
+  ## fill if there is a standard area for the survey
+  if(names(dat.list.clean)[i]=="PS14"){
+    dat.list.clean[[i]]$area <- 0.56
+  }
+  if(names(dat.list.clean)[i]=="PS18"){
+    dat.list.clean[[i]]$area <- 0.9
+  }
+  if(names(dat.list.clean)[i]=="PS61"){
+    dat.list.clean[[i]]$area <- 1
+  }
+  if(names(dat.list.clean)[i]=="WAP"){
+    dat.list.clean[[i]]$area <- 3
+  }
+  if(names(dat.list.clean)[i]=="NBP1402"){
+    dat.list.clean[[i]]$area <- 4.8
+  }
+  if(names(dat.list.clean)[i]%in%c("JR262","JR15005","JR17001","JR17003")){
+    dat.list.clean[[i]]$area <- 0.51
+  }
+  ## first find for which images some area estimates exist (and then select only the first appearance of that image)
+  area.sel.raw <- which(area.raw$`image filename`%in%dat.list.clean[[i]]$Filename.standardised)
+  if(length(area.sel.raw>0)){
+    area.sel <- area.sel.raw[seq(1,length(area.sel.raw),by=2)]
+    area.raw$`image filename`[area.sel]
+    ## then find  matches between data and area
+    dat.sel <- match(area.raw$`image filename`[area.sel], dat.list.clean[[i]]$Filename.standardised)
+    ## then fill if available
+    dat.list.clean[[i]]$area[dat.sel] <- area.raw$`image area in m²`[area.sel]
+  }
+}
+
+```
+
+### adding dates for the CRS cruises after email from Craig Smith on 15th August 2023
+### now it's been directly corrected in the dat.CRS file (survey metadata)
+
+```{r}
+# dat.list$WAP$Date[dat.list$WAP$transectID==1069] <- "2008-07-19"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1072] <- "2008-07-19"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1091] <- "2008-07-21"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1103] <- "2008-07-22"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1130] <- "2008-07-26"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1132] <- "2008-07-26"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1315] <- "2010-02-08"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1320] <- "2010-02-15"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1323] <- "2010-02-15"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1324] <- "2010-02-15"
+# dat.list$WAP$Date[dat.list$WAP$transectID==1325] <- "2010-02-16"
+# 
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1069] <- "2008-07-19"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1072] <- "2008-07-19"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1091] <- "2008-07-21"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1103] <- "2008-07-22"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1130] <- "2008-07-26"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1132] <- "2008-07-26"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1315] <- "2010-02-08"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1320] <- "2010-02-15"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1323] <- "2010-02-15"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1324] <- "2010-02-15"
+# dat.list.clean$WAP$Date[dat.list.clean$WAP$transectID==1325] <- "2010-02-16"
+# 
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1069] <- "2008-07-19"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1072] <- "2008-07-19"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1091] <- "2008-07-21"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1103] <- "2008-07-22"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1130] <- "2008-07-26"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1132] <- "2008-07-26"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1315] <- "2010-02-08"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1320] <- "2010-02-15"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1323] <- "2010-02-15"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1324] <- "2010-02-15"
+# dat.subset.list$WAP$DateTime[dat.subset.list$WAP$transectID==1325] <- "2010-02-16"
+# 
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1069] <- "2008-07-19"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1072] <- "2008-07-19"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1091] <- "2008-07-21"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1103] <- "2008-07-22"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1130] <- "2008-07-26"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1132] <- "2008-07-26"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1315] <- "2010-02-08"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1320] <- "2010-02-15"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1323] <- "2010-02-15"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1324] <- "2010-02-15"
+# dat.start.list$WAP$Date[dat.start.list$WAP$transectID==1325] <- "2010-02-16"
+
+```
+
+
+### save output for analysis
+
+```{r, eval=FALSE, warning=FALSE, message=FALSE}
+save(polar.dat.0802,
+     polar.dat.1802,
+     polar.dat.1901,
+     polar.dat.WAP,
+     polar.dat.NBP1402,
+     polar.dat.NBP1502,
+     polar.dat.PS06,
+     polar.dat.PS14,
+     polar.dat.PS18,
+     polar.dat.PS61,
+     polar.dat.PS81,
+     polar.dat.PS81_shallow,
+     polar.dat.PS96,
+     polar.dat.PS118,
+     polar.dat.AA2011,
+     polar.dat.JR262,
+     polar.dat.JR15005,
+     polar.dat.JR17001,
+     polar.dat.JR17003,
+     polar.dat.LMG1311,
+     polar.dat.list.clean,
+     polar.dat.start.list,
+     polar.dat.subset.list,
+     dat.list,
+     dat.list.clean,
+     dat.subset.list,
+     dat.start.list,
+     total.t.length.list,
+     total.t.length.list.clean,
+     stereo,
+     file=paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata_2024.Rdata"))
+```
+
+### standardise image metadata for csv-files IS DONE IN annotation/1_Circumpolar_Annotation_Data_prep.R TO INCLUDE LASER POINTS
+
+```{r, eval=FALSE, echo=FALSE}
+## starting positions of each transect
+dat.start.list.simple <- list()
+for(i in 1:length(dat.start.list)){
+  print(i)
+  if(i %in% c(1:5,15:20)) dat.start.list.simple[[i]] <- dat.start.list[[i]][,c('transectID','lon','lat')]
+  if(i %in% 6:9) dat.start.list.simple[[i]] <- dat.start.list[[i]][,c('transectID','Longitude','Latitude')]
+  if(i %in% 10:14) dat.start.list.simple[[i]] <- dat.start.list[[i]][,c('transectID','GPS_lon','GPS_lat')]
+  names(dat.start.list.simple[[i]]) <- c('transectID','lon','lat')
+  dat.start.list.simple[[i]]$transectID_full <- paste0(names(dat.start.list)[i],"_",dat.start.list.simple[[i]]$transectID)
+}
+```
+

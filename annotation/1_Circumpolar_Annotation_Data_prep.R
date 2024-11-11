@@ -207,6 +207,7 @@ for (survey_current in unique(image_metadata$survey)) {
         # Compute average value of non NA images
         avg_value <- mean(image_metadata[(image_metadata$survey == survey_current) 
                                          & (image_metadata$transectID == transect_current), ]$area[idx_nonNA_values])
+        ## FOR PS81,96,118 and AA2011 THIS SHOULD HAVE BEEN ONLY AVERAGES ACROSS METADATA IMAGES BECAUSE OF CROPPING (FIXED IN 5_SetupFinalARCDPDataset...)
         # Assign this value to images with NA area
         image_metadata[(image_metadata$survey == survey_current) 
                        & (image_metadata$transectID == transect_current), ]$area[idx_NA_values] <- avg_value

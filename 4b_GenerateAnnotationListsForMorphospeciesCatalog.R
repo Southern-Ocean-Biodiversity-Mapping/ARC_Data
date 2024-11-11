@@ -13,7 +13,7 @@ user = "Jan"
 #user="nicole"
 
 if (user == "Jan") {
-  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
   ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
@@ -193,6 +193,9 @@ ann.count.dat3 <- ann.count.dat.temp#[,c(1:12,14,15)]
 
 ann.count.dat <- ann.count.dat3
 save(ann.count.dat, file=paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202312.Rdata"))
+
+write.csv(ann.cover.dat[,-9],file=paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202312_rawforpublication.csv"))
+
 
 ####################################################################################
 

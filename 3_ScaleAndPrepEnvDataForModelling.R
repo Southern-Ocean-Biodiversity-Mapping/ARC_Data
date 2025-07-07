@@ -16,7 +16,7 @@ user = "Jan"
 #user = "charley"
 #user="nicole"
 if (user == "Jan") {
-  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   #bio.dir <-      paste0(sci.dir,"data_biological/")
   ## remote repository (DOESN'T WORK YET):
@@ -55,7 +55,7 @@ load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,"_202312.
 ## cell_metadata, count_cells, cover_cells
 ## image_metadata, count_images, cover_images
 
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,"_202312.Rdata"))
+load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,"_202412.Rdata"))
 ## cell_metadata_env, count_cells_env, cover_cells_env
 ## image_metadata_env
 
@@ -69,30 +69,34 @@ cell_metadata_env$cover_points_scorable <- rowSums(cover_cells)-cover_cells$Unsc
 
 ######################################################################################################
 ##### check correlations (essentially the same between 500m and 2km resolution)
+## for 2km res:
+## first batch:
+chart.Correlation(cell_metadata_env[,24:37])
+# remove tpi5, arag_mean, no3_mean & sd, po4_mean & sd
+chart.Correlation(dplyr::select(cell_metadata_env[,24:37],-c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd")))
 
-# ## first batch: 
-# chart.Correlation(cell_metadata_env[,21:34])
-# # remove tpi5, arag_mean, no3_mean & sd, po4_mean & sd
-# chart.Correlation(dplyr::select(cell_metadata_env[,21:34],-c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd")))
-# 
-# ## second batch:
-# chart.Correlation(cell_metadata_env[,36:47])
-# #remove ice prop & mean & max, ice summer sd
-# chart.Correlation(dplyr::select(cell_metadata_env[,36:47],-c("ice_prop", "ice_mean", "ice_max", "ice_su_sd")))
+## second batch:
+chart.Correlation(cell_metadata_env[,39:50])
+#remove ice prop & mean & max, ice summer sd
+chart.Correlation(dplyr::select(cell_metadata_env[,39:50],-c("ice_prop", "ice_mean", "ice_max", "ice_su_sd","npp_sd")))
 
-# 
-# ## third batch:
-# chart.Correlation(cell_metadata_env[,48:70])
-# #remove ssh summer mean & sd, ssh spring mean, sst seasonal means, yearly sd and spring sd,  flux
-# chart.Correlation(dplyr::select(cell_metadata_env[,48:70],-c("ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean")))
+## third batch:
+chart.Correlation(cell_metadata_env[,51:62])
+#remove ssh summer mean & sd, ssh spring mean, sst seasonal means, yearly sd and spring sd,  flux0001, flux0002
+chart.Correlation(dplyr::select(cell_metadata_env[,51:62],-c("ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean")))#,"flux0001","flux0002")))
+
+## fourth batch:
+chart.Correlation(cell_metadata_env[,63:82])
+#remove seafloorcurrents_absolute, individual flux and sed runs
+chart.Correlation(dplyr::select(cell_metadata_env[,63:82],-c("seafloorcurrents_absolute","flux0001","flux0002","flux0005","flux00005","sed0001","sed0002","sed0005","sed00005")))
 
 # ## together: note that npp_mean-susp08 are correlated, and tpi-tpi11
-env.remove <- c("tpi5", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",
-                "ice_prop", "ice_mean", "ice_max", "ice_su_sd",
+env.remove <- c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",
+                "ice_prop", "ice_mean", "ice_max", "ice_su_sd","npp_sd",
                 "ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean",
-                "seafloorcurrents_absolute", "seafloorcurrents_max")
+                "seafloorcurrents_absolute","flux00005","flux0001","flux0002","flux0005","sed00005","sed0001","sed0002","sed0005")
 env.sel.remove <- which(names(cell_metadata_env)%in%env.remove)
-env.sel.remove.metadata <- c(1:23,73,74)
+env.sel.remove.metadata <- c(1:23,83,84)
 # chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,1:15])
 # chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,16:29])
 
@@ -121,7 +125,7 @@ names(transect.xy) <- c("transectID_full", "proj_coord_x", "proj_coord_y")
 ######################################################################################################
 save(cell_metadata_env, transect.xy, sel.not.correlated,
      cell_metadata_env_scaled, scale.means, scale.sd,
-     file=paste0(ARC_Data.dir,"Cell_level_env_",res,"_202312.Rdata"))
+     file=paste0(ARC_Data.dir,"Cell_level_env_",res,"_202412.Rdata"))
 
 
 ######################################################################################################
@@ -135,19 +139,21 @@ pred_stack <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_
                     paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_polynomials_etc.tif")))
 
 ## matching up metadata with pred-layers
-names(cell_metadata_env_scaled)[sel.not.correlated]
-names(pred_stack)[sel.not.correlated-22]
-pred_stack.nc <- subset(pred_stack,sel.not.correlated-22)
+sel.vars <- names(cell_metadata_env_scaled)[sel.not.correlated]
+sel.ra <- which(names(pred_stack)%in%sel.vars)
+#names(pred_stack)[which(names(pred_stack)%in%sel.vars)]
+pred_stack.nc <- subset(pred_stack,sel.ra)
 names(pred_stack.nc)
 
-## split scaling into runs of 5:
-seq_split <- split(1:nlyr(pred_stack.nc), ceiling(seq_along(1:nlyr(pred_stack.nc))/5))
+## split scaling into runs of 4:
+seq_split <- split(1:nlyr(pred_stack.nc), ceiling(seq_along(1:nlyr(pred_stack.nc))/4))
 for(j in 1:length(seq_split)){
   ## creating an empty stack of 10 layers
   pred_stack_scaled <- rast(pred_stack.nc[[seq_split[[j]]]])
-  for(i in 1:5){
+  for(i in 1:4){
     l <- seq_split[[j]][i]
     print(l)
+    if(is.na(l)) break
     k <- names(pred_stack.nc)[l]
     ## we don't want to scale geomorphology
     if(k=="geomorphology"){
@@ -169,7 +175,7 @@ file_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE)
 #subset to  "shelf" files
 file_list<-file_list[grep(paste0(".",res,"_shelf_mask_scaled_temporary"), file_list)]
 # ## we need to reorder the list so that #10 comes after 9...
-# file_list <- file_list[c(1,3:10,2)]
+#file_list <- file_list[c(1,3:10,2)]
 ## read in and save as one file
 all_temporary_files <- rast(file_list)
 writeRaster(all_temporary_files, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"), overwrite=TRUE)
@@ -194,14 +200,14 @@ tempdat7 <- cbind(env_stack_scaled[[seq_split[[7]]]][sel])
 tempdat8 <- cbind(env_stack_scaled[[seq_split[[8]]]][sel])
 tempdat9 <- cbind(env_stack_scaled[[seq_split[[9]]]][sel])
 tempdat10 <- cbind(env_stack_scaled[[seq_split[[10]]]][sel])
-# tempdat11 <- cbind(env_stack_scaled[[seq_split[[11]]]][sel])
+tempdat11 <- cbind(env_stack_scaled[[seq_split[[11]]]][sel])
 # tempdat12 <- cbind(env_stack_scaled[[seq_split[[12]]]][sel])
 # tempdat13 <- cbind(env_stack_scaled[[seq_split[[13]]]][sel])
 # tempdat14 <- cbind(env_stack_scaled[[seq_split[[14]]]][sel])
 # tempdat15 <- cbind(env_stack_scaled[[seq_split[[15]]]][sel])
 # tempdat16 <- cbind(env_stack_scaled[[seq_split[[16]]]][sel])
 # tempdat17 <- cbind(env_stack_scaled[[seq_split[[17]]]][sel])
-pred_stack.dat <- data.frame(cbind(tempdat1,tempdat2,tempdat3,tempdat4,tempdat5,tempdat6,tempdat7,tempdat8,tempdat9,tempdat10)) #,tempdat11,tempdat12,tempdat13,tempdat14,tempdat15,tempdat16,tempdat17))
+pred_stack.dat <- data.frame(cbind(tempdat1,tempdat2,tempdat3,tempdat4,tempdat5,tempdat6,tempdat7,tempdat8,tempdat9,tempdat10,tempdat11))#,tempdat12,tempdat13,tempdat14,tempdat15,tempdat16,tempdat17))
 pred_stack.dat$gear <- "OFOS"
 pred_stack.dat$cover_cells_survey <- "PS96"
 pred_stack.dat$cover_cells_transect1 <- "PS96_001"

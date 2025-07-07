@@ -24,10 +24,10 @@
 library(ncdf4)        ## package for netcdf manipulation
 library(raadtools)
 #library(raster)       ## package for raster manipulation
+#library(rgdal)        ## package for geospatial analysis
 library(sp)
 library(dplyr)
 library(blueant)
-library(rgdal)        ## package for geospatial analysis
 library(ggplot2)      ## package for plotting
 library(terra)
 
@@ -35,7 +35,7 @@ library(spatialEco)
 
 # set up directory pointers etc
 # Jan's local machine:
-env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+env.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/"
 
 # remote repository (DOESN'T WORK YET)
 # env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
@@ -116,7 +116,7 @@ if(data.name=="gebco"){
 }
 
 ## OR, load the latest IBCSO version here:
-r.raw <- raster(paste0(env.raw,"IBCSO_2022/IBCSO_v2_ice-surface.tif"))
+r.raw <- rast(paste0(env.raw,"IBCSO_2022/IBCSO_v2_ice-surface.tif"))
 r.raw.c <- crop(r.raw, ri)
 r <- projectRaster(r.raw.c, ri)
 
@@ -228,15 +228,35 @@ writeRaster(r2k.slope, filename=paste0(save.string,"_slope.tif"), overwrite=TRUE
 writeRaster(r2k.tpi,   filename=paste0(save.string,"_tpi.tif"), overwrite=TRUE)
 writeRaster(r2k.tpi5,  filename=paste0(save.string,"_tpi5.tif"), overwrite=TRUE)
 writeRaster(r2k.tpi11, filename=paste0(save.string,"_tpi11.tif"), overwrite=TRUE)
-
-
 ###
 
-r <- raster(paste0(env.derived,string.chr,"500m_bathy_gebco.grd"))
-r[r>=0] <- NA
-r[r<=depth.range[2]] <- NA
 
-r.depth <- raster(paste0(env.derived,string.chr,"500m_shelf_bathy_ibcso2_depth.tif"))
+### REDO Bathymetry calculations for bedrock data layer:
+## old bathy layer
+r.d <- rast(paste0(env.derived,string.chr,"500m_bathy_ibcso2_depth.tif"))
+## bedrock bathy
+r.raw <- rast(paste0(env.dir,"/IBCSO_v2_bed.tif"))
+r.raw.c <- crop(r.raw, r.d)
+r <- project(r.raw.c, r.d)
+## calculate derivatives
+r.slope <- terrain(r)
+r.tpi <- tpi(r)
+r.tpi5 <- tpi(r, scale=5)
+r.tpi11 <- tpi(r, scale=11)
+
+r.stack <- c(r, r.slope, r.tpi, r.tpi5, r.tpi11)
+names(r.stack) <- c("depth","slope","tpi","tpi5","tpi11")
+
+## set anything on land to NA, and optionally set abyssal zone to NA
+r.stack[r.d>0] <- NA
+r.stack[r.d<=-3000] <- NA
+writeRaster(r.stack, filename=paste0(save.string,"bed.tif"), overwrite=TRUE)
+#test2 <- rast(paste0(save.string,"bed.tif"))
+
+## 2k res:
+r.stack.2k <- aggregate(r.stack, 4)
+writeRaster(r.stack.2k, filename=paste0(env.derived,string.chr,"2km_shelf_bathy_ibcso2bed.tif"), overwrite=TRUE)
+
 
 #### 4) Net Primary Production ----
 

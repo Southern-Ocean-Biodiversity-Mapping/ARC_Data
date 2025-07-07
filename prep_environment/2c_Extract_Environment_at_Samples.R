@@ -18,7 +18,7 @@ user = "Jan"
 
 if (user == "Jan") {
   
-  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   #bio.dir <-      paste0(sci.dir,"data_biological/")
   
@@ -103,7 +103,7 @@ count_cells_env<- right_join(cell_metadata_env,
 
 
 save(cell_metadata_env, cover_cells_env, count_cells_env,
-           file =paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data_",res,"_202312.RData"))
+           file =paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Env_Data_",res,"_202412.RData"))
 
 
 ##########################################

@@ -30,7 +30,7 @@ Owncloud repository folder is "EnvironmentalData". All data can be found here:
 
 ```{r}
 ## Jan's local machine:
-env.dir <- "C:/Users/jjansen/Desktop/science/data_environmental/"
+env.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/"
 
 ## remote repository (DOESN'T WORK YET):
 # env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"

@@ -11,7 +11,7 @@ user = "Jan"
 #user = "charley"
 #user="nicole"
 if (user == "Jan") {
-  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   env.raw <- "E:/science/data_environmental/raw/"
   tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
@@ -34,8 +34,8 @@ if (user == "nicole") {
 ##############################################################################################################
 ##############################################################################################################
 
-res <- "500m"
-#res <- "2km"
+#res <- "500m"
+res <- "2km"
 
 #######################################################
 ##### Bathymetry
@@ -45,38 +45,45 @@ res <- "500m"
 #######################################################
 
 ## first, load bathy data and draw a mask to include/exclude areas
-bathy_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-bathy_list<-bathy_list[grep(paste0(".",res,"_shelf_bathy"), bathy_list)]
-bathy_names <- gsub(".*_|\\..*","",bathy_list)
+# bathy_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
+# bathy_list<-bathy_list[grep(paste0(".",res,"_shelf_bathy"), bathy_list)]
+# bathy_names <- gsub(".*_|\\..*","",bathy_list)
+# r <- rast(bathy_list)
+# names(r) <- bathy_names
 
-r <- rast(bathy_list)
-names(r) <- bathy_names
+## load the bedrock bathymetry data
+r <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_bathy_ibcso2bed.tif"))
 
 ## set cells that are below 2500m depth to NA
-sel.na <- which(r$depth[]<(-2500))
-for(i in 1:nlyr(r)){
-  print(i)
-  r[[i]][sel.na] <- NA
-}
+r.mask <- r$depth
+r.mask[which(r$depth[]<(-2500))] <- NA
+## load mask boundaries
+t <- vect(paste0(env.derived,"Circumpolar_EnvData_mask_shelf.shp"))
+r.mask2 <- mask(r.mask,t)
 
+## mask bathymetry data
+r2 <- mask(r,r.mask2)
+## save output:
+writeRaster(r2, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2bed.tif"), overwrite=TRUE)
+
+
+# ## set cells that are below 2500m depth to NA
+# sel.na <- which(r$depth[]<(-2500))
+# for(i in 1:nlyr(r)){
+#   print(i)
+#   r[[i]][sel.na] <- NA
+# }
 ## draw mask around the continental shelf break and save polygon
 #t <- draw(x="polygon")
 #writeVector(t,paste0(env.derived,"Circumpolar_EnvData_mask_shelf.shp"))
-
-## load mask
-t <- vect(paste0(env.derived,"Circumpolar_EnvData_mask_shelf.shp"))
-
-## mask bathymetry data
-r2 <- mask(r,t)
-
-## set filenames to save to:
-savestring <- paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_")
-
-## save bathymetry back to file
-for(i in 1:nlyr(r)){
-  print(i)
-  writeRaster(r2[[i]], filename=paste0(savestring,bathy_names[i],".tif"), overwrite=TRUE)
-}
+# ## set filenames to save to:
+# savestring <- paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_")
+# 
+# ## save bathymetry back to file
+# for(i in 1:nlyr(r)){
+#   print(i)
+#   writeRaster(r2[[i]], filename=paste0(savestring,bathy_names[i],".tif"), overwrite=TRUE)
+# }
 
 #######################################################
 ##### ICE, SSH & SST
@@ -204,7 +211,6 @@ waom_shelf<-mask(waom, bathy_shelf)
 writeRaster(npp_shelf, filename=paste0(savestring2,"NPP.tif"))
 writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k.tif"))
 
-
 #######################################################
 
 ##### read in all files and save as one single tif:
@@ -221,6 +227,76 @@ writeRaster(env_stack, filename=paste0(savestring2,"unscaled_variables.tif"), ov
 #file.remove(env_list)
 
 #env_stack2 <- c(subset(test,1:25),subset(env_stack,1:2),subset(test,28:39),subset(env_stack,3:9))
+
+#######################################################
+##### FAM and 2km model current speeds
+#######################################################
+fam.dir <- paste0(sci.dir,"data_environmental/FAM_outputs/")
+roms.dir <- paste0(sci.dir,"data_environmental/ROMS_2k_files/")
+
+flux01 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0001_28days_flux.tif"))
+flux02 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0002_28days_flux.tif"))
+flux05 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0005_28days_flux.tif"))
+flux005 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r00005_28days_flux.tif"))
+flux.mean <- mean(flux005,flux01,flux02, flux05, na.rm=TRUE)
+log.flux.mean <- log(flux.mean)
+sed01 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0001_28days_sed.tif"))
+sed02 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0002_28days_sed.tif"))
+sed05 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0005_28days_sed.tif"))
+sed005 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r00005_28days_sed.tif"))
+sed.mean <- mean(sed005,sed01,sed02, sed05, na.rm=TRUE)
+fam <- c(flux005,flux01,flux02,flux05,flux.mean,log.flux.mean, sed005,sed01,sed02,sed05,sed.mean)
+names(fam) <- c("flux00005","flux0001","flux0002","flux0005","flux.mean","log.flux.mean","sed00005","sed0001","sed0002","sed0005","sed.mean")
+
+uv_absmean <- rast(paste0(roms.dir,"ocean_his_bottom_uv_absmean.tif"))
+uv_mean <- rast(paste0(roms.dir,"ocean_his_bottom_uv_mean.tif"))
+uv_max <- rast(paste0(roms.dir,"ocean_his_bottom_uv_max.tif"))
+w_absmean <- rast(paste0(roms.dir,"ocean_his_bottom_w_absmean.tif"))
+w_mean <- rast(paste0(roms.dir,"ocean_his_bottom_w_mean.tif"))
+currents <- c(uv_absmean,uv_mean,uv_max,w_absmean,w_mean)
+names(currents) <- c("uv_absmean","uv_mean","uv_max","w_absmean","w_mean")
+
+## need to match extents of the rasters first before masking
+fam.resampled <- resample(fam, r.mask2, method="near")
+currents.resampled <- resample(currents, r.mask2, method="near")
+
+#plot(fam.resampled)
+sed.na <- which(is.na(fam.resampled$sed.mean[]))
+flux.na <- which(is.na(fam.resampled$flux.mean[]))
+fam.resampled$sed.mean[sed.na[-which(sed.na%in%flux.na)]] <- 0
+
+fam2 <- mask(fam.resampled, r.mask2)
+currents2 <- mask(currents.resampled, r.mask2)
+
+
+###############################
+unscaled.vars <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables_old.tif"))
+bedbathy <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2bed.tif"))
+
+unscaled.vars[[1:5]] <- bedbathy[[1:5]]
+
+## drop sd and substitute current vals
+unscaled.vars <- unscaled.vars[[-44]]
+unscaled.vars$seafloorcurrents_max <- currents2$uv_max
+unscaled.vars$seafloorcurrents_mean <- currents2$uv_mean
+unscaled.vars$seafloorcurrents_absolute <- currents2$uv_absmean
+unscaled.vars$seafloorcurrents_residual <- currents2$uv_absmean-currents2$uv_mean
+
+unscaled.vars <- c(unscaled.vars,fam2)
+
+#writeRaster(unscaled.vars, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"), overwrite=TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -19,7 +19,7 @@ user = "Jan"
 #user="nicole"
 
 if (user == "Jan") {
-  sci.dir <-      "C:/Users/jjansen/Desktop/science/"
+  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
   ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
@@ -37,6 +37,9 @@ if (user == "nicole") {
   tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
 }
 
+output <- "AMC"
+#output <- "ASAID"
+
 ##### 1: load image data and create table of count/prevalence per morphotype
 
 ##### 2: save excel-file and group relevant labels for final publishable annotation library
@@ -52,7 +55,7 @@ if (user == "nicole") {
 
 ## load image data (saved within the annotation data files for the 500m and 2km data)
 load(paste0(ARC_Data.dir, "annotation/Circumpolar_Annotation_Data_500m_202312.Rdata"))
-cover_cells_500m <- cover_cells
+ cover_cells_500m <- cover_cells
 count_cells_500m <- count_cells
 cell_metadata_500m <- cell_metadata
 image_metadata_500m <- image_metadata
@@ -280,13 +283,13 @@ count_prev3$prev_2km   <- count_prev.2km$prev_2km
 
 ##### 4: read back in the species excel-sheet and make groupings for modelling of COVER data
 ## read in excel sheets
-cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=1)
-count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_07.xlsx"),sheet=2)
+cover_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_10.xlsx"),sheet=1)
+count_list<-read_xlsx(path=paste0(ARC_Data.dir, "Annotation/Species_list_vs_CATAMI_2023_10.xlsx"),sheet=2)
 
 ## read in cell-metadata
 load(paste0(ARC_Data.dir,"Cell_level_env_500m_202312.Rdata"))
 meta_env_500m <- cell_metadata_env
-load(paste0(ARC_Data.dir,"Cell_level_env_2km_202312.Rdata"))
+load(paste0(ARC_Data.dir,"Cell_level_env_2km_202412.Rdata"))
 meta_env_2km <- cell_metadata_env
 rm(cell_metadata_env, cell_metadata_env_scaled, transect.xy)
 
@@ -296,48 +299,52 @@ sc.500m <- meta_env_500m$cover_points_scorable
 sc.2km  <- meta_env_2km$cover_points_scorable
 
 #### group morphospecies in img, 500m and 2km data as decided in the excel file
+if(output=="AMC"){
+  label_str <- "AMC"
+}else label_str <- "Final_labels_img"
+  
 ### reformat data to long, merge, change names und update labels to publishable names and convert back to wide
 ## Cover data
 cover_images_long <- cover_mod[,-1] %>%
   mutate(cellID=cover_mod$cellID)  %>% #add cellID
-  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked,
-               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(cover_list[,c("Label", "Final_labels_img", "Merge_With_1pc_img")])
-cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_1pc_img), cover_images_long$Merge_With_1pc_img, cover_images_long$Label)
-# cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum, values_fill = 0)
-cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = Final_labels_img, values_from = count, values_fn=sum, values_fill = 0)
+  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked,names_to ="Label", values_to = "count") %>% #long format and merge names to change
+  left_join(cover_list[,c("Label", "AMC", "Final_labels_img", "Merge_With_1pc_img")])
+cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_1pc_img), cover_images_long$Merge_With_1pc_img, cover_images_long$AMC)
+cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum, values_fill = 0)
+#cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from=Final_labels_img, values_from=count, values_fn=sum, values_fill=0)
+#cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from="AMC", values_from=count, values_fn=sum, values_fill=0)
 cover_mod <- cover_images_renamed
 cover_mod$cellID <- as.factor(cover_mod$cellID)
 
 cover_images_long <- cover_mod.500m[,-1] %>%
   mutate(cellID=cover_mod.500m$cellID)  %>% #add cellID
-  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, 
-               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(cover_list[,c("Label", "Merge_With_2pc_500m")])
-cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_2pc_500m), cover_images_long$Merge_With_2pc_500m, cover_images_long$Label)
+  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, names_to ="Label", values_to = "count") %>% #long format and merge names to change
+  left_join(cover_list[,c("Label", "AMC","Merge_With_2pc_500m")])
+cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_2pc_500m), cover_images_long$Merge_With_2pc_500m, cover_images_long$AMC)
 cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+# cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from="AMC", values_from=count, values_fn=sum, values_fill=0)
 cover_mod.500m <- cover_images_renamed
 cover_mod.500m$cellID <- as.factor(cover_mod.500m$cellID)
 
 cover_images_long <- cover_mod.2km[,-1] %>%
   mutate(cellID=cover_mod.2km$cellID)  %>% #add cellID
-  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, 
-               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(cover_list[,c("Label", "Merge_With_2pc_2km")])
-cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_2pc_2km), cover_images_long$Merge_With_2pc_2km, cover_images_long$Label)
+  pivot_longer(cols=`Sub_Fine`:Echinoderms_Crinoids_Stalked, names_to ="Label", values_to = "count") %>% #long format and merge names to change
+  left_join(cover_list[,c("Label", "AMC","Merge_With_2pc_2km")])
+cover_images_long$new <- ifelse(!is.na(cover_images_long$Merge_With_2pc_2km), cover_images_long$Merge_With_2pc_2km, cover_images_long$AMC)
 cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+# cover_images_renamed <- pivot_wider(cover_images_long, id_cols=cellID, names_from="AMC", values_from=count, values_fn=sum, values_fill=0)
 cover_mod.2km <- cover_images_renamed
 cover_mod.2km$cellID <- as.factor(cover_mod.2km$cellID)
 
 ## Count data
 count_images_long <- count_mod[,-1] %>%
   mutate(cellID=count_mod$cellID)  %>% #add cellID
-  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, 
-               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(count_list[,c("Label", "Final_labels_img", "Merge_With_1pc_img")])
-count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_1pc_img), count_images_long$Merge_With_1pc_img, count_images_long$Label)
-#count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
-count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = Final_labels_img, values_from = count, values_fn=sum, values_fill = 0)
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell__LimpetLike, names_to ="Label", values_to = "count") %>% #long format and merge names to change
+  left_join(count_list[,c("Label", "AMC","Final_labels_img", "Merge_With_1pc_img")])
+count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_1pc_img), count_images_long$Merge_With_1pc_img, count_images_long$AMC)
+count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+# count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = Final_labels_img, values_from = count, values_fn=sum, values_fill = 0)
+# count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = AMC, values_from = count, values_fn=sum, values_fill = 0)
 #remove species to exclude
 count_mod <- count_images_renamed %>%
   dplyr::select( - count_list$Label[which(count_list$Exclude_img =='x')])
@@ -345,11 +352,11 @@ count_mod$cellID <- as.factor(count_mod$cellID)
 
 count_images_long <- count_mod.500m[,-1] %>%
   mutate(cellID=count_mod.500m$cellID)  %>% #add cellID
-  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell, 
-               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(count_list[,c("Label", "Merge_With_2pc_500m")])
-count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_500m), count_images_long$Merge_With_2pc_500m, count_images_long$Label)
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell, names_to ="Label", values_to = "count") %>% #long format and merge names to change
+  left_join(count_list[,c("Label", "AMC","Merge_With_2pc_500m")])
+count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_500m), count_images_long$Merge_With_2pc_500m, count_images_long$AMC)
 count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
+# count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from =AMC, values_from = count, values_fn=sum,values_fill = 0)
 #remove species to exclude
 count_mod.500m <- count_images_renamed %>%
   dplyr::select( - count_list$Label[which(count_list$Exclude_500m =='x')])
@@ -357,9 +364,8 @@ count_mod.500m$cellID <- as.factor(count_mod.500m$cellID)
 
 count_images_long <- count_mod.2km[,-1] %>%
   mutate(cellID=count_mod.2km$cellID)  %>% #add cellID
-  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell, 
-               names_to ="Label", values_to = "count") %>%           #long format and merge names to change
-  left_join(count_list[,c("Label", "Merge_With_2pc_2km")])
+  pivot_longer(cols=Echinoderms__Crinoid_unstalked:Molluscs__Gastropods_shell, names_to ="Label", values_to = "count") %>% #long format and merge names to change
+  left_join(count_list[,c("Label", "AMC","Merge_With_2pc_2km")])
 count_images_long$new <- ifelse(!is.na(count_images_long$Merge_With_2pc_2km), count_images_long$Merge_With_2pc_2km, count_images_long$Label)
 count_images_renamed <- pivot_wider(count_images_long, id_cols=cellID, names_from = new, values_from = count, values_fn=sum,values_fill = 0)
 #remove species to exclude
@@ -456,7 +462,7 @@ names(img.metadata)[7] <- "cellID_500m"
 img.metadata$cellID_2km <- image_metadata_2km$cellID[sel.metadat]
 img.metadata[,9:(ncol(image_metadata_500m)+1)] <- image_metadata_500m[sel.metadat,8:ncol(image_metadata_500m)]
 
-save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio_202312.Rdata"))
+save(cover_mod, count_mod, cover_groupings, count_groupings, img.metadata, file=paste0(ARC_Data.dir,"Image_level_bio_202412.Rdata"))
 ###
 
 #################################
@@ -634,7 +640,7 @@ count_groupings <- data.frame(cbind(count_mobile, count_echino, count_crust, cou
 # #join count data back to cell metadata and environmental data
 # count_mod_env<-left_join(cell_metadata_env, count_mod, by="cellID")
 # save outputs
-save(cover_mod.2km, count_mod.2km, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_2km_202312.Rdata"))
+save(cover_mod.2km, count_mod.2km, cover_groupings, count_groupings, file=paste0(ARC_Data.dir,"Cell_level_bio_2pc_2km_202412.Rdata"))
 
 
 

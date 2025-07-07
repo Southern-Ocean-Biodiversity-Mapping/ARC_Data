@@ -1,62 +1,62 @@
-# Mobile Fauna  
-
-## Bony Fish, Rays & Skates  
-```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in c(1,53)){
-  load_and_plot(i)
-}
-```
 
 ## Brachiopoda
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-load_and_plot(2)
+load_and_plot(1)
 ```
+
 
 ## Crustacea
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 3:12){
+for(i in 2:11){
   load_and_plot(i)
 }
 ```
 
 ## Echinoderms
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 13:38){
+for(i in 12:37){
+  load_and_plot(i)
+}
+```
+
+## Fish, Rays & Skates
+```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
+for(i in 38:39){
   load_and_plot(i)
 }
 ```
 
 ## Jellies
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 39:43){
+for(i in 43:47){
   load_and_plot(i)
 }
 ```
 
 ## Molluscs
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 44:52){
+for(i in 48:56){
   load_and_plot(i)
 }
 ```
 
 ## Seaspiders
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 54:55){
+for(i in 57:58){
   load_and_plot(i)
 }
 ```
 
 ## Worms
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 63:75){
+for(i in 59:71){
   load_and_plot(i)
 }
 ```
 
 ## Unidentified classifications
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 56:62){
+for(i in 40:42){
   load_and_plot(i)
 }
 ```

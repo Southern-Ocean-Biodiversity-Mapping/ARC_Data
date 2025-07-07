@@ -1,11 +1,12 @@
 ### 1) ### Setting up----
-library(raster)
+#library(raster)
 library(readxl)
 library(readr)
 library(dplyr)
 library(data.table)
 library(proj4)
 library(stringr)
+library(terra)
 
 user = "Jan"
 #user = "charley"
@@ -60,10 +61,10 @@ image.quality.path <- "R:/IMAS/Antarctic_Seafloor/image_quality_analysis/image_q
 ##### load still and diatom sample locations and bathymetry:
 
 ## from "Readin_Circumpolar_DownwardImage_Data.Rmd"
-load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
+load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata_2024.Rdata"))
 
 ## from "ReadIn_Circumpolar_Environmental_Data.Rmd"
-r2 <- raster(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_bathy_ibcso2_depth.tif"))
+r2 <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_bathy_ibcso2_depth.tif"))
 
 ##### load coastline
 #stereo <- as.character(r2@crs)
@@ -764,7 +765,7 @@ save(image_metadata, cell_metadata, cover_cells, cover_images, count_cells, coun
 
 ##########################################################
 library(lubridate)
-load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata.Rdata"))
+load(paste0(ARC_Data.dir,"prep_image/Circumpolar_DownwardImages_metadata_2024.Rdata"))
 load(file=paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_500m_202312.Rdata"))
 
 head(image_metadata)
@@ -810,7 +811,7 @@ csv.list$PS06 <- cbind(dat.list$PS06[,c('Filename','Filename.standardised')],
 
 csv.list$PS14 <- cbind(dat.list$PS14[,c('Filename','Filename.standardised')], 
                        "PS14",dat.list$PS14[,c('transectID','lon','lat')],
-                       NA, ymd_hms(dat.list$PS14$time_start), ymd_hms(dat.list$PS14$time_end), 
+                       NA, ymd_hms(dat.list$PS14$time_start, truncated=3), ymd_hms(dat.list$PS14$time_end), 
                        NA, "CC-BY-3.0",
                        NA, dat.list$PS14[,c('depth_start','depth_end')]*-1, NA, 0.56, "metadata")
 
@@ -848,7 +849,7 @@ csv.list$PS96 <- cbind(dat.list$PS96[,c('Filename','Filename.standardised')],
 
 csv.list$PS118 <- cbind(dat.list$PS118[,c('Filename','Filename.standardised')],
                         "PS118", dat.list$PS118[,c('transectID','Longitude','Latitude')], 
-                        ymd_hms(dat.list$PS118$Date.Time), NA, NA,
+                        ymd_hms(dat.list$PS118$Date.Time, truncated=1), NA, NA,
                         "doi.pangaea.de/10.1594/PANGAEA.911904", "CC-BY-4.0",
                         dat.list$PS118[,c('Depth.water..m.')], NA, NA, NA, dat.list$PS118[,c('Area')], "metadata")
 csv.list$PS118[1875:1972,7] <- ymd_hm(substr(dat.list$PS118$Date.Time[1875:1972],1,19))
@@ -990,8 +991,11 @@ for(i in 1:21){
   message(names(csv.list)[i])
   ## merge csv_list and image_metadata by filename and replace area values in csv_list
   dat.merged <- merge(csv.list[[i]][,c(2,16,17)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)
-  csv.list[[i]]['Image_area']        <- ifelse(!is.na(dat.merged[,4]), dat.merged[,4], dat.merged[,2])
-  csv.list[[i]]['Image_area_source'] <- ifelse(!is.na(dat.merged[,4]), dat.merged[,5], dat.merged[,3])
+  
+  ## Match the merged data back to the original dataframe order
+  matched_data <- dat.merged[match(csv.list[[i]]$Filename.standardised, dat.merged$Filename.standardised),]
+  csv.list[[i]]['Image_area'] <- ifelse(!is.na(matched_data$area),matched_data$area, matched_data$Image_area)
+  csv.list[[i]]['Image_area_source'] <- ifelse(!is.na(matched_data$area), matched_data$area_source, matched_data$Image_area_source)
   # csv.list[[i]][c('Image_area','Image_area_source')] <- merge(csv.list[[i]][,c(2,16,17)], image_metadata[,c(1,10,11)], by="Filename.standardised", all.x=TRUE)[,3:4]
   print(head(csv.list[[i]]))
 }

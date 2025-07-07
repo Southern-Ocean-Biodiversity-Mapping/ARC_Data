@@ -79,45 +79,38 @@ for(i in 1:10){
   f <- sds(flux.list5[[i]],flux.list2[[i]],flux.list1[[i]],flux.list05[[i]])
   flux.list.sum[[i]] <- app(f, fun="sum", na.rm=TRUE)
 }
+
+#cols=rev(magma(99))
+#cols=rev(viridis(99))
+library(RColorBrewer)
+cols.lower <- colorRampPalette(c("#F2F2F2","#FDE725FF"))
+cols=c(cols.lower(10), rev(viridis(99)))
 ```
 
-# NPP, sinking and settling
+# NPP, sinking and settling per region
 
 ```{r, fig.height=10, fig.width=10}
 for(i in 1:10){
 par(mfrow=c(4,2))
-plot(npp.ra.list[[i]], range=c(0,1500), main=paste0("Region ",i," surface NPP"))
-plot(track3D.ra.list[[i]], range=c(0,1500), main=paste0("Region ",i," sinking model output"))
-plot(sed.list5[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 0005 output"))
-plot(sed.list2[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 0002 output"))
-plot(sed.list1[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 0001 output"))
-plot(sed.list05[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 00005 output"))
-plot(sed.list.sum[[i]], range=c(0,6000), main=paste0("Region ",i," settling model summed output"))
-plot(sed.list.sum2[[i]], range=c(0,7500), main=paste0("Region ",i," settling model + sink summed output"))
+plot(npp.ra.list[[i]], range=c(0,1500), main=paste0("Region ",i," surface NPP"), col=cols)
+plot(track3D.ra.list[[i]], range=c(0,1500), main=paste0("Region ",i," sinking model output"), col=cols)
+plot(sed.list5[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 0005 output"), col=cols)
+plot(sed.list2[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 0002 output"), col=cols)
+plot(sed.list1[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 0001 output"), col=cols)
+plot(sed.list05[[i]], range=c(0,1500), main=paste0("Region ",i," settling model 00005 output"), col=cols)
+plot(sed.list.sum[[i]], range=c(0,6000), main=paste0("Region ",i," settling model summed output"), col=cols)
+plot(sed.list.sum2[[i]], range=c(0,7500), main=paste0("Region ",i," settling model + sink summed output"), col=cols)
 }
 ```
 
-# Flux
+# Flux per region
 
 ```{r, fig.height=10, fig.width=10}
 for(i in 1:10){
 par(mfrow=c(1,1))
-plot(flux.list05[[i]], main=paste0("Region ",i," flux model 00005 output"), col=rev(magma(99)))
+plot(flux.list05[[i]], main=paste0("Region ",i," flux model 00005 output"), col=cols)
 plot(coast.proj, add=TRUE)
 }
-```
-
-
-```{r, fig.height=10, fig.width=10}
-library(RColorBrewer)
-
-cols <- colorRampPalette(c("#F2F2F2","#FDE725FF"))
-
-RS.flux <- crop(flux.list05[[1]], ext(-500000,500000,-2100000,-1150000))
-
-par(mfrow=c(1,1))
-plot(RS.flux, main=paste0("Region ",i," flux model 00005 output"), col=c(cols(10), rev(viridis(99))))#, range=c(0,15000))
-plot(coast.proj, add=TRUE)
 ```
 
 # Comparison with TOC
@@ -184,7 +177,7 @@ ant.df$sedsum  <- extract(sed.list.sum[[1]],ant.toc.locs)[,1]
 ant.df$sedsum2<- extract(sed.list.sum2[[1]],ant.toc.locs)[,1]
 
 for(i in 2:10){
-  print(i)
+  #print(i)
   l <- extract(track3D.ra.list[[i]],ant.toc.locs)
   l5  <- extract(sed.list5[[i]], ant.toc.locs)
   l2  <- extract(sed.list2[[i]], ant.toc.locs)
@@ -293,10 +286,11 @@ cex.vals <- sqrt(cex.vals.raw*20/pi)
 
 for(i in 1:10){
 par(mfrow=c(1,1))
-plot(sed.list.sum[[i]], range=c(0,6000), main=paste0("Region ",i," settling model summed output"))
+plot(sed.list.sum[[i]], range=c(0,6000), main=paste0("Region ",i," settling model summed output"), col=cols)
 #points(ant.toc.locs, cex=cex.vals, col="red")
-points(ant.toc.locs[neg.vals,], cex=cex.vals[neg.vals], col="red", lwd=2)
-points(ant.toc.locs[-neg.vals,], cex=cex.vals[-neg.vals], col="green", lwd=2)
+points(ant.toc.locs[neg.vals,], cex=cex.vals[neg.vals], col="red", lwd=3)
+points(ant.toc.locs[-neg.vals,], cex=cex.vals[-neg.vals], col="purple", lwd=3)
+add_legend("topright",col=c("red","purple"), legend=c("under-predicted", "over-predicted"), cex=1, pch=1)
 }
 ```
 
@@ -341,18 +335,28 @@ plot(log(flux.list1[[1]]), main=paste0("Region 01 particle flux"))
 points(ross.toc.locs, cex=cex)
 ```
 
-# Distances from sources to sinks
+# Distances from sources to sinks, and from sinks to sources
+
+Note that the Ross Sea raster is wrong, need to recreate the raster
 
 ```{r}
 d.to.sink.avg.files <- list.files("C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/FAM_outputs/", pattern="disttosinkavg", full.names=TRUE)
 d.to.sink.avg <- list()
 d.sink.4k <- list()
+
+d.to.source.avg.files <- list.files("C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/FAM_outputs/", pattern="disttosourceavg", full.names=TRUE)
+d.to.source.avg <- list()
+d.source.4k <- list()
+
 for(i in 1:10){
   d.to.sink.avg[[i]] <- rast(d.to.sink.avg.files[i])
+  d.to.source.avg[[i]] <- rast(d.to.source.avg.files[i])
   #plot(d.to.sink.avg[[i]])
   ## lower res:
   d.sink.4k[[i]] <- terra::aggregate(d.to.sink.avg[[i]], fact=2, na.rm=TRUE)
-  plot(d.sink.4k[[i]])
+  d.source.4k[[i]] <- terra::aggregate(d.to.source.avg[[i]], fact=2, na.rm=TRUE)
+  plot(d.sink.4k[[i]],   col=cols, main=paste0("distance to sink - Region ",i))
+  plot(d.source.4k[[i]], col=cols, main=paste0("distance to source - Region ",i))
 }
 ```
 
@@ -742,68 +746,3 @@ htmlwidgets::saveWidget(p, "particle_movements.html", selfcontained = TRUE)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##
-??? Mertz - underpredicting just off the adelie bank
-
-
-```{r, fig.height=7, fig.width=10, eval=FALSE}
-sel <- reg.mertz
-xlim <- c(1350000,1800000)
-ylim <- c(-2200000,-1900000)
-##
-
-cex <- toc.vals[sel]*2
-p <- setl.vals.list[[5]][sel]
-o <- toc.vals[sel]
-fit <- lm(o~p)
-r2 <- summary(fit)$r.squared
-top5 <- tail(order(sqrt(fit$residuals^2)))
-
-par(mfrow=c(2,2), mar=c(2,3,2,1))
-
-plot(h2, xlim=xlim, ylim=ylim, main="depth")
-points(polar.dat.toc[sel], cex=cex)
-points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
-
-plot(setl_05[[30]]-setl_05[[1]], xlim=xlim, ylim=ylim, main="setl")
-points(polar.dat.toc[sel], cex=cex)
-points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
-
-plot(mean.uv, xlim=xlim, ylim=ylim, main="mean current")
-points(polar.dat.toc[sel], cex=cex)
-points(polar.dat.toc[sel[top5]], cex=cex[top5], col="red")
-
-plot(p, o, main="toc vs setl")
-points(p[top5], o[top5], col="red")
-abline(fit, lty=2)
-legend("topleft", legend=c(paste0("cor=",round(cor(o, p),3)),
-                             paste0("r2=",round(r2,3))),
-         bty="n")
-```

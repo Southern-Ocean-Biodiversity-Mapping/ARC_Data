@@ -1,0 +1,38 @@
+name,AMC,AMC_ID
+colonial-zoantharia,Biota - Cnidaria - Colonial anemones - Zoanthids,457
+solitary-actiniaria,Biota - Cnidaria - True anemones,501
+colonial-corallimorpharia,Biota - Cnidaria - Colonial anemones,455
+stalked_colonial-ascidiacea,Biota - Ascidians - Stalked - Colonial,372
+stalked_solitary-ascidiacea,Biota - Ascidians - Stalked - Solitary,373
+unstalked_colonial-ascidiacea,Biota - Ascidians - Untalked - Colonial,375
+unstalked_solitary-ascidiacea,Biota - Ascidians - Unstalked - Solitary,376
+brachiopods-brachiopoda,Biota - Brachiopods,444
+barnacles-bathylasmatidae,Biota - Crustacea - Barnacles,507
+colonial_feather-hydroidolina,Biota - Cnidaria - Hydroids - Colonial,28412
+solitary-hydroidolina,Biota - Cnidaria - Hydroids - Solitary,28413
+antarctic_scallop-antarctic_scallop,Biota - Molluscs - Bivalves - Scallop - Adamussium colbecki,29059
+bottle_brush_complex-alcyonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Complex,468
+bottle_brush_complex-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Complex,
+bottle_brush_complex-antipatharia,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Complex,
+bottle_brush_simple-alcyonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Simple,469
+bottle_brush_simple-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Simple,
+bottle_brush_simple-antipatharia,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Simple,
+fleshy_arborescent-alcyonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Fleshy - Arborescent,463
+fleshy_mushroom-alcyonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Fleshy - Mushroom,464
+branching_arborescent-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Arborescent,466
+branching_arborescent-alcyonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Arborescent,
+branching_bushy-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bushy,470
+branching_bushy-antipatharia,Biota - Cnidaria - Corals - Black & Octocorals - Branching (3D) - Non-fleshy - Bushy,
+seafan_flexible-gorgonacea,,
+seafan_fern_complex-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Fan (2D) - Fern-frond - Complex,474
+seafan_fern_complex-antipatharia,Biota - Cnidaria - Corals - Black & Octocorals - Fan (2D) - Fern-frond - Complex - Antipathes,13277
+seafan_fern_simple-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Fan (2D) - Fern-frond - Simple,475
+seafan_fern_simple-antipatharia,Biota - Cnidaria - Corals - Black & Octocorals - Fan (2D) - Fern-frond - Simple,
+quill-pennatulacea,Biota - Cnidaria - Corals - Black & Octocorals - Quill (seapen),479
+whip_simple_umbellula-pennatulacea,Biota - Cnidaria - Corals - Black & Octocorals - Whip - Sea Whip,
+whip-pennatulacea,Biota - Cnidaria - Corals - Black & Octocorals - Whip - Sea Whip,7161
+whip-gorgonacea,Biota - Cnidaria - Corals - Black & Octocorals - Whip - Sea Whip,
+whip-alcyonacea,Biota - Cnidaria - Corals - Black & Octocorals - Whip - Sea Whip,
+solitary-scleractinia,Biota - Cnidaria - Corals - Stony corals - Solitary,490
+colonial-scleractinia,Biota - Cnidaria - Corals - Stony corals - Colonial,12812
+worms_acorn-pterobranchia,Biota - Worms - Pterobranchia,28426

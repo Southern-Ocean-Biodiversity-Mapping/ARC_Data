@@ -1,0 +1,16 @@
+sessile-fauna
+ascidia
+bryozoa
+cnidaria
+macroalgae
+porifera
+unidentified-classifications
+mobile-fauna
+brachiopods
+crustaceans
+echinoderms
+fish
+jellies
+molluscs
+seaspiders
+worms

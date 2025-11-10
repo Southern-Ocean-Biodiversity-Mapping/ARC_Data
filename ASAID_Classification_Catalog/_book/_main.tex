@@ -1,0 +1,2173 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{book}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{booktabs}
+\usepackage[margin=0.5in]{geometry} % Adjust the margin size as needed
+\usepackage{longtable}
+\usepackage{placeins}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage[]{natbib}
+\bibliographystyle{plainnat}
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Antarctic Seafloor Annotated Imagery Database - Classification Guide},
+  pdfauthor={Edited by Jan Jansen},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Antarctic Seafloor Annotated Imagery Database - Classification Guide}
+\author{Edited by Jan Jansen}
+\date{2024-12-20}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{1}
+\tableofcontents
+}
+\hypertarget{point-score-classification-catalog}{%
+\chapter*{Point-score classification catalog}\label{point-score-classification-catalog}}
+\addcontentsline{toc}{chapter}{Point-score classification catalog}
+
+This Classification Catalog shows example images for all labels used for the point-scoring method in the Antarctic Seafloor Annotated Imagery Database (AS-AID). It aims to give users an overview of the labels. This catalog represents a snapshot of the database at the time of publication of the associated data-paper.
+The labels used are based on the Australian Morphospecies Catalog, which is an extension of the CATAMI classification scheme. For more information, the CATAMI paper can be found under this \href{https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0141039}{link}
+
+Up to nine randomly selected images are presented for each classification, alongside a table with the following information:
+
+\begin{itemize}
+\tightlist
+\item
+  AMC\_ID: matching identifier in the Australian Morphospecies Catalog, and extension of the CATAMI classification.\\
+\item
+  Found\_in\_surveys: a list of all surveys in AS-AID in which this organism has been detected\\
+\item
+  Total\_annotations: the total number of annotations for this label\\
+\item
+  VME-taxa: whether this label is identified as a CCAMLR Vulnerable Marine Ecosystem taxa
+\end{itemize}
+
+Please direct any enquiries, questions or comments to \href{mailto:Jan.Jansen@utas.edu.au}{\nolinkurl{Jan.Jansen@utas.edu.au}}
+
+\newpage
+
+\hypertarget{sessile-fauna}{%
+\chapter{Sessile Fauna}\label{sessile-fauna}}
+
+\newpage
+
+\hypertarget{ascidia}{%
+\section{Ascidia}\label{ascidia}}
+
+\hypertarget{biota---ascidians---stalked---colonial}{%
+\subsection*{Biota - Ascidians - Stalked - Colonial}\label{biota---ascidians---stalked---colonial}}
+\addcontentsline{toc}{subsection}{Biota - Ascidians - Stalked - Colonial}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+372 & AA2011, JR17003, NBP1502, PS14, PS18, PS81, PS96, TAN0802, TAN1802 & 170 & Yes & Ascidia - Stalked - Colonial - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-1-1.pdf} \newpage
+
+\hypertarget{biota---ascidians---stalked---colonial---white-lollipop}{%
+\subsection*{Biota - Ascidians - Stalked - Colonial - White Lollipop}\label{biota---ascidians---stalked---colonial---white-lollipop}}
+\addcontentsline{toc}{subsection}{Biota - Ascidians - Stalked - Colonial - White Lollipop}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28380 & PS81, PS118 & 76 & Yes & Ascidia - Stalked - Colonial - Morphotype 1 - Pinhead\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-1-2.pdf} \newpage
+
+\hypertarget{biota---ascidians---stalked---colonial---white-long-rod}{%
+\subsection*{Biota - Ascidians - Stalked - Colonial - White Long Rod}\label{biota---ascidians---stalked---colonial---white-long-rod}}
+\addcontentsline{toc}{subsection}{Biota - Ascidians - Stalked - Colonial - White Long Rod}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28381 & NBP1402, NBP1502, PS81, PS96, TAN1802 & 190 & Yes & Ascidia - Stalked - Colonial - Morphotype 2 - Long rod\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-1-3.pdf} \newpage
+
+\hypertarget{biota---ascidians---stalked---solitary}{%
+\subsection*{Biota - Ascidians - Stalked - Solitary}\label{biota---ascidians---stalked---solitary}}
+\addcontentsline{toc}{subsection}{Biota - Ascidians - Stalked - Solitary}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+373 & JR15005, JR17003, NBP1502, PS81, PS118, TAN0802, TAN1802, TAN1901 & 173 & Yes & Ascidia - Stalked - Solitary\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-1-4.pdf} \newpage
+
+\hypertarget{biota---ascidians---unstalked---solitary}{%
+\subsection*{Biota - Ascidians - Unstalked - Solitary}\label{biota---ascidians---unstalked---solitary}}
+\addcontentsline{toc}{subsection}{Biota - Ascidians - Unstalked - Solitary}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+376 & AA2011, JR17003, NBP1402, NBP1502, PS14, PS18, PS81, PS96, TAN0802, TAN1802, TAN1901 & 246 & No & Ascidia - Unstalked - Solitary\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-1-5.pdf} \newpage
+
+\hypertarget{biota---ascidians---untalked---colonial}{%
+\subsection*{Biota - Ascidians - Untalked - Colonial}\label{biota---ascidians---untalked---colonial}}
+\addcontentsline{toc}{subsection}{Biota - Ascidians - Untalked - Colonial}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+375 & AA2011, JR262, JR15005, JR17001, JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 825 & Yes & Ascidia - Unstalked - Colonial\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-1-6.pdf} \newpage
+
+\hypertarget{bryozoa}{%
+\section{Bryozoa}\label{bryozoa}}
+
+\hypertarget{biota---bryozoa}{%
+\subsection*{Biota - Bryozoa}\label{biota---bryozoa}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+445 & PS81 & 1 & Yes & Bryozoa - Unidentified Morphotype 1\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-1.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---branching}{%
+\subsection*{Biota - Bryozoa - Hard - Branching}\label{biota---bryozoa---hard---branching}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Branching}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+447 & PS14 & 33 & Yes & Bryozoa - Hard - Branching - Morphotype 4 - Antler short\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-2.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---branching---antler}{%
+\subsection*{Biota - Bryozoa - Hard - Branching - Antler}\label{biota---bryozoa---hard---branching---antler}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Branching - Antler}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28383 & AA2011, JR262, JR15005, JR17003, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 2842 & Yes & Bryozoa - Hard - Branching - Morphotype 1 - Antler\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-3.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---branching---antler---purple}{%
+\subsection*{Biota - Bryozoa - Hard - Branching - Antler - Purple}\label{biota---bryozoa---hard---branching---antler---purple}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Branching - Antler - Purple}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28386 & AA2011, JR15005, NBP1502, PS81, PS96, TAN0802 & 136 & Yes & Bryozoa - Hard - Branching - Morphotype 5 - Purple\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-4.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---branching---antler-coral-head}{%
+\subsection*{Biota - Bryozoa - Hard - Branching - Antler Coral-head}\label{biota---bryozoa---hard---branching---antler-coral-head}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Branching - Antler Coral-head}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28384 & AA2011, PS14, PS18, PS81, PS96, TAN0802 & 108 & Yes & Bryozoa - Hard - Branching - Morphotype 2 - Coralhead\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-5.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---branching---leafy}{%
+\subsection*{Biota - Bryozoa - Hard - Branching - Leafy}\label{biota---bryozoa---hard---branching---leafy}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Branching - Leafy}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28385 & AA2011, JR262, JR15005, JR17003, LMG1311, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1901 & 1204 & Yes & Bryozoa - Hard - Branching - Morphotype 3 - Leafy\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-6.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---encrusting}{%
+\subsection*{Biota - Bryozoa - Hard - Encrusting}\label{biota---bryozoa---hard---encrusting}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Encrusting}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+448 & AA2011, JR15005, NBP1502, PS06, PS14, PS18, PS118, TAN0802, TAN1802, TAN1901 & 459 & Yes & Bryozoa - Hard - Encrusting\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-7.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---fenestrate}{%
+\subsection*{Biota - Bryozoa - Hard - Fenestrate}\label{biota---bryozoa---hard---fenestrate}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Fenestrate}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+449 & AA2011, JR17003, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 107 & Yes & Bryozoa - Hard - Fenestrate\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-8.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---fenestrate---bryozoa-lace}{%
+\subsection*{Biota - Bryozoa - Hard - Fenestrate - Bryozoa Lace}\label{biota---bryozoa---hard---fenestrate---bryozoa-lace}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Fenestrate - Bryozoa Lace}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+7212 & AA2011, JR17001, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 1499 & Yes & Bryozoa - Hard - Massive\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-9.pdf} \newpage
+
+\hypertarget{biota---bryozoa---hard---melicerita-obliqua}{%
+\subsection*{Biota - Bryozoa - Hard - Melicerita obliqua}\label{biota---bryozoa---hard---melicerita-obliqua}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Hard - Melicerita obliqua}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28387 & NBP1502, PS14, PS18, PS61, PS81, PS96, TAN0802 & 167 & Yes & Bryozoa - Hard - Melicerita obliqua\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-10.pdf} \newpage
+
+\hypertarget{biota---bryozoa---soft}{%
+\subsection*{Biota - Bryozoa - Soft}\label{biota---bryozoa---soft}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Soft}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+451 & AA2011, NBP1001, JR262, JR15005, JR17003, NBP1402, PS14, PS18, PS81, PS96, TAN0802, TAN1802 & 238 & Yes & Bryozoa - Soft - Morphotype 1 - Fan-shaped\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-11.pdf} \newpage
+
+\hypertarget{biota---bryozoa---soft---dendroid}{%
+\subsection*{Biota - Bryozoa - Soft - Dendroid}\label{biota---bryozoa---soft---dendroid}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Soft - Dendroid}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+452 & AA2011, NBP1001, JR262, JR15005, JR17001, JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802 & 1589 & Yes & Bryozoa - Soft - Dendroid\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-12.pdf} \newpage
+
+\hypertarget{biota---bryozoa---soft---foliaceous}{%
+\subsection*{Biota - Bryozoa - Soft - Foliaceous}\label{biota---bryozoa---soft---foliaceous}}
+\addcontentsline{toc}{subsection}{Biota - Bryozoa - Soft - Foliaceous}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+453 & AA2011, JR17003, NBP1502, PS14, PS18, PS61, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 540 & Yes & Bryozoa - Soft - Foliaceous\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-2-13.pdf} \newpage
+
+\hypertarget{cnidaria}{%
+\section{Cnidaria}\label{cnidaria}}
+
+\hypertarget{biota---cnidaria---colonial-anemones}{%
+\subsection*{Biota - Cnidaria - Colonial anemones}\label{biota---cnidaria---colonial-anemones}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Colonial anemones}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+455 & PS14, PS81, TAN1802 & 29 & Yes & Anemone - Colonial\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-1.pdf} \newpage
+
+\hypertarget{biota---cnidaria---colonial-anemones---zoanthids}{%
+\subsection*{Biota - Cnidaria - Colonial anemones - Zoanthids}\label{biota---cnidaria---colonial-anemones---zoanthids}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Colonial anemones - Zoanthids}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+457 & JR15005, JR17003, PS18, PS118 & 19 & Yes & Anemone - Colonial - Zoanthids\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-2.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---branching-3d---fleshy---arborescent}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Fleshy - Arborescent}\label{biota---cnidaria---corals---black-octocorals---branching-3d---fleshy---arborescent}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Fleshy - Arborescent}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+463 & NBP1402, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 33 & Yes & Octocorals - 3D - Fleshy - Arborescent\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-3.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---branching-3d---fleshy---mushroom}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Fleshy - Mushroom}\label{biota---cnidaria---corals---black-octocorals---branching-3d---fleshy---mushroom}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Fleshy - Mushroom}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+464 & AA2011, NBP1001, JR17003, LMG1311, NBP1502, PS14, PS81, PS118, TAN1802, TAN1901 & 114 & Yes & Octocorals - Branching - Fleshy - Mushroom\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-4.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy}\label{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+465 & JR17003, NBP1502, PS14, PS96 & 75 & Yes & Octocorals - 3D - Non-Fleshy - Morphotype 1 - Strands\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-5.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy---arborescent}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy - Arborescent}\label{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy---arborescent}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy - Arborescent}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+466 & AA2011, JR17003, PS14, PS18, PS81, PS118 & 16 & Yes & Octocorals - 3D - Non-Fleshy - Arborescent\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-6.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy---bottle-brush---complex}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Complex}\label{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy---bottle-brush---complex}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Complex}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+468 & AA2011, JR17003, NBP1402, PS18, PS81 & 19 & Yes & Octocorals - Branching - Non-fleshy - Bottlebrush - Complex\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-7.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy---bottle-brush---simple}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Simple}\label{biota---cnidaria---corals---black-octocorals---branching-3d---non-fleshy---bottle-brush---simple}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Branching (3D) - Non-fleshy - Bottle-brush - Simple}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+469 & AA2011, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 298 & Yes & Octocorals - Branching - Non-fleshy - Bottlebrush - Simple\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-8.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---cuplike}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Cuplike}\label{biota---cnidaria---corals---black-octocorals---cuplike}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Cuplike}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28428 & JR17003, PS14, PS81 & 27 & Yes & Octocorals - 3D - Cuplike\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-9.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---fan-2d}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Fan (2D)}\label{biota---cnidaria---corals---black-octocorals---fan-2d}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Fan (2D)}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+472 & AA2011, JR15005, NBP1402, PS14, PS18, PS81, PS96, PS118, TAN1802 & 59 & Yes & Octocorals - 2D\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-10.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---fan-2d---fern-frond}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Fan (2D) - Fern-frond}\label{biota---cnidaria---corals---black-octocorals---fan-2d---fern-frond}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Fan (2D) - Fern-frond}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+473 & AA2011, NBP1502, TAN1802 & 17 & Yes & Octocorals - 2D - Fernfrond\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-11.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---quill-seapen}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Quill (seapen)}\label{biota---cnidaria---corals---black-octocorals---quill-seapen}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Quill (seapen)}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+479 & LMG1311, NBP1502, PS14, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 35 & Yes & Octocorals - Seapen\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-12.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---whip---sea-whip}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Whip - Sea Whip}\label{biota---cnidaria---corals---black-octocorals---whip---sea-whip}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Whip - Sea Whip}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+7161 & AA2011, JR17003, LMG1311, NBP1402, NBP1502, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 167 & Yes & Octocorals - Whip\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-13.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---black-octocorals---whip---sea-whip---large-polyps}{%
+\subsection*{Biota - Cnidaria - Corals - Black \& Octocorals - Whip - Sea Whip - Large polyps}\label{biota---cnidaria---corals---black-octocorals---whip---sea-whip---large-polyps}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Black \& Octocorals - Whip - Sea Whip - Large polyps}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28429 & JR15005, JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN1802 & 65 & Yes & Octocorals - Morphotype 1 - Thin strand with large polyps\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-14.pdf} \newpage
+
+\hypertarget{biota---cnidaria---corals---stony-corals---solitary}{%
+\subsection*{Biota - Cnidaria - Corals - Stony corals - Solitary}\label{biota---cnidaria---corals---stony-corals---solitary}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Corals - Stony corals - Solitary}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+490 & JR15005, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 108 & Yes & Stonycorals Solitary\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-15.pdf} \newpage
+
+\hypertarget{biota---cnidaria---hydrocorals---branching}{%
+\subsection*{Biota - Cnidaria - Hydrocorals - Branching}\label{biota---cnidaria---hydrocorals---branching}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Hydrocorals - Branching}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+498 & AA2011, JR15005, JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 1287 & Yes & Hydrozoa - Branching hydrocoral\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-16.pdf} \newpage
+
+\hypertarget{biota---cnidaria---hydroids---colonial}{%
+\subsection*{Biota - Cnidaria - Hydroids - Colonial}\label{biota---cnidaria---hydroids---colonial}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Hydroids - Colonial}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28412 & AA2011, NBP1001, JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 351 & Yes & Hydrozoa - Hydroid - Colonial\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-17.pdf} \newpage
+
+\hypertarget{biota---cnidaria---hydroids---solitary}{%
+\subsection*{Biota - Cnidaria - Hydroids - Solitary}\label{biota---cnidaria---hydroids---solitary}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Hydroids - Solitary}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28413 & JR17003, PS14, PS18, PS81, TAN0802, TAN1802 & 54 & Yes & Hydrozoa - Hydroid - Solitary\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-18.pdf} \newpage
+
+\hypertarget{biota---cnidaria---hydroids---thin-branching}{%
+\subsection*{Biota - Cnidaria - Hydroids - Thin branching}\label{biota---cnidaria---hydroids---thin-branching}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Hydroids - Thin branching}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28414 & PS14, PS81, PS96 & 15 & No & Hydrozoa - Morphotype 2 - thin branching\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-19.pdf} \newpage
+
+\hypertarget{biota---cnidaria---hydroids---thin-filaments}{%
+\subsection*{Biota - Cnidaria - Hydroids - Thin filaments}\label{biota---cnidaria---hydroids---thin-filaments}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - Hydroids - Thin filaments}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28415 & PS14 & 53 & No & Hydrozoa - Morphotype 1 - thin filaments\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-20.pdf} \newpage
+
+\hypertarget{biota---cnidaria---true-anemones}{%
+\subsection*{Biota - Cnidaria - True anemones}\label{biota---cnidaria---true-anemones}}
+\addcontentsline{toc}{subsection}{Biota - Cnidaria - True anemones}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+501 & AA2011, NBP0808, CRS, NBP1001, JR262, JR15005, LMG1311, NBP1402, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 336 & Yes & Anemone - Solitary\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-3-21.pdf} \newpage
+
+\hypertarget{macroalgae}{%
+\section{Macroalgae}\label{macroalgae}}
+
+\hypertarget{biota---macroalgae}{%
+\subsection*{Biota - Macroalgae}\label{biota---macroalgae}}
+\addcontentsline{toc}{subsection}{Biota - Macroalgae}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+552 & AA2011, NBP1001, JR17003, LMG1311, PS14, PS18, PS81, PS118, TAN0802 & 369 & No & Macroalgae\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-4-1.pdf} \newpage
+
+\hypertarget{biota---macroalgae---encrusting}{%
+\subsection*{Biota - Macroalgae - Encrusting}\label{biota---macroalgae---encrusting}}
+\addcontentsline{toc}{subsection}{Biota - Macroalgae - Encrusting}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+556 & PS81 & 26 & No & Macroalgae - Encrusting\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-4-2.pdf} \newpage
+
+\hypertarget{porifera}{%
+\section{Porifera}\label{porifera}}
+
+\hypertarget{biota---sponges---crusts---creeping-ramose}{%
+\subsection*{Biota - Sponges - Crusts - Creeping / ramose}\label{biota---sponges---crusts---creeping-ramose}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Crusts - Creeping / ramose}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+612 & AA2011, JR262, JR15005, JR17003, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 529 & Yes & Sponge - Crusts - Encrusting\\
+611 & AA2011, JR262, JR15005, JR17003, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 529 & Yes & Sponge - Crusts - Creeping\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-1.pdf} \newpage
+
+\hypertarget{biota---sponges---cup-likes---barrels}{%
+\subsection*{Biota - Sponges - Cup-likes - Barrels}\label{biota---sponges---cup-likes---barrels}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Cup-likes - Barrels}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+615 & AA2011, JR17003, LMG1311, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 571 & Yes & Sponge - Cup-likes - Barrel - Small\\
+615 & AA2011, JR17003, LMG1311, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 571 & Yes & Sponge - Cup-likes - Barrel - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-2.pdf} \newpage
+
+\hypertarget{biota---sponges---cup-likes---cups---cup-goblet}{%
+\subsection*{Biota - Sponges - Cup-likes - Cups - Cup / goblet}\label{biota---sponges---cup-likes---cups---cup-goblet}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Cup-likes - Cups - Cup / goblet}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+617 & JR17003, PS118, TAN1802, TAN1901 & 32 & Yes & Sponge - Cup-likes - Cup\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-3.pdf} \newpage
+
+\hypertarget{biota---sponges---cup-likes---cups---tables-discs}{%
+\subsection*{Biota - Sponges - Cup-likes - Cups - Tables / discs}\label{biota---sponges---cup-likes---cups---tables-discs}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Cup-likes - Cups - Tables / discs}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+619 & JR15005, LMG1311, NBP1502, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 38 & Yes & Sponge - Cup-likes - Disc\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-4.pdf} \newpage
+
+\hypertarget{biota---sponges---cup-likes---tubes-and-chimneys}{%
+\subsection*{Biota - Sponges - Cup-likes - Tubes and chimneys}\label{biota---sponges---cup-likes---tubes-and-chimneys}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Cup-likes - Tubes and chimneys}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+620 & AA2011, JR15005, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802 & 116 & Yes & Sponge - Cup-likes - Tubes\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-5.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---branching}{%
+\subsection*{Biota - Sponges - Erect forms - Branching}\label{biota---sponges---erect-forms---branching}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Branching}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+622 & AA2011, NBP1502, PS14, PS18, PS81, PS96, TAN0802 & 221 & Yes & Sponge - Erect forms - Branching\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-6.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---branching---grey-cast-like}{%
+\subsection*{Biota - Sponges - Erect forms - Branching - Grey cast like}\label{biota---sponges---erect-forms---branching---grey-cast-like}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Branching - Grey cast like}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28442 & AA2011, NBP0808, NBP1001, JR17003, PS61, PS81, PS96, TAN0802 & 142 & Yes & Sponge - Erect forms - Branching - Morphotype 1 - Castlike\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-7.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---laminar}{%
+\subsection*{Biota - Sponges - Erect forms - Laminar}\label{biota---sponges---erect-forms---laminar}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Laminar}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+623 & JR15005, JR17003, PS18, PS81, PS118, TAN0802, TAN1802, TAN1901 & 125 & Yes & Sponge - Erect forms - Laminar\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-8.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---palmate}{%
+\subsection*{Biota - Sponges - Erect forms - Palmate}\label{biota---sponges---erect-forms---palmate}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Palmate}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+624 & AA2011, TAN0802 & 12 & Yes & Sponge - Erect forms - Palmate\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-9.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---simple}{%
+\subsection*{Biota - Sponges - Erect forms - Simple}\label{biota---sponges---erect-forms---simple}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Simple}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+625 & PS14, PS18, PS81, TAN0802, TAN1802, TAN1901 & 15 & Yes & Sponge - Erect forms - Simple\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-10.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---simple---yellow-bottlebrush}{%
+\subsection*{Biota - Sponges - Erect forms - Simple - Yellow bottlebrush}\label{biota---sponges---erect-forms---simple---yellow-bottlebrush}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Simple - Yellow bottlebrush}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28440 & AA2011, NBP1502, PS14, PS18, PS81, PS96 & 33 & Yes & Sponge - Erect forms - Morphotype 1 - Bottlebrush\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-11.pdf} \newpage
+
+\hypertarget{biota---sponges---erect-forms---stalked}{%
+\subsection*{Biota - Sponges - Erect forms - Stalked}\label{biota---sponges---erect-forms---stalked}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Erect forms - Stalked}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+626 & NBP1502, PS81, TAN0802, TAN1802, TAN1901 & 19 & Yes & Sponge - Erect forms - Stalked\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-12.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---balls}{%
+\subsection*{Biota - Sponges - Massive forms - Balls}\label{biota---sponges---massive-forms---balls}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Balls}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+628 & AA2011, JR15005, JR17003, NBP1402, NBP1502, PS14, PS18, PS61, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 302 & Yes & Sponge - Massive forms - Ball - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-13.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---balls---long-spicules}{%
+\subsection*{Biota - Sponges - Massive forms - Balls - Long Spicules}\label{biota---sponges---massive-forms---balls---long-spicules}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Balls - Long Spicules}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28443 & NBP1001, JR17003, NBP1402, PS14, PS18, PS81, PS96, TAN0802, TAN1901 & 40 & Yes & Sponge - Massive forms - Ball - Morphotype 1 - Long spicules\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-14.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---cryptic---monosyringa-longispina}{%
+\subsection*{Biota - Sponges - Massive forms - Cryptic - Monosyringa longispina}\label{biota---sponges---massive-forms---cryptic---monosyringa-longispina}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Cryptic - Monosyringa longispina}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28446 & PS14, PS96 & 39 & Yes & Sponge - Infaunal\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-15.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---simple}{%
+\subsection*{Biota - Sponges - Massive forms - Simple}\label{biota---sponges---massive-forms---simple}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Simple}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+630 & AA2011, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 802 & Yes & Sponge - Massive forms - Simple - Large\\
+630 & AA2011, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 802 & Yes & Sponge - Massive forms - Simple - Other\\
+630 & AA2011, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 802 & Yes & Sponge - Massive forms - Simple - Small\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-16.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---simple---massive-rigatoni}{%
+\subsection*{Biota - Sponges - Massive forms - Simple - Massive Rigatoni}\label{biota---sponges---massive-forms---simple---massive-rigatoni}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Simple - Massive Rigatoni}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28447 & NBP1502, PS81, PS118, TAN1802, TAN1901 & 24 & Yes & Sponge - Massive forms - Simple - Morphotype 1 - Composite type\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-17.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---simple---simple-grey-perforated}{%
+\subsection*{Biota - Sponges - Massive forms - Simple - Simple Grey Perforated}\label{biota---sponges---massive-forms---simple---simple-grey-perforated}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Simple - Simple Grey Perforated}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28441 & JR17001, PS14, PS18, PS81, PS118 & 97 & Yes & Sponge - Massive forms - Simple - Morphotype 3 - Grey\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-18.pdf} \newpage
+
+\hypertarget{biota---sponges---massive-forms---simple---spikey-orange-massive}{%
+\subsection*{Biota - Sponges - Massive forms - Simple - Spikey orange massive}\label{biota---sponges---massive-forms---simple---spikey-orange-massive}}
+\addcontentsline{toc}{subsection}{Biota - Sponges - Massive forms - Simple - Spikey orange massive}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28337 & AA2011, NBP1502, PS14, PS81, PS118, TAN0802 & 82 & Yes & Sponge - Massive forms - Simple - Morphotype 2 - Orange\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-5-19.pdf} \newpage
+
+\hypertarget{unidentified-classifications}{%
+\section{Unidentified classifications}\label{unidentified-classifications}}
+
+\hypertarget{biota---general-unknown-biology}{%
+\subsection*{Biota - General Unknown Biology}\label{biota---general-unknown-biology}}
+\addcontentsline{toc}{subsection}{Biota - General Unknown Biology}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+7320 & AA2011, CRS, NBP1001, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS61, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 1241 & No & Unidentifiable\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-1.pdf} \newpage
+
+\hypertarget{biota---general-unknown-biology---branching}{%
+\subsection*{Biota - General Unknown Biology - Branching}\label{biota---general-unknown-biology---branching}}
+\addcontentsline{toc}{subsection}{Biota - General Unknown Biology - Branching}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28432 & AA2011, NBP1001, JR15005, JR17003, LMG1311, NBP1502, PS14, PS81, PS96, PS118, TAN0802, TAN1901 & 118 & No & Unidentified Morphotypes - Branching\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-2.pdf} \newpage
+
+\hypertarget{biota---general-unknown-biology---potentially-identifiable}{%
+\subsection*{Biota - General Unknown Biology - Potentially identifiable}\label{biota---general-unknown-biology---potentially-identifiable}}
+\addcontentsline{toc}{subsection}{Biota - General Unknown Biology - Potentially identifiable}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28433 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 388 & No & Unidentified Morphotypes\\
+28433 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 388 & No & Unidentified Morphotypes - Translucent\\
+28433 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 388 & No & Unidentified Morphotypes - Sponge like\\
+28433 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 388 & No & Unidentified Morphotypes - Sheet like\\
+28433 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 388 & No & Unidentified Morphotypes - Potentially suspension feeders\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-3.pdf} \newpage
+
+\hypertarget{biota---general-unknown-biology---stalk}{%
+\subsection*{Biota - General Unknown Biology - Stalk}\label{biota---general-unknown-biology---stalk}}
+\addcontentsline{toc}{subsection}{Biota - General Unknown Biology - Stalk}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28430 & JR15005, JR17001, JR17003, NBP1502, PS81 & 266 & No & Unidentified Morphotype 2\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-4.pdf} \newpage
+
+\hypertarget{biota---general-unknown-biology---stick}{%
+\subsection*{Biota - General Unknown Biology - Stick}\label{biota---general-unknown-biology---stick}}
+\addcontentsline{toc}{subsection}{Biota - General Unknown Biology - Stick}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28431 & AA2011, NBP1001, JR15005, JR17001, LMG1311, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1901 & 58 & No & Unidentified Morphotype 3\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-5.pdf} \newpage
+
+\hypertarget{biota---matrix}{%
+\subsection*{Biota - Matrix}\label{biota---matrix}}
+\addcontentsline{toc}{subsection}{Biota - Matrix}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+12825 & AA2011, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 1796 & No & Unidentified Biological Matrix\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-6.pdf} \newpage
+
+\hypertarget{biota---matrix---bryozoa-cnidaria-matrix}{%
+\subsection*{Biota - Matrix - Bryozoa / Cnidaria Matrix}\label{biota---matrix---bryozoa-cnidaria-matrix}}
+\addcontentsline{toc}{subsection}{Biota - Matrix - Bryozoa / Cnidaria Matrix}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+7119 & AA2011, JR15005, JR17001, JR17003, NBP1402, NBP1502, PS14, PS18, PS96, TAN0802, TAN1802, TAN1901 & 7201 & No & Hydroid Matrix\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-7.pdf} \newpage
+
+\hypertarget{biota---matrix---turfsedimentsilt-matrix}{%
+\subsection*{Biota - Matrix - Turf/Sediment/Silt matrix}\label{biota---matrix---turfsedimentsilt-matrix}}
+\addcontentsline{toc}{subsection}{Biota - Matrix - Turf/Sediment/Silt matrix}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+13293 & AA2011, NBP0808, CRS, NBP1001, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS61, PS81, PS96, TAN0802, TAN1802, TAN1901 & 12338 & No & Unidentified Biological Matrix\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-8.pdf} \newpage
+
+\hypertarget{biota---matrix---ubs_b-temporarylabeldonotuse}{%
+\subsection*{Biota - Matrix - UBS\_B TemporaryLabelDoNotUse}\label{biota---matrix---ubs_b-temporarylabeldonotuse}}
+\addcontentsline{toc}{subsection}{Biota - Matrix - UBS\_B TemporaryLabelDoNotUse}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28449 & AA2011, NBP1001, JR262, JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 2811 & No & Unidentified Biological Matrix - Bryozoan associated\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-9.pdf} \newpage
+
+\hypertarget{biota---matrix---ubs_sp-temporarylabeldonotuse}{%
+\subsection*{Biota - Matrix - UBS\_Sp TemporaryLabelDoNotUse}\label{biota---matrix---ubs_sp-temporarylabeldonotuse}}
+\addcontentsline{toc}{subsection}{Biota - Matrix - UBS\_Sp TemporaryLabelDoNotUse}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28450 & AA2011, JR15005, JR17003, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 469 & No & Unidentified Biological Matrix - Sponge associated\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-6-10.pdf} \newpage
+
+\hypertarget{mobile-fauna}{%
+\chapter{Mobile Fauna}\label{mobile-fauna}}
+
+\newpage
+
+\hypertarget{brachiopods}{%
+\section{Brachiopods}\label{brachiopods}}
+
+\hypertarget{biota---brachiopods}{%
+\subsection*{Biota - Brachiopods}\label{biota---brachiopods}}
+\addcontentsline{toc}{subsection}{Biota - Brachiopods}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+444 & NBP1502, TAN1802 & 91 & Yes & Brachiopoda\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-7-1.pdf} \newpage
+
+\hypertarget{crustaceans}{%
+\section{Crustaceans}\label{crustaceans}}
+
+\hypertarget{biota---crustacea---amphipoda}{%
+\subsection*{Biota - Crustacea - Amphipoda}\label{biota---crustacea---amphipoda}}
+\addcontentsline{toc}{subsection}{Biota - Crustacea - Amphipoda}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+14969 & NBP1001, JR15005, PS81, TAN1901 & 15 & No & Crustacea - Amphipoda\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-8-1.pdf} \newpage
+
+\hypertarget{biota---crustacea---barnacles}{%
+\subsection*{Biota - Crustacea - Barnacles}\label{biota---crustacea---barnacles}}
+\addcontentsline{toc}{subsection}{Biota - Crustacea - Barnacles}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+507 & AA2011, TAN1802, TAN1901 & 19 & Yes & Crustacea - Barnacles\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-8-2.pdf} \newpage
+
+\hypertarget{biota---crustacea---isopoda}{%
+\subsection*{Biota - Crustacea - Isopoda}\label{biota---crustacea---isopoda}}
+\addcontentsline{toc}{subsection}{Biota - Crustacea - Isopoda}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+14968 & PS14, PS81 & 2 & No & Crustacea - Isopoda - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-8-3.pdf} \newpage
+
+\hypertarget{biota---crustacea---isopoda---serolidae}{%
+\subsection*{Biota - Crustacea - Isopoda - Serolidae}\label{biota---crustacea---isopoda---serolidae}}
+\addcontentsline{toc}{subsection}{Biota - Crustacea - Isopoda - Serolidae}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28388 & PS81, PS118, TAN0802, TAN1802, TAN1901 & 26 & No & Crustacea - Isopoda - Serolidae\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-8-4.pdf} \newpage
+
+\hypertarget{biota---crustacea---prawns}{%
+\subsection*{Biota - Crustacea - Prawns}\label{biota---crustacea---prawns}}
+\addcontentsline{toc}{subsection}{Biota - Crustacea - Prawns}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+522 & AA2011, CRS, NBP1001, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802 & 130 & No & Crustacea - Prawns\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-8-5.pdf} \newpage
+
+\hypertarget{echinoderms}{%
+\section{Echinoderms}\label{echinoderms}}
+
+\hypertarget{biota---echinoderms---feather-stars---stalked-crinoids}{%
+\subsection*{Biota - Echinoderms - Feather stars - Stalked crinoids}\label{biota---echinoderms---feather-stars---stalked-crinoids}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Feather stars - Stalked crinoids}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+525 & TAN1802 & 10 & Yes & Echinoderms - Crinoids - Stalked\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-1.pdf} \newpage
+
+\hypertarget{biota---echinoderms---feather-stars---unstalked-crinoids}{%
+\subsection*{Biota - Echinoderms - Feather stars - Unstalked crinoids}\label{biota---echinoderms---feather-stars---unstalked-crinoids}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Feather stars - Unstalked crinoids}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+526 & AA2011, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 1013 & No & Echinoderms - Crinoids - Unstalked\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-2.pdf} \newpage
+
+\hypertarget{biota---echinoderms---ophiuroids---basket-stars}{%
+\subsection*{Biota - Echinoderms - Ophiuroids - Basket stars}\label{biota---echinoderms---ophiuroids---basket-stars}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Ophiuroids - Basket stars}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+528 & TAN1802 & 3 & Yes & Echinoderms - Ophiuroids - Basketstars\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-3.pdf} \newpage
+
+\hypertarget{biota---echinoderms---ophiuroids---brittle-snake-stars}{%
+\subsection*{Biota - Echinoderms - Ophiuroids - Brittle / snake stars}\label{biota---echinoderms---ophiuroids---brittle-snake-stars}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Ophiuroids - Brittle / snake stars}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+15005 & AA2011, NBP1001, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS61, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 1660 & No & Echinoderms - Ophiuroids - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-4.pdf} \newpage
+
+\hypertarget{biota---echinoderms---ophiuroids---brittle-snake-stars---curly-arms}{%
+\subsection*{Biota - Echinoderms - Ophiuroids - Brittle / snake stars - Curly arms}\label{biota---echinoderms---ophiuroids---brittle-snake-stars---curly-arms}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Ophiuroids - Brittle / snake stars - Curly arms}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28396 & AA2011, JR15005, NBP1502, PS81, PS96, PS118, TAN0802 & 62 & No & Echinoderms - Ophiuroids - Morphotype 1 - Basketstarlike\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-5.pdf} \newpage
+
+\hypertarget{biota---echinoderms---ophiuroids---brittle-snake-stars---suspension-feeders}{%
+\subsection*{Biota - Echinoderms - Ophiuroids - Brittle / snake stars - Suspension feeders}\label{biota---echinoderms---ophiuroids---brittle-snake-stars---suspension-feeders}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Ophiuroids - Brittle / snake stars - Suspension feeders}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28398 & AA2011, JR15005, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 411 & No & Echinoderms - Ophiuroids - Suspension Feeders - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-6.pdf} \newpage
+
+\hypertarget{biota---echinoderms---ophiuroids---brittle-snake-stars---suspension-feeders---six-arms}{%
+\subsection*{Biota - Echinoderms - Ophiuroids - Brittle / snake stars - Suspension feeders - Six arms}\label{biota---echinoderms---ophiuroids---brittle-snake-stars---suspension-feeders---six-arms}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Ophiuroids - Brittle / snake stars - Suspension feeders - Six arms}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28399 & NBP1502, PS81, PS118, TAN0802, TAN1901 & 103 & No & Echinoderms - Ophiuroids - Suspension Feeders - Morphotype 1 - Six Arms\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-7.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-cucumbers---benthic}{%
+\subsection*{Biota - Echinoderms - Sea cucumbers - Benthic}\label{biota---echinoderms---sea-cucumbers---benthic}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea cucumbers - Benthic}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+531 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17003, LMG1311, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 184 & No & Echinoderms - Holothurians - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-8.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-cucumbers---benthic---grey-sediment-like}{%
+\subsection*{Biota - Echinoderms - Sea cucumbers - Benthic - Grey sediment like}\label{biota---echinoderms---sea-cucumbers---benthic---grey-sediment-like}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea cucumbers - Benthic - Grey sediment like}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28392 & JR15005, JR17001, JR17003, PS81, PS96, TAN0802 & 13 & No & Echinoderms - Holothurians - Infaunal\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-9.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-cucumbers---benthic---suspension-feeder}{%
+\subsection*{Biota - Echinoderms - Sea cucumbers - Benthic - Suspension feeder}\label{biota---echinoderms---sea-cucumbers---benthic---suspension-feeder}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea cucumbers - Benthic - Suspension feeder}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28393 & AA2011, JR17003, LMG1311, NBP1402, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 101 & No & Echinoderms - Holothurians - Suspension Feeders Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-10.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-cucumbers---benthic---suspension-feeder---buried}{%
+\subsection*{Biota - Echinoderms - Sea cucumbers - Benthic - Suspension feeder - Buried}\label{biota---echinoderms---sea-cucumbers---benthic---suspension-feeder---buried}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea cucumbers - Benthic - Suspension feeder - Buried}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28394 & NBP1001, NBP1402, NBP1502, PS81 & 9 & No & Echinoderms - Holothurians - Suspension Feeders Buried Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-11.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-cucumbers---benthic---suspension-feeder---buried---red-tentacles}{%
+\subsection*{Biota - Echinoderms - Sea cucumbers - Benthic - Suspension feeder - Buried - Red tentacles}\label{biota---echinoderms---sea-cucumbers---benthic---suspension-feeder---buried---red-tentacles}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea cucumbers - Benthic - Suspension feeder - Buried - Red tentacles}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28395 & AA2011, JR15005, NBP1502, PS96 & 121 & No & Echinoderms - Holothurians - Suspension Feeders Buried - Morphotype 1 - Red\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-12.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-stars}{%
+\subsection*{Biota - Echinoderms - Sea stars}\label{biota---echinoderms---sea-stars}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea stars}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+533 & AA2011, CRS, NBP1001, JR15005, JR17003, LMG1311, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 118 & No & Echinoderms - Asteridae - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-13.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-stars---labidiaster-annulatus}{%
+\subsection*{Biota - Echinoderms - Sea stars - Labidiaster annulatus}\label{biota---echinoderms---sea-stars---labidiaster-annulatus}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea stars - Labidiaster annulatus}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28390 & LMG1311, PS14, PS81, TAN1802, TAN1901 & 122 & No & Echinoderms - Asteridae - Labidiaster annulatus\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-14.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-stars---pentagon-shaped}{%
+\subsection*{Biota - Echinoderms - Sea stars - Pentagon shaped}\label{biota---echinoderms---sea-stars---pentagon-shaped}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea stars - Pentagon shaped}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28389 & PS81, PS118 & 3 & No & Echinoderms - Asteridae - Morphotype 1 - Pentagon shape\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-15.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-urchins---irregular-urchins}{%
+\subsection*{Biota - Echinoderms - Sea urchins - Irregular urchins}\label{biota---echinoderms---sea-urchins---irregular-urchins}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea urchins - Irregular urchins}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+535 & AA2011, JR15005, JR17003, LMG1311, NBP1402, NBP1502, PS14, PS81, PS96, PS118 & 65 & No & Echinoderms - Echinoids - Irregular\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-16.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-urchins---regular-urchins}{%
+\subsection*{Biota - Echinoderms - Sea urchins - Regular urchins}\label{biota---echinoderms---sea-urchins---regular-urchins}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea urchins - Regular urchins}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+536 & JR17003, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN1802, TAN1901 & 37 & No & Echinoderms - Echinoids - Regular Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-17.pdf} \newpage
+
+\hypertarget{biota---echinoderms---sea-urchins---regular-urchins---pencil-urchins}{%
+\subsection*{Biota - Echinoderms - Sea urchins - Regular urchins - Pencil urchins}\label{biota---echinoderms---sea-urchins---regular-urchins---pencil-urchins}}
+\addcontentsline{toc}{subsection}{Biota - Echinoderms - Sea urchins - Regular urchins - Pencil urchins}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28391 & JR15005, JR17003, NBP1502, PS14, PS18, PS61, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 57 & Yes & Echinoderms - Echinoids - Regular Pencil urchins\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-9-18.pdf} \newpage
+
+\hypertarget{fish}{%
+\section{Fish}\label{fish}}
+
+\hypertarget{biota---fished---bony-fishes---eggs}{%
+\subsection*{Biota - Fished - Bony fishes - Eggs}\label{biota---fished---bony-fishes---eggs}}
+\addcontentsline{toc}{subsection}{Biota - Fished - Bony fishes - Eggs}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28411 & NBP1001, PS81 & 7 & No & Fish - Eggs\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-10-1.pdf} \newpage
+
+\hypertarget{biota---fishes---bony-fishes}{%
+\subsection*{Biota - Fishes - Bony fishes}\label{biota---fishes---bony-fishes}}
+\addcontentsline{toc}{subsection}{Biota - Fishes - Bony fishes}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+538 & AA2011, NBP1001, JR262, JR15005, JR17001, JR17003, LMG1311, NBP1502, PS14, PS18, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 114 & No & Fish - Bony Fishes\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-10-2.pdf} \newpage
+
+\hypertarget{biota---fishes---elasmobranchs---rays-skates}{%
+\subsection*{Biota - Fishes - Elasmobranchs - Rays \& skates}\label{biota---fishes---elasmobranchs---rays-skates}}
+\addcontentsline{toc}{subsection}{Biota - Fishes - Elasmobranchs - Rays \& skates}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+542 & PS81, TAN1802 & 5 & No & Fish - Rays \& Skates\\
+\bottomrule
+\end{tabular}
+\end{table}
+\newpage
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-10-3.pdf}
+
+\hypertarget{jellies}{%
+\section{Jellies}\label{jellies}}
+
+\hypertarget{biota---jellies}{%
+\subsection*{Biota - Jellies}\label{biota---jellies}}
+\addcontentsline{toc}{subsection}{Biota - Jellies}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+544 & PS81 & 7 & No & Jellies - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-11-1.pdf} \newpage
+
+\hypertarget{biota---jellies---ctenophores}{%
+\subsection*{Biota - Jellies - Ctenophores}\label{biota---jellies---ctenophores}}
+\addcontentsline{toc}{subsection}{Biota - Jellies - Ctenophores}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+545 & PS81 & 2 & No & Jellies - Ctenophores\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-11-2.pdf} \newpage
+
+\hypertarget{biota---jellies---hydromedusae}{%
+\subsection*{Biota - Jellies - Hydromedusae}\label{biota---jellies---hydromedusae}}
+\addcontentsline{toc}{subsection}{Biota - Jellies - Hydromedusae}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+547 & NBP1001, PS81 & 37 & No & Jellies - Hydromedusae\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-11-3.pdf} \newpage
+
+\hypertarget{biota---jellies---siphonophores}{%
+\subsection*{Biota - Jellies - Siphonophores}\label{biota---jellies---siphonophores}}
+\addcontentsline{toc}{subsection}{Biota - Jellies - Siphonophores}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+551 & PS118 & 1 & No & Jellies - Siphonophore\\
+\bottomrule
+\end{tabular}
+\end{table}
+\newpage
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-11-4.pdf}
+
+\hypertarget{molluscs}{%
+\section{Molluscs}\label{molluscs}}
+
+\hypertarget{biota---molluscs---bivalves}{%
+\subsection*{Biota - Molluscs - Bivalves}\label{biota---molluscs---bivalves}}
+\addcontentsline{toc}{subsection}{Biota - Molluscs - Bivalves}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+589 & AA2011, PS81, TAN0802, TAN1802, TAN1901 & 10 & No & Molluscs - Bivalves\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-12-1.pdf} \newpage
+
+\hypertarget{biota---molluscs---cephalopods---octopods}{%
+\subsection*{Biota - Molluscs - Cephalopods - Octopods}\label{biota---molluscs---cephalopods---octopods}}
+\addcontentsline{toc}{subsection}{Biota - Molluscs - Cephalopods - Octopods}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+592 & NBP1001, JR15005, PS18, PS81, PS96, TAN1901 & 17 & No & Molluscs - Cephalopods - Octopods\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-12-2.pdf} \newpage
+
+\hypertarget{biota---molluscs---chitons}{%
+\subsection*{Biota - Molluscs - Chitons}\label{biota---molluscs---chitons}}
+\addcontentsline{toc}{subsection}{Biota - Molluscs - Chitons}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+594 & NBP1502, PS18, PS81, TAN0802 & 4 & No & Molluscs - Chitons\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-12-3.pdf} \newpage
+
+\hypertarget{biota---molluscs---gastropods}{%
+\subsection*{Biota - Molluscs - Gastropods}\label{biota---molluscs---gastropods}}
+\addcontentsline{toc}{subsection}{Biota - Molluscs - Gastropods}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+595 & NBP1001, JR15005, PS14, PS18, PS81, PS96 & 13 & No & Molluscs - Gastropods - With shells - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-12-4.pdf} \newpage
+
+\hypertarget{biota---molluscs---gastropods---limpets}{%
+\subsection*{Biota - Molluscs - Gastropods - Limpets}\label{biota---molluscs---gastropods---limpets}}
+\addcontentsline{toc}{subsection}{Biota - Molluscs - Gastropods - Limpets}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28416 & PS81 & 6 & No & Molluscs - Gastropods - With shells - Limpets\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-12-5.pdf} \newpage
+
+\hypertarget{biota---molluscs---gastropods---nudibranchia}{%
+\subsection*{Biota - Molluscs - Gastropods - Nudibranchia}\label{biota---molluscs---gastropods---nudibranchia}}
+\addcontentsline{toc}{subsection}{Biota - Molluscs - Gastropods - Nudibranchia}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+15018 & PS14, PS18, PS81 & 3 & No & Molluscs - Gastropods - No shells\\
+\bottomrule
+\end{tabular}
+\end{table}
+\newpage
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-12-6.pdf}
+
+\hypertarget{seaspiders}{%
+\section{Seaspiders}\label{seaspiders}}
+
+\hypertarget{biota---seaspiders}{%
+\subsection*{Biota - Seaspiders}\label{biota---seaspiders}}
+\addcontentsline{toc}{subsection}{Biota - Seaspiders}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+605 & CRS, NBP1001, JR15005, JR17003, LMG1311, NBP1502, PS06, PS14, PS81, PS96, PS118, TAN0802, TAN1901 & 119 & No & Seaspiders\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-13-1.pdf} \newpage
+
+\hypertarget{worms}{%
+\section{Worms}\label{worms}}
+
+\hypertarget{biota---worms}{%
+\subsection*{Biota - Worms}\label{biota---worms}}
+\addcontentsline{toc}{subsection}{Biota - Worms}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+650 & AA2011, NBP0808, CRS, NBP1001, JR15005, JR17001, JR17003, LMG1311, NBP1402, NBP1502, PS06, PS14, PS18, PS61, PS81, PS96, PS118, TAN0802, TAN1802, TAN1901 & 424 & No & Worms - Morphotype 2 - in tube\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-1.pdf} \newpage
+
+\hypertarget{biota---worms---other-temporarylabeldonotuse}{%
+\subsection*{Biota - Worms - Other TemporaryLabelDoNotUse}\label{biota---worms---other-temporarylabeldonotuse}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Other TemporaryLabelDoNotUse}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28448 & NBP1001, JR15005, JR17003, NBP1502, PS18, PS81, PS96, TAN0802 & 37 & No & Worms - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-2.pdf} \newpage
+
+\hypertarget{biota---worms---polychaetes---other-polychaetes}{%
+\subsection*{Biota - Worms - Polychaetes - Other polychaetes}\label{biota---worms---polychaetes---other-polychaetes}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Polychaetes - Other polychaetes}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+656 & JR17003 & 9 & No & Worms - Polychaetes - Other\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-3.pdf} \newpage
+
+\hypertarget{biota---worms---polychaetes---scaleworms}{%
+\subsection*{Biota - Worms - Polychaetes - Scaleworms}\label{biota---worms---polychaetes---scaleworms}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Polychaetes - Scaleworms}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28422 & LMG1311, NBP1502, PS14, PS81, PS96, PS118, TAN1802, TAN1901 & 46 & No & Worms - Polychaetes - Scaleworms\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-4.pdf} \newpage
+
+\hypertarget{biota---worms---polychaetes---tube-worms}{%
+\subsection*{Biota - Worms - Polychaetes - Tube worms}\label{biota---worms---polychaetes---tube-worms}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Polychaetes - Tube worms}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+657 & AA2011, JR15005, JR17001, JR17003, NBP1502, PS14, PS18, PS81, PS96, TAN0802, TAN1901 & 231 & Yes & Worms - Polychaetes - Tubeworms\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-5.pdf} \newpage
+
+\hypertarget{biota---worms---polychaetes---tube-worms---spaghetti-worms}{%
+\subsection*{Biota - Worms - Polychaetes - Tube worms - Spaghetti worms}\label{biota---worms---polychaetes---tube-worms---spaghetti-worms}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Polychaetes - Tube worms - Spaghetti worms}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28421 & PS96, TAN0802 & 10 & No & Worms - Tube Deposit feeder\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-6.pdf} \newpage
+
+\hypertarget{biota---worms---polychaetes---tube-worms---two-antennas}{%
+\subsection*{Biota - Worms - Polychaetes - Tube worms - Two antennas}\label{biota---worms---polychaetes---tube-worms---two-antennas}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Polychaetes - Tube worms - Two antennas}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28425 & NBP1001, JR15005, JR17003 & 15 & No & Worms - Morphotype 1 - simple\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-7.pdf} \newpage
+
+\hypertarget{biota---worms---pterobranchia}{%
+\subsection*{Biota - Worms - Pterobranchia}\label{biota---worms---pterobranchia}}
+\addcontentsline{toc}{subsection}{Biota - Worms - Pterobranchia}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{7cm}>{\raggedleft\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{2cm}}
+\toprule
+AMC\_ID & Found\_in\_surveys & Annotations & VME\_taxa & ASAID.name\\
+\midrule
+28426 & AA2011, PS18 & 9 & Yes & Worms - Pterobranchia\\
+\bottomrule
+\end{tabular}
+\end{table}
+\newpage
+
+\includegraphics{_main_files/figure-latex/unnamed-chunk-14-8.pdf}
+
+\end{document}

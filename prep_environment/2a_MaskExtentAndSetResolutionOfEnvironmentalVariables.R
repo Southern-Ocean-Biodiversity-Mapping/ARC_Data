@@ -229,7 +229,7 @@ writeRaster(env_stack, filename=paste0(savestring2,"unscaled_variables.tif"), ov
 #env_stack2 <- c(subset(test,1:25),subset(env_stack,1:2),subset(test,28:39),subset(env_stack,3:9))
 
 #######################################################
-##### FAM and 2km model current speeds
+##### FAM and 2km model current speeds (THIS FIXES )
 #######################################################
 fam.dir <- paste0(sci.dir,"data_environmental/FAM_outputs/")
 roms.dir <- paste0(sci.dir,"data_environmental/ROMS_2k_files/")
@@ -248,6 +248,7 @@ sed.mean <- mean(sed005,sed01,sed02, sed05, na.rm=TRUE)
 fam <- c(flux005,flux01,flux02,flux05,flux.mean,log.flux.mean, sed005,sed01,sed02,sed05,sed.mean)
 names(fam) <- c("flux00005","flux0001","flux0002","flux0005","flux.mean","log.flux.mean","sed00005","sed0001","sed0002","sed0005","sed.mean")
 
+## these are averages for a single month in summer
 uv_absmean <- rast(paste0(roms.dir,"ocean_his_bottom_uv_absmean.tif"))
 uv_mean <- rast(paste0(roms.dir,"ocean_his_bottom_uv_mean.tif"))
 uv_max <- rast(paste0(roms.dir,"ocean_his_bottom_uv_max.tif"))

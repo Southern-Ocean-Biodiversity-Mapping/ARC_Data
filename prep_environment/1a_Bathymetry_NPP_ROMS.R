@@ -5,7 +5,7 @@
 
 ### This code extracts circumpolar bathymetry data and generate the topographic position index at varying scales
 ### as well as generates Net Primary Productivity climatologies from previous files extracted for FAM modelling
-### and seafloor variables from the circumpolar Regional Oceanographic Modelling System (ROMS) developed by Ben Galton-Fenzi and Fabio ***
+### and seafloor variables from the circumpolar Regional Oceanographic Modelling System (ROMS) developed by Ben Galton-Fenzi and Fabio Boeira-Dias***
 
 
 ## Things you need to do to run this script
@@ -256,6 +256,7 @@ writeRaster(r.stack, filename=paste0(save.string,"bed.tif"), overwrite=TRUE)
 ## 2k res:
 r.stack.2k <- aggregate(r.stack, 4)
 writeRaster(r.stack.2k, filename=paste0(env.derived,string.chr,"2km_shelf_bathy_ibcso2bed.tif"), overwrite=TRUE)
+#writeRaster(r.stack.2k, filename=paste0(env.derived,string.chr,"2km_bathy_ibcso2bed.tif"), overwrite=TRUE)
 
 
 #### 4) Net Primary Production ----
@@ -375,6 +376,8 @@ writeRaster(npp2k_su_sd_shelf, filename=paste0(env.derived,string.chr,"2km_shelf
 
 
 #### 5) ROMS Currents & Temperature & FAM ----
+
+#### NOTE: ROMS 2k current velocities were calculated on the VM, with the raw files stored on /pvol/data_environmental/ROMS_2k_files
 
 ## WE NEED A RUN ACROSS SUMMER WITH HIGH-RES HISTORY FILES!!! 8 has one month only, 8_Nov has 10-day intervals...
 
@@ -704,6 +707,7 @@ writeRaster(s_2k_shelf,      overwrite=TRUE, filename=paste0(env.derived,string.
 
 
 # #NOTE: 2k res (UPDATE ONCE FAM HAS RUN)  
+### 2k files are in data_environmental/ROMS_2k_files
 # #NetCDF-files are downloaded from GADI
 # 
 # ## file paths

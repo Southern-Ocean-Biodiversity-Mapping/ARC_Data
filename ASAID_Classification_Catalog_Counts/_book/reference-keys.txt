@@ -1,8 +1,7 @@
-mobile-fauna
-bony-fish-rays-skates
 brachiopoda
 crustacea
 echinoderms
+fish-rays-skates
 jellies
 molluscs
 seaspiders

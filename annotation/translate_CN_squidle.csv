@@ -1,0 +1,127 @@
+AMC_lineage_names,AMC_id,uuid,CoralNet_LabelID,CoralNet_ShortCode
+1.1 Biota > Ascidians > Stalked > Colonial,372,0ceecb87-bfeb-42b7-8434-6ba19f242aa9,341,Asc_SCol
+1.1 Biota > Ascidians > Stalked > Colonial > White Lollipop,28380,fc202a73-701e-4057-8cbd-d06fcb724909,,
+1.1 Biota > Ascidians > Stalked > Colonial > White Long Rod,28381,64a4f712-3fc0-405c-aac2-3092bd1d3c56,11356,Asc_WLD
+1.1 Biota > Ascidians > Stalked > Solitary,373,c5688a05-bbb6-4a3b-a2b3-ee7a906be89f,340,Asc_SSol
+1.1 Biota > Ascidians > Unstalked > Colonial,375,06b9b6a9-f223-4aad-bd41-37d4db3e5e7f,338,Asc_UCol
+1.1 Biota > Ascidians > Unstalked > Solitary,376,ca5ff6c8-c188-4ca6-b0c4-bf0912af3288,337,Asc_USol
+1.1 Biota > Brachiopods,444,25504fb1-a43e-49bd-a44d-603ef82d2e11,4062,Brach
+1.1 Biota > Bryozoa,445,7369e38e-79f6-4672-9d55-6d94e50a5d33,1853,bryozoan
+1.1 Biota > Bryozoa > Hard > Branching,447,d0e9bccc-372b-445f-81b7-c454df6ec03d,335,BHB
+1.1 Biota > Bryozoa > Hard > Branching > Antler,28383,cb0c5aa0-351c-4d81-b577-942e1d1a8623,4162,BH_BrAnt
+1.1 Biota > Bryozoa > Hard > Branching > Antler > Purple,28386,9ccfb26e-8775-4632-a588-f2217a176456,,
+1.1 Biota > Bryozoa > Hard > Branching > Antler Coral-head,28384,3980f457-3e59-49dd-b95b-ca134b5f5723,4163,BH_BrHead
+1.1 Biota > Bryozoa > Hard > Branching > Leafy,28385,6321e13a-ad36-42bf-a899-f5170243b3e7,4161,BH_BrLeaf
+1.1 Biota > Bryozoa > Hard > Encrusting,448,dd3f83b6-046e-43bd-b7cf-395fe498b939,334,BH_Encr
+1.1 Biota > Bryozoa > Hard > Fenestrate,449,124e9dc2-e4d8-42b7-ab5f-8e285a974a94,333,BH_Fenestr
+1.1 Biota > Bryozoa > Hard > Fenestrate > Bryozoa Lace,7212,ce197f7d-4c2c-4c67-80fb-a9ebbbc20a11,11384,BH_Lace
+1.1 Biota > Bryozoa > Hard > Melicerita obliqua,28387,94c08815-fd22-45e0-b963-9f1d341a1b97,11378,BH_Mo
+1.1 Biota > Bryozoa > Soft,451,a1feffe9-b859-4a18-8203-574d1a78ae42,328,BS
+1.1 Biota > Bryozoa > Soft > Dendroid,452,ef975b5b-e1eb-4d58-9e47-d66abcb04c57,329,BS_Dendr
+1.1 Biota > Bryozoa > Soft > Foliaceous,453,5764d798-b9cc-4a62-9b4b-2f4fc065536a,330,BS_Foliac
+1.1 Biota > Cnidaria > Colonial anemones,455,a34df8cc-f98d-4df5-a967-ac398ac0f0b3,4773,CNCA
+1.1 Biota > Cnidaria > Colonial anemones > Zoanthids,457,14609ace-afc4-49ce-9ddc-856110e25f3d,4112,CNCAZ
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Branching (3D) > Fleshy > Arborescent,463,505f4186-3e53-4691-ba80-6dd8c0fa519c,262,O_3D_FlArb
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Branching (3D) > Fleshy > Mushroom,464,aeb87493-2a2d-4aea-a3b3-8addc6be4309,4164,O_3D_MshSt
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Branching (3D) > Non-fleshy,465,927df05e-cab6-4ccd-868b-8d23e7a7fbff,254,OBN
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Branching (3D) > Non-fleshy > Arborescent,466,7ea450cc-89bb-4757-99ce-5ffe50dc456f,259,O_3D_NFArb
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Branching (3D) > Non-fleshy > Bottle-brush > Complex,468,4f1d60d0-4b8a-4fad-a1b6-4bb48c8eb6f3,11376,OBNBCom
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Branching (3D) > Non-fleshy > Bottle-brush > Simple,469,cab4a7dd-9e59-4ba8-9242-3a5414ccd47b,257,OBNBS
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Cuplike,28428,2776647b-8ca4-49a4-8bbd-e12d06f3f7c2,11377,O_Cup
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Fan (2D),472,dca69d17-221c-4b18-a2a6-761ba10f24b4,247,OF
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Fan (2D) > Fern-frond,473,09a80d80-0883-4770-a64c-da2151aaaa0f,249,OFaF
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Quill (seapen),479,f4944c33-a9e8-4060-8992-7d0e5c678535,4166,O_Seapen
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Whip > Sea Whip,7161,f814b3de-e207-4c30-9742-6c468131f8dc,246,O_Whip
+1.1 Biota > Cnidaria > Corals > Black & Octocorals > Whip > Sea Whip > Large polyps,28429,6d783451-7a4e-4e26-9429-bc922cc4df9c,11362,O_Whip_LP
+1.1 Biota > Cnidaria > Corals > Stony corals > Solitary,490,337e32dd-160c-47de-bd74-869baca701a7,4167,StonyC_Sol
+1.1 Biota > Cnidaria > Hydrocorals > Branching,498,d53b4497-c4a9-48f2-83b1-9c4175a45afb,4168,HydrC_Br
+1.1 Biota > Cnidaria > Hydroids > Colonial,28412,58fc2d32-8ddf-42af-84f7-eca6dd3176a6,,
+1.1 Biota > Cnidaria > Hydroids > Solitary,28413,57df35dd-d8e8-4ab2-978d-677de87aea87,4170,Hydroid_S
+1.1 Biota > Cnidaria > Hydroids > Thin branching,28414,b7573d9d-d98f-4978-8f1a-4441414ac380,,
+1.1 Biota > Cnidaria > Hydroids > Thin filaments,28415,11717a4a-9fa2-49c3-b29f-5859f121c05e,,
+1.1 Biota > Cnidaria > True anemones,501,87da4253-d88a-4085-bce6-e87ac751a688,4774,CNTR
+1.1 Biota > Crustacea > Amphipoda,14969,9c805576-6b07-400a-8751-2eddf601238b,4028,Cr_Amph
+1.1 Biota > Crustacea > Barnacles,507,e205829a-3fce-439e-b7d2-cbb210e5bc5d,357,Cr_Barn
+1.1 Biota > Crustacea > Isopoda,14968,3ce7f717-a700-4399-9656-f225e1c93dd9,4035,Cr_Isopod
+1.1 Biota > Crustacea > Isopoda > Serolidae,28388,11b07cd9-2fe4-42af-a66b-cdde7d3070ea,4036,SERO
+1.1 Biota > Crustacea > Prawns / shrimps / mysids,522,f24cfd60-3eed-4db3-9b74-b6c8fbc2ce78,4171,Cr_Prawn
+1.1 Biota > Echinoderms > Feather stars > Stalked crinoids,525,e42d30c1-29bc-4b0b-9336-baf15da22975,352,E_Crin_St
+1.1 Biota > Echinoderms > Feather stars > Unstalked crinoids,526,82c1c5e9-070e-4089-b5f3-3c814850fcd0,351,E_Crin_US
+1.1 Biota > Echinoderms > Sea cucumbers > Benthic,531,531890e9-ba7e-408c-a9b9-daa6edba5cf0,346,E_H_Oth
+1.1 Biota > Echinoderms > Sea cucumbers > Benthic > Grey sediment like,28392,03973161-4459-41ee-84cf-979496b2c002,,
+1.1 Biota > Echinoderms > Sea cucumbers > Benthic > Suspension feeder,28393,6a3983bb-268b-4cb3-b94d-419dbc6c01b6,11360,SC_SF
+1.1 Biota > Echinoderms > Sea cucumbers > Benthic > Suspension feeder > Buried,28394,12fd1240-87b0-48d4-afc1-cbcf16d877a4,11335,SC_B_SF
+1.1 Biota > Echinoderms > Sea cucumbers > Benthic > Suspension feeder > Buried > Red tentacles,28395,9e98618f-4fc4-4350-84e0-21573c46e4af,,
+1.1 Biota > Echinoderms > Sea stars,533,e0b9fa0e-688f-41cf-9219-86955cd32624,344,ESS
+1.1 Biota > Echinoderms > Sea stars > Labidiaster annulatus,28390,4813ae17-d1ed-48ad-a96d-f21e4e3b7eee,,
+1.1 Biota > Echinoderms > Sea stars > Ophiuroids > Basket stars,528,222b5f1c-d29d-4429-a1f2-631d1404d763,348,EOBS
+1.1 Biota > Echinoderms > Sea stars > Ophiuroids > Brittle / snake stars > Curly arms,28396,fc2d24c6-7030-4bda-94fe-76d9b017ec21,11375,EOBS_CA
+1.1 Biota > Echinoderms > Sea stars > Ophiuroids > Brittle / snake stars,529,7693da8e-f9ce-4292-bb6e-ffd14c5baa30,11349,brittle
+1.1 Biota > Echinoderms > Sea stars > Ophiuroids > Brittle / snake stars > Ophiomyxa bengalensis,15005,3b0542b2-3f16-448d-b90a-8186cab354be,,
+1.1 Biota > Echinoderms > Sea stars > Ophiuroids > Brittle / snake stars > Suspension feeders,28398,75525ef6-11f1-4e0e-b130-efc49c65fe8c,4178,E_A_SF
+1.1 Biota > Echinoderms > Sea stars > Ophiuroids > Brittle / snake stars > Suspension feeders > Six arms,28399,01d854ad-5aa1-4673-b515-8d90e3816cd7,4179,E_A_SF
+1.1 Biota > Echinoderms > Sea stars > Pentagon shaped,28389,53d77aaa-164b-42de-b1d4-ed5702f2db3a,4177,E_A_Penta
+1.1 Biota > Echinoderms > Sea urchins > Irregular urchins,535,3ea5341b-eca9-44bf-84d5-ee760a963887,356,E_E_Irreg
+1.1 Biota > Echinoderms > Sea urchins > Regular urchins,536,8cf5a09b-67b0-44c4-8f3b-91f0790cccbd,343,E_E_RegOth
+1.1 Biota > Echinoderms > Sea urchins > Regular urchins > Pencil urchins,28391,2678e98d-10d7-43da-bec6-6d7b6fe49695,4180,E_E_RegPen
+1.1 Biota > Fishes > Bony fishes,538,194ba19d-645c-4e77-80f9-db8c3aef28fa,4192,BonyFish
+1.1 Biota > Fishes > Bony fishes > Fish eggs,28411,8e3f3cff-62aa-4960-8ab6-e1155c4223ee,4700,FishEggs
+1.1 Biota > Fishes > Elasmobranchs > Rays & skates,542,ee249b4c-8a38-480f-9670-ce7e7586f787,4193,RaySkate
+1.1 Biota > General Unknown Biology,7320,0757b67a-90cf-49d7-940c-13e08e42cf79,4215,UBS
+1.1 Biota > General Unknown Biology > Branching,28432,c6a86a77-d4c9-454e-b007-ba09c330f488,,
+1.1 Biota > General Unknown Biology > Potentially identifiable,28433,cfbc44b0-c7d4-4443-b988-782e3237b00a,,
+1.1 Biota > General Unknown Biology > Stalk,28431,b0b47b35-6655-4701-9d6c-0be42ab3aea6,4472,Stalk
+1.1 Biota > General Unknown Biology > Stick,28430,16a56571-ece6-467b-b396-395803bd7c34,4220,Stick
+1.1 Biota > Jellies,544,70acdbe1-b328-4ab1-9ce9-25062a73e23e,4181,Jellies
+1.1 Biota > Jellies > Ctenophores,545,7ba2fafa-a1b7-45a5-af97-be20ec766fc8,,
+1.1 Biota > Jellies > Hydromedusae,547,8c6a33bd-5d8c-4d23-8d0b-c4fb995f05f7,,
+1.1 Biota > Jellies > Siphonophores,551,5a571876-e5f9-4601-8cb6-e7b07fbb2513,,
+1.1 Biota > Macroalgae,552,7d82df0e-16d9-45a7-b65b-f16cfb87b0ff,81,MAL
+1.1 Biota > Macroalgae > Encrusting,556,26c4d263-1a25-4a9a-aec3-1dc146c02fe9,321,MAEN
+1.1 Biota > Matrix,12825,fd4177cb-3124-49da-984e-56e0e1d21099,2102,BMAT
+1.1 Biota > Matrix > Bryozoa / Cnidaria Matrix,7119,64e14508-e2ce-453a-b284-1d6c04ff5df0,,
+1.1 Biota > Matrix > Turf/Sediment/Silt matrix,13293,2aa3ed85-dcd8-499d-80a5-769881a0d582,,
+1.1 Biota > Molluscs > Bivalves,589,74025069-25a3-44a7-9572-839d3a09ea0d,355,M_Bivalve
+1.1 Biota > Molluscs > Cephalopods > Octopods,592,e0538bda-deab-4582-8b9d-5173e08006b4,4182,M_Ceph
+1.1 Biota > Molluscs > Chitons,594,5217e631-a373-4246-ae0d-fb4e06bc89ac,354,M_Chiton
+1.1 Biota > Molluscs > Gastropods,595,94e60440-7348-484d-b224-1b4e9c8c33e2,353,gastropod
+1.1 Biota > Molluscs > Gastropods > Limpets,28416,363928ef-d061-4305-85bd-24d8d6871a79,961,MOLI
+1.1 Biota > Molluscs > Gastropods > Nudibranchia,15018,977ba74e-6a42-4110-9a80-ec68a97be7f8,8974,nudoth
+1.1 Biota > Sea spiders,605,c924cbeb-e77d-4cd5-b4b3-ca5ceaf10483,548,Pycno
+1.1 Biota > Sponges > Crusts > Creeping / ramose,611,9a398d55-054c-4cb1-a24b-7848a65aed7b,293,S_Creep
+1.1 Biota > Sponges > Crusts > Encrusting,612,f220cc5a-00ce-43dd-a3f6-155343d14d5a,4185,S_Encr
+1.1 Biota > Sponges > Cup-likes > Barrels,615,d3b62c69-cdaf-4f75-9693-90298acfae77,11350,barrel
+1.1 Biota > Sponges > Cup-likes > Cups > Cup / goblet,617,5faa8917-63fc-4146-996c-bfb81a9eb5a8,4186,S_CupCmplt
+1.1 Biota > Sponges > Cup-likes > Cups > Tables / discs,619,1313f964-47c6-4e8c-a0d3-767ee24266d9,4187,S_Disc
+1.1 Biota > Sponges > Cup-likes > Tubes and chimneys,620,946cd4eb-1417-43c5-b14c-d9bee8df092e,11359,S_Chim
+1.1 Biota > Sponges > Erect forms > Branching,622,187963d4-38bf-40ca-919e-023cf2bdb3a7,288,S_Er_Br
+1.1 Biota > Sponges > Erect forms > Branching > Grey cast like,28442,fa9dcaac-e111-4923-85e6-f1707bf1d53c,11336,S_E_B_G
+1.1 Biota > Sponges > Erect forms > Laminar,623,c92b956d-7f8c-4bcb-98f8-4cc5737e7395,289,S_Er_Lam
+1.1 Biota > Sponges > Erect forms > Palmate,624,d4e1a08e-7123-47ab-92d3-2ba8533d2842,290,S_Er_Palm
+1.1 Biota > Sponges > Erect forms > Simple,625,97aab209-dd6a-4961-90bd-829d5393f539,291,S_Er_Simp
+1.1 Biota > Sponges > Erect forms > Simple > Yellow bottlebrush,28440,fb70acd6-a47c-45c3-b418-69114bfc90b1,11361,S_YBB
+1.1 Biota > Sponges > Erect forms > Stalked,626,a03d273f-0b65-4bd3-b391-f2541d5a154b,9249,STALKED
+1.1 Biota > Sponges > Massive forms > Balls,628,2403ae8d-46de-4e63-b763-b1177e18d009,272,S_Ball
+1.1 Biota > Sponges > Massive forms > Balls > Long Spicules,28443,e4313cc1-3cb0-42bb-a6e8-28985b181dd1,11357,SP_long
+1.1 Biota > Sponges > Massive forms > Cryptic > Monosyringa longispina,28446,841708ea-67d4-4913-bba5-41fc951ee474,,
+1.1 Biota > Sponges > Massive forms > Simple,630,35ba3d26-c825-4344-837d-41dd9d1ecd68,280,S_Amorph
+1.1 Biota > Sponges > Massive forms > Simple > Massive Rigatoni,28447,de428e01-5d8e-4636-a66c-b2d264d43488,,
+1.1 Biota > Sponges > Massive forms > Simple > Simple Grey Perforated,28441,0ae13507-8b8d-4e65-b493-83972fc3f866,,
+1.1 Biota > Sponges > Massive forms > Simple > Spikey orange massive,28337,a9f7cd02-6095-45f5-94df-4149cf4d408e,11358,S_SOM
+1.1 Biota > Worms,650,ba4ae9b5-8f9f-4aa1-8ab3-a30bdc506809,231,W
+1.1 Biota > Worms > Polychaetes > Scaleworms,28422,68e93e9d-e602-4732-be1a-5fa11bf1acd0,4188,WP_Scale
+1.1 Biota > Worms > Polychaetes > Tube worms,657,6995e427-ae22-4134-8a49-d30d69c09bc3,4229,W_Tube
+1.1 Biota > Worms > Polychaetes > Tube worms > Spaghetti worms,28421,2ee88135-2c93-40a2-9f5e-857b3f3d40e4,11355,WP_Spag
+1.1 Biota > Worms > Polychaetes > Tube worms > Two antennas,28425,10f8e4da-1764-425f-87a6-e385794435b5,,
+1.1 Biota > Worms > Pterobranchia,28426,41a7e6b0-c007-4095-9f75-5ca6af0f31ee,,
+2 Physical > Substrate > Consolidated (hard) > Boulders,633,9473aa42-574a-4d36-a703-27c0b1f2d0ba,2999,4Sub_Bould
+2 Physical > Substrate > Consolidated (hard) > Cobbles,634,38eaa150-2e5f-4458-a784-472bfc698f30,2998,3Sub_Cbble
+2 Physical > Substrate > Consolidated (hard) > Rock,635,904f435e-736b-476b-bb98-a1d833e44fff,3003,Sub_Rock
+2 Physical > Substrate > Unconsolidated (soft) > Pebble / gravel,637,82ecc53f-597e-441a-ad45-9d67ed0cbc1d,369,2Sub_PbGrv
+2 Physical > Substrate > Unconsolidated (soft) > Pebble / gravel > Biologenic,638,069626e9-3007-4a72-9f2e-4f700c577369,4205,5Sub_BioRu
+2 Physical > Substrate > Unconsolidated (soft) > Pebble / gravel > Biologenic > Coquina / shellhash,640,8dabade0-57af-431e-a43a-70669a50245e,3370,Sub_BioShl
+2 Physical > Substrate > Unconsolidated (soft) > Sand / mud (<2mm),646,93a15ab7-1f28-4fd7-9696-5a6ee2eaf0e2,801,1Sub_Fine
+Unscorable,6835,2a00a85e-6675-4d69-ab4f-197992dcead7,4197,Unscorable
+,,,4313,NoID
+,,,4198,NoID_ExpOp
+,,,4199,NoID_TBD

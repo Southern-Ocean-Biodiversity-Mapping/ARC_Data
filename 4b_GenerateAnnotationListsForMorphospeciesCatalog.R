@@ -18,7 +18,7 @@ if (user == "Jan") {
   env.derived <-  paste0(sci.dir,"data_environmental/derived/")
   tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
   ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
-  r.path <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/"
+  r.path <- "R:/IMAS/Antarctic_Seafloor/ASAID_data/"
   cover.path <- paste0(r.path,"AnnotationLibrary_AllFinishedSurveys/Cover/")
   count.path <- paste0(r.path,"AnnotationLibrary_AllFinishedSurveys/Counts/")
   counts.surveys.path <- paste0(r.path,"AnnotationLibrary_AllFinishedSurveys/Counts_annotation_files_individual_surveys/")
@@ -439,7 +439,7 @@ count.dat <- read.csv(paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSe
 cover.dat <- read.csv(paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202502.csv"))
 
 #### AA2011: 10% crop, so 5% from top and 5% from left need to be adjusted for
-## in AA 2011, the images on Squidle are already the cropped ones
+## in AA 2011, the images on Squidle are already the uncropped ones
 sel <- which(cover.dat$SurveyID=="AA2011")
 width.adjustment <- round(0.05*cover.dat$Width[sel])
 height.adjustment <- round(0.05*cover.dat$Height[sel])
@@ -494,16 +494,69 @@ names(cover.dat)[8:9] <- c("point.pixels.width","point.pixels.height")
 count.dat$SurveyID <- as.factor(count.dat$SurveyID)
 cover.dat$SurveyID <- as.factor(cover.dat$SurveyID)
 
-for(i in c(1)){#,17,18,13)){ #1:21){
+for(i in c(10)){#,17,18,13)){ #1:21){
   print(i)
   s.ID <- levels(cover.dat$SurveyID)[i]
   cover.sel <- which(cover.dat$SurveyID==s.ID)
   cover.dat.subset <- cover.dat[cover.sel,]
-  write.csv(cover.dat.subset, paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202507_",s.ID,".csv"), row.names = FALSE)
+  write.csv(cover.dat.subset, paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202511_",s.ID,".csv"), row.names = FALSE)
   count.sel <- which(count.dat$SurveyID==s.ID)
   count.dat.subset <- count.dat[count.sel,]
-  write.csv(count.dat.subset, paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507_",s.ID,".csv"), row.names = FALSE)
+  write.csv(count.dat.subset, paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202511_",s.ID,".csv"), row.names = FALSE)
 }
 
+#####################################################################
+## Another update to fix NBP1402 10% bleed.
+count.dat <- read.csv(paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507.csv"))
+cover.dat <- read.csv(paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202507.csv"))
+
+
+#####################################################################
+## Another update to fix NBP1402 10% bleed.
+count.dat <- read.csv(paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507.csv"))
+cover.dat <- read.csv(paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202507.csv"))
+
+sel <- which(cover.dat$SurveyID=="NBP1402")
+width.adjustment <- round(0.05*cover.dat$Width[sel])
+height.adjustment <- round(0.05*cover.dat$Height[sel])
+cover.dat$point.x[sel] <- (cover.dat$point.pixels.col[sel]+width.adjustment)/cover.dat$Width[sel]
+cover.dat$point.y[sel] <- (cover.dat$point.pixels.row[sel]+height.adjustment)/cover.dat$Height[sel]
+
+sel <- which(count.dat$SurveyID=="NBP1402")
+width.adjustment <-  round(0.05*count.dat$Width[sel])
+height.adjustment <- round(0.05*count.dat$Height[sel])
+count.dat$point.x[sel] <- (count.dat$point.pixels.x[sel]+width.adjustment)/count.dat$Width[sel]
+count.dat$point.y[sel] <- (count.dat$point.pixels.y[sel]+height.adjustment)/count.dat$Height[sel]
+
+# Save the updated dataframes to CSV files
+write.csv(count.dat, paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202511.csv"), row.names = FALSE)
+write.csv(cover.dat, paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202511.csv"), row.names = FALSE)
+
+head(count.dat)
+names(count.dat)[1] <- "point.media.key"
+names(count.dat)[8] <- "label.id"
+names(count.dat)[9] <- "point.media.deployment.key"
+names(count.dat)[10:11] <- c("point.pixels.width","point.pixels.height")
+
+head(cover.dat)
+names(cover.dat)[1] <- "point.media.key"
+names(cover.dat)[6] <- "label.id"
+names(cover.dat)[7] <- "point.media.deployment.key"
+names(cover.dat)[8:9] <- c("point.pixels.width","point.pixels.height")
+
+## subset by survey
+count.dat$SurveyID <- as.factor(count.dat$SurveyID)
+cover.dat$SurveyID <- as.factor(cover.dat$SurveyID)
+
+for(i in c(10)){#,17,18,13)){ #1:21){
+  print(i)
+  s.ID <- levels(cover.dat$SurveyID)[i]
+  cover.sel <- which(cover.dat$SurveyID==s.ID)
+  cover.dat.subset <- cover.dat[cover.sel,]
+  write.csv(cover.dat.subset, paste0(cover.path,"Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202511_",s.ID,".csv"), row.names = FALSE)
+  count.sel <- which(count.dat$SurveyID==s.ID)
+  count.dat.subset <- count.dat[count.sel,]
+  write.csv(count.dat.subset, paste0(count.path,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202511_",s.ID,".csv"), row.names = FALSE)
+}
 
 

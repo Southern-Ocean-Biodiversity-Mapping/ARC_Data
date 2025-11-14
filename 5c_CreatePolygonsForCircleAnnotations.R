@@ -54,9 +54,8 @@ write_csv(polygon_data, paste0(counts.dir, "Circumpolar_DownwardImages_Exhaustiv
 
 
 #################################################################################
-#### SURVEYS WITH 20% CROP (PS81, PS96, PS118)
 ## Read the CSV file
-annotations <- read_csv(paste0(counts.dir,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507.csv"))
+annotations <- read_csv(paste0(counts.dir,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202511.csv"))
 annotations <- annotations %>%
   rename(point.media.key = Name,
          label.id = AMC_ID,
@@ -64,10 +63,17 @@ annotations <- annotations %>%
          point.media.deployment.key = TransectID)
 
 annotations_uncropped <- annotations
+###### surveys with crops, but locations already fixed in script 4b from 202511
+#### SURVEYS WITH 20% CROP (PS81, PS96, PS118)
 # annotations_uncropped$point.pixels.x <- annotations$point.pixels.x + 0.1*annotations$point.pixels.width
 # annotations_uncropped$point.pixels.y <- annotations$point.pixels.y + 0.1*annotations$point.pixels.height
 # annotations_uncropped$point.x <- annotations_uncropped$point.pixels.x/annotations$point.pixels.width
 # annotations_uncropped$point.y <- annotations_uncropped$point.pixels.y/annotations$point.pixels.height
+#### NBP1402 is also cropped at 10%
+# annotations_uncropped$point.pixels.x <- annotations$point.pixels.x + 0.05*annotations$Width
+# annotations_uncropped$point.pixels.y <- annotations$point.pixels.y + 0.05*annotations$Height
+# annotations_uncropped$point.x <- annotations_uncropped$point.pixels.x/annotations$Width
+# annotations_uncropped$point.y <- annotations_uncropped$point.pixels.y/annotations$Height
 
 ## Function to generate relative polygon coordinates
 generate_relative_polygon <- function(radius, width, height, n_points = 16) {
@@ -126,7 +132,7 @@ write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_Exhaustive
 polygon_dat <- polygon_data[which(polygon_data$SurveyID=="NBP1001"),]
 write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507_NBP1001.csv"))
 polygon_dat <- polygon_data[which(polygon_data$SurveyID=="NBP1402"),]
-write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507_NBP1402.csv"))
+write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202511_NBP1402.csv"))
 polygon_dat <- polygon_data[which(polygon_data$SurveyID=="NBP1502"),]
 write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507_NBP1502.csv"))
 
@@ -134,11 +140,6 @@ polygon_dat <- polygon_data[which(polygon_data$SurveyID=="CRS"),]
 write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507_CRS.csv"))
 polygon_dat <- polygon_data[which(polygon_data$SurveyID=="LMG1311"),]
 write_csv(polygon_dat, paste0(counts.dir, "Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507_LMG1311.csv"))
-
-
-
-
-
 
 
 

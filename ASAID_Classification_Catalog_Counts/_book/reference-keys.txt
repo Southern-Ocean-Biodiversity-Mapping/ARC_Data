@@ -1,9 +1,0 @@
-brachiopoda
-crustacea
-echinoderms
-fish-rays-skates
-jellies
-molluscs
-seaspiders
-worms
-unidentified-classifications

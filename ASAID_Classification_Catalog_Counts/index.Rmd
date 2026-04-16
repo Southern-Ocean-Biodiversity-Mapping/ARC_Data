@@ -4,6 +4,8 @@ author: "Edited by Jan Jansen"
 date: "2026-03-03"
 # site: bookdown::bookdown_site
 documentclass: book
+book_filename: "classification_guide_mobiles"
+output_dir: C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/data_biological/classification_catalogs/mobiles
 # output:
 #   bookdown::pdf_book:
 #     includes:
@@ -25,6 +27,9 @@ library(kableExtra)
 
 ## set directories
 sci.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
+
+## file should be save to shared dropbox folder
+
 
 ## load annotation file
 dat.mob1 <- read.csv(paste0(sci.dir,"data_biological/SquidleASAIDAnnotations_202602_Mobiles1.csv"))

@@ -1,5 +1,5 @@
 ---
-title: "Antarctic Seafloor Annotated Imagery Database - Classification Guide"
+title: "Antarctic Seafloor Annotated Imagery Database - General Classification Guide"
 author: "Edited by Jan Jansen"
 date: "`r Sys.Date()`"
 # site: bookdown::bookdown_site
@@ -23,173 +23,301 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
 
-user <- "Jan"
-#user <- "Sarah"
-if(user=="Jan"){
-  SO.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/SouthernOceanBiodiversityMapping/"
-}
-if(user=="Sarah"){
-  SO.dir <- "... /SouthernOceanBiodiversityMapping/"
-}
-
+## load libraries
 library(imager)
 library(kableExtra)
+
+## set directories
+sci.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
 r.dir <- "R:/IMAS/Antarctic_Seafloor/ASAID_data/AnnotationLibrary_AllFinishedSurveys/"
-img.cover.dir <- paste0(r.dir,"Cover/")
+
+#SO.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/")
+#img.cover.dir <- paste0(r.dir,"Cover/")
 
 ## load annotation file
-# load(paste0(img.cover.dir,"Circumpolar_DownwardImages_PointScore_Annotations_202312.Rdata"))
-load(paste0(img.cover.dir,"Circumpolar_DownwardImages_PointScore_Annotations_202501.Rdata"))
-ann.cover.dat$Name_to_publish <- as.factor(ann.cover.dat$Name_to_publish)
-ann.cover.dat$img.path <- paste0(ann.cover.dat$Folder.path,ann.cover.dat$Name)
-## fix weird annotation labels
-ann.cover.dat$AMC[which(ann.cover.dat$AMC=="Biota - Matrix - UBS_B TemporaryLabelDoNotUse")] <- "Biota - Bryozoa - Hard - Branching - Antler"
-ann.cover.dat$AMC[which(ann.cover.dat$AMC=="Biota - Matrix - UBS_Sp TemporaryLabelDoNotUse")] <- "Biota - Matrix - Sponge matrix"
-ann.cover.dat$AMC[which(ann.cover.dat$AMC=="Biota - Worms - Other TemporaryLabelDoNotUse")] <- "Biota - Worms - Flat"
-ann.cover.dat$AMC[which(ann.cover.dat$AMC=="Biota - Ascidians - Untalked - Colonial")] <- "Biota - Ascidians - Unstalked - Colonial"
-ann.cover.dat$AMC <- as.factor(ann.cover.dat$AMC)
+dat.pts1 <- read.csv(paste0(sci.dir,"data_biological/SquidleASAIDAnnotations_202602_Points1.csv"))
+dat.pts2 <- read.csv(paste0(sci.dir,"data_biological/SquidleASAIDAnnotations_202602_Points2.csv"))
+dat.pts3 <- read.csv(paste0(sci.dir,"data_biological/SquidleASAIDAnnotations_202602_Points3.csv"))
+dat.pts <- rbind(dat.pts1, dat.pts2, dat.pts3)
+
+## subset to only the relevant columns for the classification guide
+dat <- dat.pts[,c("point.media.deployment.campaign.key", "point.media.data.equipment", "point.media.deployment.key", "point.media.key",
+                  "label.lineage_names", "point.x", "point.y","point.media.path_best_thm")]
+dat$point.media.path.images <- gsub("thumbnails", "images", dat$point.media.path_best_thm)
+#path.to.images <- paste0(r.dir,dat$point.media.deployment.campaign.key,"/",dat$point.media.data.equipment,"/",dat$point.media.deployment.key,"/images/",dat$point.media.key)
+dat$label.lineage_names[which(dat$label.lineage_names=="1.1 Biota > Worms > Unidentified TemporaryLabelDoNotUse")] <- "1.1 Biota > Worms > Unidentified"
+## remove "1.1 " or "2 " from all labels
+dat$label.lineage_names <- gsub("1.1 ", "", dat$label.lineage_names)
+dat$label.lineage_names <- gsub("2 ", "", dat$label.lineage_names)
+dat$label.lineage_names <- as.factor(dat$label.lineage_names)
 
 ## which ones are VME taxa
-idx.vme.ASAIDcover <- c(c(1:8), c(13:26), 30, 37, 41, 47, 56, 57, 58, c(73:84), c(89:112), 133:134)
-vme.ASAIDcover <- levels(ann.cover.dat$Name_to_publish)[idx.vme.ASAIDcover]
-## Get corresponding AMC levels
-corresponding.amc <- unique(ann.cover.dat$AMC[ann.cover.dat$Name_to_publish %in% vme.ASAIDcover])
-idx.vme.AMC <- which(levels(ann.cover.dat$AMC) %in% corresponding.amc)
-vme.AMC <- levels(ann.cover.dat$AMC)[idx.vme.AMC]
+idx.vme.AMC <- c(2:43, 49, 51, 66, 93:111, 116, 120)
+vme.AMC <- levels(dat$label.lineage_names)[idx.vme.AMC]
+dat$VME <- "No"
+dat$VME[which(dat$label.lineage_names %in% vme.AMC)] <- "Yes"
 
-## add coralnet labels based on matching AMC ids from ann.transl with ann.cover.dat
-ann.transl <- read.csv(paste0(SO.dir,"ARC_Data/annotation/translate_CN_squidle.csv"))
-ann.cover.dat$CoralNet_ShortCode <- NA
-for(i in 1:nrow(ann.transl)){
-  sel <- which(ann.cover.dat$AMC_ID==ann.transl$AMC_id[i])
-  if(length(sel>=1)){
-    ann.cover.dat$CoralNet_ShortCode[sel] <- ann.transl$CoralNet_ShortCode[i]
+# ## add coralnet labels based on matching AMC ids from ann.transl with ann.cover.dat
+# ann.transl <- read.csv(paste0(SO.dir,"ARC_Data/annotation/translate_CN_squidle.csv"))
+# ann.cover.dat$CoralNet_ShortCode <- NA
+# for(i in 1:nrow(ann.transl)){
+#   sel <- which(ann.cover.dat$AMC_ID==ann.transl$AMC_id[i])
+#   if(length(sel>=1)){
+#     ann.cover.dat$CoralNet_ShortCode[sel] <- ann.transl$CoralNet_ShortCode[i]
+#   }
+# }
+
+## for each level in dat$label.lineage_names, select 20 random annotations, spread first across as many research campaigns as possible, then across as many deployments as possible
+ann.sel.list <- list()
+for (i in seq_along(levels(dat$label.lineage_names))) {
+  label <- levels(dat$label.lineage_names)[i]
+  # message(label)
+  label.dat <- dat[dat$label.lineage_names == label, ]
+  # Get unique campaigns for this label
+  campaigns <- unique(label.dat$point.media.deployment.campaign.key)
+  # print(campaigns)
+  # Sample one annotation from each campaign
+  sampled.idx <- NA
+  for(k in 1:length(campaigns)){
+    camp <- campaigns[k]
+    idx <- which(label.dat$point.media.deployment.campaign.key == camp)
+    if(length(idx)>0){
+      sampled.idx[k] <- idx[sample(1:length(idx), 1)]
+    }
+  }
+  # If we have fewer than 20 samples, fill up with one annotation from each deployment that hasn't been included yet, skipping over annotations that are already included in sampled.idx
+  if (length(sampled.idx) < 20) {
+    remaining.idx <- setdiff(seq_len(nrow(label.dat)), sampled.idx)
+    deployments <- unique(label.dat$point.media.deployment.key[remaining.idx])
+    additional.idx <- unlist(lapply(deployments, function(dep) {
+      idx <- which(label.dat$point.media.deployment.key == dep & !(seq_len(nrow(label.dat)) %in% sampled.idx))
+      if (length(idx) > 0) idx[sample(1:length(idx), 1)] else NULL
+    }))
+    sampled.idx <- c(sampled.idx, additional.idx)
+  }  
+  ## if there are still fewer than 20 samples, fill up with random samples from the remaining annotations
+  if (length(sampled.idx) < 20) {
+    remaining.idx <- setdiff(seq_len(nrow(label.dat)), sampled.idx)
+    additional.idx <- remaining.idx[sample(1:length(remaining.idx), min(20 - length(sampled.idx), length(remaining.idx)))]
+    sampled.idx <- c(sampled.idx, additional.idx)
+  }
+  
+  ann.sel.list[[label]] <- label.dat[sampled.idx, ]
+}
+
+## the paths to the images online:
+image.paths <- unlist(lapply(ann.sel.list, function(df) df$point.media.path.images))
+image.paths <- unique(image.paths)
+## download all unique images to the local directory "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_biological/Stills/ASAID_annotated_images/"
+local.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_biological/Stills/ASAID_annotated_images/"
+
+#### code below was used to download all images to the local harddrive
+# for(i in seq_along(image.paths)){
+#   print(paste0("Downloading image ", i, " of ", length(image.paths)))
+#   img.url <- image.paths[i]
+#   img.name <- basename(img.url)
+#   local.path <- file.path(local.dir, img.name)
+#   if(!file.exists(local.path)){
+#     try(download.file(img.url, local.path, mode = "wb"), silent = TRUE)
+#   }
+# }
+## quicker to download from the R-drive
+remote.dir <- "R:/IMAS/Antarctic_Seafloor/SQUIDLE_dataset_202411/"
+remote.dir2 <- "R:/IMAS/Antarctic_Seafloor/SQUIDLE_dataset_fix_AA2011"
+# ## and then they are in "R:/IMAS/Antarctic_Seafloor/SQUIDLE_dataset_202411/{campaign}/{equipment}/{deployment}/images/{media.key}.jpg"
+for(i in seq_along(image.paths)){
+  print(paste0("Copying image ", i, " of ", length(image.paths)))
+  img.url <- image.paths[i]
+  img.name <- basename(img.url)
+  local.path <- file.path(local.dir, img.name)
+  if(!file.exists(local.path)){
+    ## if the image is from AA2011, use remote.dir2 to download
+    if(grepl("AA2011", img.url)){
+      remote.path <- file.path(remote.dir2, sub("https://data.imas.utas.edu.au/imagery/IMAS_Antarctic/Antarctica_East_2011_AA2011/CTD/", "", img.url))
+    } else {
+    remote.path <- file.path(remote.dir, sub("https://data.imas.utas.edu.au/imagery/IMAS_Antarctic/", "", img.url))
+    }
+    try(file.copy(remote.path, local.path), silent = TRUE)
   }
 }
 
-## create function to:
-### load images for each label
-### plot them in a nice way
-load_and_plot <- function(label.idx=1, img.count=20){  ## default is 6 example images
-  ## select the labels to display
-  lab <- levels(ann.cover.dat$AMC)[label.idx]
-  ## is that label a VME
-  if(lab%in%vme.AMC){
-    vme = "Yes"
-  }else vme = "No"
-  ## subset to only annotations with that label
-  lab.dat <- ann.cover.dat[which(ann.cover.dat$AMC==lab),]
-  ## how many are there?
-  l <- nrow(lab.dat)
-  ## if there are equal to or less than the number of images to display, we show all of them
-  ## if not, then we need to subset
-  if(l<=img.count){
-    temp.dat <- lab.dat
-  } else {
-    ## Get unique surveys for the current label
-    lab.surveys <- unique(lab.dat$SurveyID)
-    ## Sample at least one image from each survey
-    s <- unlist(lapply(lab.surveys, function(survey) {
-      sample(which(lab.dat$SurveyID == survey), 1)
-    }))
-    ## If fewer than img.count images, sample additional images to make up the count
-    if(length(s) < img.count){
-      remaining_images <- setdiff(1:l, s)
-      s <- c(s, sample(remaining_images, img.count - length(s)))
-    } else if(length(s) > img.count){
-      ## If more than img.count images, randomly select img.count images
-      s <- sample(s, img.count)
-    }
-    ## Subset the data to the selected images
-    temp.dat <- lab.dat[s, ]
-  }  
-  # ## if examples come from multiple surveys, use at least 1 image from each survey
-  # lab.surveys <- unique(lab.dat$SurveyID)
-  # lab.dat.s <- which(lab.dat$SurveyID==lab.surveys[1])
-  # s <- sample(lab.dat.s,1)
-  # if(length(lab.surveys)>1){
-  #    for(j in 2:length(lab.surveys)){
-  #     lab.dat.s <- which(lab.dat$SurveyID==lab.surveys[j])
-  #     s <- c(s,sample(lab.dat.s,1))
-  #   }
-  # }
-  # ## now fill up examples to a maximum of 9 per label
-  # if(length(s)>=img.count){ ## if there are 9 or more surveys
-  #   sel <- sample(s, img.count)
-  # } else if(l==length(s)){ ## if there is only one label per survey
-  #   sel <- s
-  # }else if(l < 9){ ## if we have fewer than 9 images for a label
-  #   sel <- c(s, sample((1:l)[-s],l-length(s)))
-  # } else sel <- c(s, sample((1:l)[-s],img.count-length(s))) ## and all other cases
-  # ## subset data
-  # temp.dat <- lab.dat[sel,]
-  # labels to display
-  # print(knitr::kable(data.frame("AMC_ID"=unique(temp.dat$AMC_ID),
-  #                               "Found_in_surveys"=paste(unique(lab.dat$SurveyID), collapse=", "),
-  #                               "Total_annotations"= l,
-  #                               "VME_taxa"=vme,
-  #                               "previous ASAID name"=unique(temp.dat$Name_to_publish))
-  # ))
-  cat(paste0("### ",unique(temp.dat$AMC)," {-} \n \n"))
-  df <- data.frame("AMC-ID"=unique(temp.dat$AMC_ID),
-                   "Found in surveys"=paste(unique(lab.dat$SurveyID), collapse=", "),
-                   "Total annotations"= l,
-                   "VME-taxa?"=vme,
-                   "CoralNetCode"=unique(temp.dat$CoralNet_ShortCode))#,
-#                   "ASAID name"=unique(temp.dat$Name_to_publish))
-  # Generate the table with adjusted column widths
+
+## update ann.sel.list to point to the local files instead of the URLs, and the images on the local drive are all together in the same folder
+for(i in seq_along(ann.sel.list)){
+  df <- ann.sel.list[[i]]
+  df$point.media.path.images <- paste0(local.dir, basename(df$point.media.path.images))
+  ann.sel.list[[i]] <- df
+}
+
+## Requires:
+## - dat: full annotation data.frame (as in your code)
+## - ann.sel.list: named list where each name is a label and the value is a data.frame
+##                 of up to 20 selected annotations for that label (your selection code)
+## - Libraries: imager, knitr, kableExtra
+
+load_and_plot <- function(label.idx = 1,
+                          img.count = 16,
+                          y_origin = c("bottom","top"),
+                          crosshair_len = 12,
+                          center_gap = 8,           # <- size of the gap around the center (pixels)
+                          crosshair_lty = 1,        # <- dashed
+                          crosshair_lwd = 2,
+                          crosshair_col = "chartreuse3") {
+  y_origin <- match.arg(y_origin)
+
+  # --- Resolve label ----
+  labs <- levels(dat$label.lineage_names)
+  if (label.idx < 1 || label.idx > length(labs)) {
+    warning("label.idx out of bounds.")
+    return(invisible(NULL))
+  }
+  label <- labs[label.idx]
+
+  # --- Data for the table & plotting ----
+  lab.all <- dat[dat$label.lineage_names == label, , drop = FALSE]
+  if (nrow(lab.all) == 0) {
+    warning(sprintf("No annotations found for label: %s", label))
+    return(invisible(NULL))
+  }
+
+  sel.df <- ann.sel.list[[label]]
+  if (is.null(sel.df) || nrow(sel.df) == 0) {
+    warning(sprintf("No selected annotations in ann.sel.list for label: %s", label))
+    return(invisible(NULL))
+  }
+
+  # limit to requested img.count
+  sel.df <- sel.df[seq_len(min(img.count, nrow(sel.df))), , drop = FALSE]
+
+  # --- Header + summary table ----
+  cat(paste0("### ", label, " {-} \n\n"))
+
+  df <- data.frame(
+    "Found in campaigns" = paste(unique(lab.all$point.media.deployment.campaign.key), collapse = ", "),
+    "Total annotations"  = nrow(lab.all),
+    "VME-taxa?"          = unique(lab.all$VME),
+    check.names = FALSE
+  )
+
   if (knitr::is_latex_output()) {
     cat(knitr::kable(df, format = "latex", booktabs = TRUE))
   } else {
     cat(knitr::kable(df, format = "html"))
   }
 
-  # if (knitr::is_latex_output()) {
-  #   print(kable(df, format = "latex", booktabs = TRUE) %>%
-  #           kable_styling(latex_options = c("hold_position")) %>%
-  #           column_spec(1, width = "2cm") %>%  # Adjust width of the first column
-  #           column_spec(2, width = "7cm") %>%  # Adjust width of the second column
-  #           column_spec(3, width = "2cm") %>%  # Adjust width of the third column
-  #           column_spec(4, width = "2cm") %>%  # Adjust width of the fourth column
-  #           column_spec(5, width = "2cm"))     # Adjust width of the fifth column
-  # } else {
-  #   print(kable(df, format = "html", escape = FALSE) %>%
-  #           kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")))
-  # }
-  
-  ## define path to library images
-  locs <- list.files(paste0(img.cover.dir,unique(temp.dat$Label_after_review)), full.names=TRUE)
-  ## match the selected images to the library path to find the corresponding ones
-  img.find <- which(basename(locs)%in%temp.dat$NameInFile)
-  match.idx <- match(temp.dat$NameInFile, basename(locs)[img.find])
-  img.sel <- locs[img.find][match.idx]
-  ## plot example images
-  if(img.count==9){
-    par(mfrow=c(3,3), oma=c(1,0,1,0), mar=c(2,0,0,0))
-  }else if(img.count==12){
-    par(mfrow=c(4,3), oma=c(1,0,1,0), mar=c(2,0,0,0))
-  }else{
-    par(mfrow=c(5,4), oma=c(1,0,1,0), mar=c(2,0,0,0))
+  # --- Flexible panel layout (default: 4 columns) ----
+  n <- nrow(sel.df)
+  ncol <- if (n <= 9) 3 else 4
+  nrow <- ceiling(n / ncol)
+  op <- par(mfrow = c(nrow, ncol), oma = c(1, 0, 1, 0), mar = c(2, 0, 0, 0))
+
+  on.exit(par(op), add = TRUE)
+
+  # --- Helper: plot one crop with crosshair ----
+  for (k in seq_len(n)) {
+    p <- sel.df[k, , drop = FALSE]
+
+    # Try to load the full-res frame from local.dir
+    local.path <- paste0(local.dir, basename(p$point.media.path.images))
+    img <- try(imager::load.image(local.path), silent = TRUE)
+    #img <- try(imager::load.image(p$point.media.path.images), silent = TRUE)
+    if (inherits(img, "try-error")) {
+      # Graceful fallback tile
+      plot(NA, xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "")
+      text(0.5, 0.6, "Image not available", col = "red")
+      mtext(p$point.media.deployment.key, side = 1, cex = 0.7)
+      next
+    }
+
+    W <- imager::width(img)
+    H <- imager::height(img)
+
+    # Convert normalized coordinates -> pixel coordinates
+    px <- as.numeric(p$point.x)
+    py <- as.numeric(p$point.y)
+
+    # y-origin: top (web) vs bottom (R image default)
+    py <- if (y_origin == "top") (1 - py) else py
+
+    x_pix <- max(1L, min(W, round(px * (W - 1)) + 1L))
+    y_pix <- max(1L, min(H, round(py * (H - 1)) + 1L))
+
+    # 100x100 crop centered on (x_pix, y_pix), with edge-aware shifting
+    # Target inclusive window size = 100 px in each dimension
+    x1 <- x_pix - 49L
+    x2 <- x_pix + 50L
+    y1 <- y_pix - 49L
+    y2 <- y_pix + 50L
+
+    # Keep width = 100 if the image allows
+    if (W >= 100L) {
+      if (x1 < 1L) { x2 <- x2 + (1L - x1); x1 <- 1L }
+      if (x2 > W) { x1 <- x1 - (x2 - W); x2 <- W }
+    } else {
+      x1 <- 1L; x2 <- W
+    }
+
+    # Keep height = 100 if the image allows
+    if (H >= 100L) {
+      if (y1 < 1L) { y2 <- y2 + (1L - y1); y1 <- 1L }
+      if (y2 > H) { y1 <- y1 - (y2 - H); y2 <- H }
+    } else {
+      y1 <- 1L; y2 <- H
+    }
+
+    # Crop
+    crop <- imager::imsub(img, x %in% x1:x2, y %in% y1:y2)
+
+    # Position of the annotation within the crop
+    cx <- x_pix - x1 + 1L
+    cy <- y_pix - y1 + 1L
+
+    # Resize to exactly 100x100 if needed, and rescale crosshair coordinates
+    cw <- imager::width(crop)
+    ch <- imager::height(crop)
+    if (cw != 100L || ch != 100L) {
+      sx <- 100 / cw
+      sy <- 100 / ch
+      crop <- imager::imresize(crop, size_x = 100, size_y = 100)
+      cx <- cx * sx
+      cy <- cy * sy
+    }
+
+    # Show the crop
+    plot(crop, axes = FALSE)
+
+    # ---- Dashed crosshair with a small center gap (simple) ----
+    # (Uses your parameters: center_gap, crosshair_len, lty, lwd, col)
+    half_gap <- center_gap / 2
+
+    # Horizontal arms
+    segments(cx - crosshair_len, cy, cx - half_gap, cy,
+             col = crosshair_col, lwd = crosshair_lwd, lty = crosshair_lty)
+    segments(cx + half_gap, cy, cx + crosshair_len, cy,
+             col = crosshair_col, lwd = crosshair_lwd, lty = crosshair_lty)
+
+    # Vertical arms
+    segments(cx, cy - crosshair_len, cx, cy - half_gap,
+             col = crosshair_col, lwd = crosshair_lwd, lty = crosshair_lty)
+    segments(cx, cy + half_gap, cx, cy + crosshair_len,
+             col = crosshair_col, lwd = crosshair_lwd, lty = crosshair_lty)
+
+    # Caption: deployment (you can change this to campaign/key/etc.)
+    mtext(p$point.media.deployment.key, side = 1, cex = 0.7)
   }
-  if(l < img.count){z <- 1:l
-  }else z <- 1:img.count
-  for(k in z){
-    plot(load.image(img.sel[k]), axes=FALSE)
-    mtext(temp.dat$TransectID[k],side=1, cex=0.7)
-  }
-  cat("\\newpage\n \n")
+  cat("\n\\newpage\n\n")
+  invisible(NULL)
 }
 ```
 
 # Point-score classification catalog {-}
 
-This Classification Catalog shows example images for all labels used for the point-scoring method in the Antarctic Seafloor Annotated Imagery Database (AS-AID). It aims to give users an overview of the labels. This catalog represents a snapshot of the database at the time of publication of the associated data-paper.
+This Classification Catalog shows example images for all biotic labels used for the point-scoring method in the Antarctic Seafloor Annotated Imagery Database (AS-AID). This catalog represents a snapshot of the database at the time of publication of the associated data-paper.
 The labels used are based on the Australian Morphospecies Catalog, which is an extension of the CATAMI classification scheme. For more information, the CATAMI paper can be found under this [link](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0141039)  
 
 Up to 16 randomly selected images are presented for each classification, alongside a table with the following information:  
   
-* **AMC-ID**: matching identifier in the Australian Morphospecies Catalog, and extension of the CATAMI classification.  
-* **Found in surveys**: a list of all surveys in AS-AID in which this organism has been detected  
+* **Found in campaigns**: a list of all campaigns in AS-AID in which this organism has been detected  
 * **Total annotations**: the total number of annotations for this label  
 * **VME-taxa**: whether this label is identified as a CCAMLR Vulnerable Marine Ecosystem taxa  
   

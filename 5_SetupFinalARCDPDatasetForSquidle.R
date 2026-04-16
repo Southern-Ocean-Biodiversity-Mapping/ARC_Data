@@ -5,13 +5,13 @@ library(lubridate)
 ## directories
 r.dir   <- "R:/IMAS/Antarctic_Seafloor/"
 sq.dir  <- paste0(r.dir,"SQUIDLE_dataset_202411/")
-dat.dir <- paste0(r.dir,"Clean_Data_For_Permanent_Storage/")
+dat.dir <- paste0(r.dir,"ASAID_data/")
 
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 ## name each campaign (copy folder names from existing setup)
 ## and add the gear into each campaign
-campaign.names <- list.dirs(paste0(r.dir,"SQUIDLE_dataset_20230703"), recursive=FALSE, full.names=FALSE)
+campaign.names <- list.dirs(paste0(r.dir,"SQUIDLE_dataset_202411"), recursive=FALSE, full.names=FALSE)
 gear.names <- c("CTD","YOYO","FTS",rep("YOYO",3),"SUCS","YOYO","OFOS",rep("SUCS",3),"OFOBS","DTIS","YOYO",rep("DTIS",2),rep("FTS",3),"OFOS")
 # for(i in 1:length(campaign.names)){
 #   dir.create(paste0(sq.dir, campaign.names[i]))
@@ -174,6 +174,27 @@ for(i in 1:length(campaign.names)){
   full.metadata.list[[i]] <- dat
 }
 
+
+#### to fix TAN1802 and TAN1901 depths for some images (they are -999.9)
+for(i in 16:17){
+  message(i)
+  dat <- full.metadata.list[[i]]
+  ## standardised transect ID names:
+  dat$Transect.ID.standardised <- unlist(lapply(dat$Filename.standardised, subset_string))
+  t.IDs <- unique(dat$Transect.ID.standardised)
+  #print(t.IDs)
+  s.ID <- unique(dat$Survey.ID)
+  #### fix date format
+  if(s.ID %in% c("TAN0802", "TAN1802","TAN1901")){
+    dat$timestamp <- format(ymd_hms(dat$Date, truncated=3)-hours(12), "%Y-%m-%d %H:%M:%S UTC")
+    print(head(dat$timestamp))
+  }
+  full.metadata.list[[i]] <- dat
+}
+
+
+
+
 ########
 library(magick)
 # Function to resize images for thumbnails
@@ -329,6 +350,7 @@ for(i in 1:length(campaign.names)){ #
 ## PS81_215-2_2013-03-01T23_34_24_4611.jpg
 
 
+#### Edit: change TAN1802 and TAN1901 depths for some images (they are -999.9)
 
 
 

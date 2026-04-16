@@ -127,6 +127,13 @@ head(vme.dat)
 vme.dat <- vme.dat %>%
   rename(point.media.key = image_filename)
 
+## LMG1311 subset for further below
+vme.dat.LMG1311 <- vme.dat %>%
+  filter(grepl("LMG1311",point.media.key))
+vme.dat.LMG1311$point.media.deployment.key <- sapply(vme.dat.LMG1311$point.media.key, function(x) {
+  parts <- unlist(strsplit(x, "_"))[1:2]
+  return(paste0(parts, collapse="_"))
+})
 
 #################################################################
 #### now copying the code from the mobile species to create polygons for each circle annotation
@@ -138,7 +145,7 @@ library(readr)
 ## Read the mobiles CSV file, it contains information about relevant image dimensions
 asaid.dir <- "R:/IMAS/Antarctic_Seafloor/ASAID_data/AnnotationLibrary_AllFinishedSurveys/"
 #annotations <- read.csv(paste0(asaid.dir,"Counts/Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_ForSquidle_202507.csv"))
-annotations <- read.csv(paste0(asaid.dir,"Cover/Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202507.csv"))
+annotations <- read.csv(paste0(asaid.dir,"Cover/Circumpolar_DownwardImages_PointScore_Annotations_ForSquidle_202511.csv"))
 
 ## adding point.pixels.width and point.pixels.height to vme.dat
 ## we need to look up for each unique "point.media.key" in annotations the widths and heights, and then add these to vme.dat by "image_filename"
@@ -172,13 +179,13 @@ for(i in 1:length(unique_images)){
 # PS81_163_0017__PS81_163-2_2013-02-10T20_23_28_7443.jpg #Width=5616, Height=3744
 # CRS_1103_0007__CRS_1103_104.jpg #Width=3872, Height=2592
 # CRS_1103_0001__CRS_1103_060.jpg #Width=3872, Height=2592
-PS18.sel <- which(vme.dat$point.media.key%in%c(
+PS81.sel <- which(vme.dat$point.media.key%in%c(
   "PS81_159_0005__PS81_159-1_2013-02-08T04_44_24_5900.jpg",
   "PS81_159_0017__PS81_159-1_2013-02-08T05_10_20_5961.jpg",
   "PS81_163_0003__PS81_163-2_2013-02-10T20_35_00_7468.jpg",
   "PS81_163_0017__PS81_163-2_2013-02-10T20_23_28_7443.jpg"))
-vme.dat$point.pixels.width[PS18.sel] <- 5616
-vme.dat$point.pixels.height[PS18.sel] <- 3744
+vme.dat$point.pixels.width[PS81.sel] <- 5616
+vme.dat$point.pixels.height[PS81.sel] <- 3744
 CRS.sel <- which(vme.dat$point.media.key%in%c(
   "CRS_1103_0007__CRS_1103_104.jpg",
   "CRS_1103_0001__CRS_1103_060.jpg"))
@@ -346,40 +353,174 @@ write_csv(polygon_dat.lmg0902, paste0(asaid.dir, "VME/Circumpolar_DownwardImages
 write_csv(polygon_dat.nbp1001, paste0(asaid.dir, "VME/Circumpolar_DownwardImages_VME_Annotations_ForSquidle_202511_NBP1001.csv"))
 
 
-
-
-
-
-
-
-
-
-
-
-## adding point.pixels.width and point.pixels.height to vme.dat.AA2011
-## we need to look up for each unique "point.media.key" in annotations the widths and heights, and then add these to vme.dat.AA2011 by "image_filename"
-unique_images <- unique(vme.dat.AA2011$point.media.key)
-image_dims <- data.frame(point.media.key = character(),
-                         point.pixels.width = numeric(),
-                         point.pixels.height = numeric(),
-                         stringsAsFactors = FALSE)
-vme.dat.AA2011$point.pixels.width <- NA
-vme.dat.AA2011$point.pixels.height <- NA
-for(i in 1:length(unique_images)){
-  img_key <- unique_images[i]
-  sel <- which(annotations$point.media.key == img_key)
-  img_width <- annotations$point.pixels.width[sel][1]
-  img_height <- annotations$point.pixels.height[sel][1]
-  image_dims <- rbind(image_dims,
-                      data.frame(point.media.key = img_key,
-                                 point.pixels.width = img_width,
-                                 point.pixels.height = img_height,
-                                 stringsAsFactors = FALSE))
-  ## add these dimensions to vme.dat.AA2011
-  sel_dim <- which(vme.dat.AA2011$point.media.key == img_key)
-  sel_img <- which(image_dims$point.media.key == img_key)
-  vme.dat.AA2011$point.pixels.width[sel_dim] <- image_dims$point.pixels.width[sel_img]
-  vme.dat.AA2011$point.pixels.height[sel_dim] <- image_dims$point.pixels.height[sel_img]
+##########
+## rectangles were not correctly converted to polygons in the previous code, so we redo these manually here
+vme.dat.ps81 <- read.csv(paste0(asaid.dir, "VME/Circumpolar_DownwardImages_VME_Annotations_ForSquidle_202511_PS81.csv"))
+rect.sel <- which(vme.dat.ps81$shape_name=="Rectangle")
+vme.dat.ps81[rect.sel,]
+## cropped dims are 4493x2995 (10% cropped on each side, so 20% total), so the rectangle coordinates are based on this cropped image, but we need to adjust to the original dimensions of 5616x3744 (20% larger than cropped) and then calculate the polygons based on the original dimensions
+for(i in 1:3){
+  ## extract x and y pixel coordinates
+  xys <- as.numeric(unlist(strsplit(gsub("\\[|\\]","",vme.dat.ps81$point.pixels.rectangle[rect.sel][i]),",")))
+  x.coords <- xys[seq(1,length(xys),by=2)]+0.1*vme.dat.ps81$point.pixels.width[rect.sel][i]
+  y.coords <- xys[seq(2,length(xys),by=2)]+0.1*vme.dat.ps81$point.pixels.height[rect.sel][i]
+  xy.mean <- c(mean(x.coords), mean(y.coords))
+  ## pixel radius is the distance along both the x and y coordinates, so need to use sqrt(a^2+b^2) to get the radius of the circle that would encompass the rectangle
+  xy.radius <- sqrt((max(x.coords)-min(x.coords))^2 + (max(y.coords)-min(y.coords))^2)/2
+  ## assign point.pixel.x, point.pixel.y and point.pixel.radius
+  vme.dat.ps81$point.pixels.x[rect.sel][i] <- xy.mean[1]
+  vme.dat.ps81$point.pixels.y[rect.sel][i] <- xy.mean[2]
+  vme.dat.ps81$point.pixels.radius[rect.sel][i] <- xy.radius
+  ## calculate point.x, point.y and point.polygon
+  vme.dat.ps81$point.x[rect.sel][i] <- xy.mean[1]/vme.dat.ps81$point.pixels.width[rect.sel][i]
+  vme.dat.ps81$point.y[rect.sel][i] <- xy.mean[2]/vme.dat.ps81$point.pixels.height[rect.sel][i]
+  vme.dat.ps81$point.polygon[rect.sel][i] <- paste0("[", paste(
+    sapply(generate_relative_polygon(xy.radius, vme.dat.ps81$point.pixels.width[rect.sel][i], vme.dat.ps81$point.pixels.height[rect.sel][i])$point.polygon,
+           function(pt) paste0("[", pt[1], ",", pt[2], "]")),
+    collapse = ", "), "]")
 }
+write_csv(vme.dat.ps81, paste0(asaid.dir, "VME/Circumpolar_DownwardImages_VME_Annotations_ForSquidle_202602_PS81.csv"))
+
+vme.dat.ps96 <- read.csv(paste0(asaid.dir, "VME/Circumpolar_DownwardImages_VME_Annotations_ForSquidle_202511_PS96.csv"))
+rect.sel <- which(vme.dat.ps96$shape_name=="Rectangle")
+vme.dat.ps96[rect.sel,]
+## cropped dims are 4608x3072 (10% cropped on each side, so 20% total), so the rectangle coordinates are based on this cropped image, but we need to adjust to the original dimensions of 5760x3840 (20% larger than cropped) and then calculate the polygons based on the original dimensions
+for(i in 1:nrow(vme.dat.ps96[rect.sel,])){
+  ## extract x and y pixel coordinates
+  xys <- as.numeric(unlist(strsplit(gsub("\\[|\\]","",vme.dat.ps96$point.pixels.rectangle[rect.sel][i]),",")))
+  x.coords <- xys[seq(1,length(xys),by=2)]+0.1*vme.dat.ps96$point.pixels.width[rect.sel][i]
+  y.coords <- xys[seq(2,length(xys),by=2)]+0.1*vme.dat.ps96$point.pixels.height[rect.sel][i]
+  xy.mean <- c(mean(x.coords), mean(y.coords))
+  ## pixel radius is the distance along both the x and y coordinates, so need to use sqrt(a^2+b^2) to get the radius of the circle that would encompass the rectangle
+  xy.radius <- sqrt((max(x.coords)-min(x.coords))^2 + (max(y.coords)-min(y.coords))^2)/2
+  ## assign point.pixel.x, point.pixel.y and point.pixel.radius
+  vme.dat.ps96$point.pixels.x[rect.sel][i] <- xy.mean[1]
+  vme.dat.ps96$point.pixels.y[rect.sel][i] <- xy.mean[2]
+  vme.dat.ps96$point.pixels.radius[rect.sel][i] <- xy.radius
+  ## calculate point.x, point.y and point.polygon
+  vme.dat.ps96$point.x[rect.sel][i] <- xy.mean[1]/vme.dat.ps96$point.pixels.width[rect.sel][i]
+  vme.dat.ps96$point.y[rect.sel][i] <- xy.mean[2]/vme.dat.ps96$point.pixels.height[rect.sel][i]
+  vme.dat.ps96$point.polygon[rect.sel][i] <- paste0("[", paste(
+    sapply(generate_relative_polygon(xy.radius, vme.dat.ps96$point.pixels.width[rect.sel][i], vme.dat.ps96$point.pixels.height[rect.sel][i])$point.polygon,
+           function(pt) paste0("[", pt[1], ",", pt[2], "]")),
+    collapse = ", "), "]")
+}
+write_csv(vme.dat.ps96, paste0(asaid.dir, "VME/Circumpolar_DownwardImages_VME_Annotations_ForSquidle_202602_PS96.csv"))
+
+
+#### LMG1311: need to read in again to get point locations and radius
+lmg1311.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/SouthernOceanBiodiversityMapping/ARC_Benthic_Mapping/vulnerable_marine_ecosystems/data/rawdata/292_csv_image_annotation_report/3213_csv_image_annotation_report/"
+lmg1311.dat <- read.csv(paste0(lmg1311.dir,"839-vme-morpho-taxa.csv"))
+## lmg1311.dat has image pixel dimensions stored in "attributes" column under "width" and "height": e.g.: {"size":2557816,"mimetype":"image\\/jpeg","width":3872,"height":2592,"laserpoints":{"error":false,"area":5.551926084248531,"count":2,"method":"manual","points":[[1782.69,1971.45],[1680.36,1884.24]],"distance":"10"}}
+lmg1311.dat$image.width <- as.numeric(gsub(".*\"width\":(\\d+).*","\\1",lmg1311.dat$attributes))
+lmg1311.dat$image.height <- as.numeric(gsub(".*\"height\":(\\d+).*","\\1",lmg1311.dat$attributes))
+## lmg1311.dat has x,y,radius stored under $points in the format "[x,y,radius]"
+## extract x,y,radius into separate columns
+lmg1311.dat <- lmg1311.dat %>%
+  separate(points, into=c("point.pixels.x", "point.pixels.y", "point.pixels.radius"), sep=",", remove=FALSE) %>%
+  mutate(point.pixels.x = as.numeric(gsub("\\[","",point.pixels.x)),
+         point.pixels.y = as.numeric(gsub("]","",point.pixels.y)),
+         point.pixels.radius = as.numeric(gsub("]","",gsub(" ","",point.pixels.radius))))
+
+lmg1311.dat$point.x <- lmg1311.dat$point.pixels.x/lmg1311.dat$image.width[1]
+lmg1311.dat$point.y <- lmg1311.dat$point.pixels.y/lmg1311.dat$image.height[1]
+
+## add point.pixels.x, point.pixels.y, point.pixels.radius data into vme.dat.LMG1311 based on matching "point.media.key" from vme.dat.LMG1311 to "filename" in lmg1311.dat
+## multiple rows in lmg1311.dat have the same filename, so we take all selected point.pixels.x, point.pixels.y and point.pixels.radius for these rows and replace the existing NA values
+vme.dat.LMG1311$point.pixels.x <- lmg1311.dat$point.pixels.x
+vme.dat.LMG1311$point.pixels.y <- lmg1311.dat$point.pixels.y
+vme.dat.LMG1311$point.pixels.radius <- lmg1311.dat$point.pixels.radius
+vme.dat.LMG1311$image.width <- lmg1311.dat$image.width
+vme.dat.LMG1311$image.height <- lmg1311.dat$image.height
+vme.dat.LMG1311$point.x <- lmg1311.dat$point.x
+vme.dat.LMG1311$point.y <- lmg1311.dat$point.y
+## now calculate polygon values for LMG1311 based on the point.pixels.radius and image dimensions
+polygon_data <- vme.dat.LMG1311 %>%
+  rowwise() %>%
+  mutate(point.polygon = paste0("[", paste(
+    sapply(generate_relative_polygon(point.pixels.radius, image.width, image.height)$point.polygon,
+           function(pt) paste0("[", pt[1], ",", pt[2], "]")),
+    collapse = ", "), "]")) %>%
+  ungroup()
+vme.dat.LMG1311$point.polygon <- polygon_data$point.polygon
+
+write_csv(vme.dat.LMG1311, paste0(asaid.dir, "VME/Circumpolar_DownwardImages_VME_Annotations_ForSquidle_202602_LMG1311.csv"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

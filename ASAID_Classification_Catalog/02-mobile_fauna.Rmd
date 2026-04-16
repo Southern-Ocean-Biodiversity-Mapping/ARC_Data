@@ -4,52 +4,52 @@
 
 ## Brachiopods  
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-load_and_plot(7)
+load_and_plot(9)
 ```
 
 ## Crustaceans
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 42:46){
+for(i in 44:48){
   load_and_plot(i)
 }
 ```
 
 ## Echinoderms
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 47:64){
+for(i in 49:66){
   load_and_plot(i)
 }
 ```
 
 ## Fish
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 65:67){
+for(i in 67:69){
   load_and_plot(i)
 }
 ```
 
 ## Jellies
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 73:76){
+for(i in 75:78){
   load_and_plot(i)
 }
 ```
 
 ## Molluscs
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 83:88){
+for(i in 86:91){
   load_and_plot(i)
 }
 ```
 
 ## Seaspiders
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-load_and_plot(89)
+load_and_plot(92)
 ```
 
 ## Worms
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 109:116){
+for(i in 112:121){
   load_and_plot(i)
 }
 ```

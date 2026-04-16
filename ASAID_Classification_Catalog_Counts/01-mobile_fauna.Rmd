@@ -14,49 +14,49 @@ for(i in 2:11){
 
 ## Echinoderms
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 12:37){
+for(i in 13:38){
   load_and_plot(i)
 }
 ```
 
 ## Fish, Rays & Skates
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 38:39){
+for(i in 39:40){
   load_and_plot(i)
 }
 ```
 
 ## Jellies
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 43:47){
+for(i in 44:48){
   load_and_plot(i)
 }
 ```
 
 ## Molluscs
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 48:56){
+for(i in 49:57){
   load_and_plot(i)
 }
 ```
 
 ## Seaspiders
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 57:58){
+for(i in 58:59){
   load_and_plot(i)
 }
 ```
 
 ## Worms
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 59:71){
+for(i in 60:77){
   load_and_plot(i)
 }
 ```
 
 ## Unidentified classifications
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 40:42){
+for(i in 41:43){
   load_and_plot(i)
 }
 ```

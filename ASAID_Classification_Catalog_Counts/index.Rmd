@@ -1,7 +1,7 @@
 ---
 title: "Antarctic Seafloor Annotated Imagery Database - Classification Guide"
 author: "Edited by Jan Jansen"
-date: "`r Sys.Date()`"
+date: "2026-03-03"
 # site: bookdown::bookdown_site
 documentclass: book
 # output:
@@ -19,126 +19,268 @@ documentclass: book
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(scipen=999)
-library(knitr)
-library(kableExtra)
+## load libraries
 library(imager)
-library(dplyr)
-r.dir <- "R:/IMAS/Antarctic_Seafloor/Clean_Data_For_Permanent_Storage/AnnotationLibrary_AllFinishedSurveys/"
-img.count.dir <- paste0(r.dir,"Counts/")
-# data.dir <- "C:/Users/jjansen/Desktop/science/SouthernOceanBiodiversityMapping/ARC_Data/"
+library(kableExtra)
+
+## set directories
+sci.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
 
 ## load annotation file
-load(paste0(img.count.dir,"Circumpolar_DownwardImages_ExhaustiveSearch_Annotations_202412.Rdata"))
-ann.count.dat$Name_to_publish <- as.factor(ann.count.dat$Name_to_publish)
-ann.count.dat$AMC <- as.factor(ann.count.dat$AMC)
-ann.count.dat$img.path <- paste0(ann.count.dat$Folder.path,ann.count.dat$Name)
+dat.mob1 <- read.csv(paste0(sci.dir,"data_biological/SquidleASAIDAnnotations_202602_Mobiles1.csv"))
+dat.mob2 <- read.csv(paste0(sci.dir,"data_biological/SquidleASAIDAnnotations_202602_Mobiles2.csv"))
+dat.mob <- rbind(dat.mob1, dat.mob2)
 
-names(ann.count.dat)[8] <- "Label_after_review"
+## subset to only the relevant columns for the classification guide
+dat <- dat.mob[,c("point.media.deployment.campaign.key", "point.media.data.equipment", "point.media.deployment.key", "point.media.key", "label.lineage_names", "point.x", "point.y","point.bbox","point.media.path_best_thm")]
+dat$point.media.path.images <- gsub("thumbnails", "images", dat$point.media.path_best_thm)
+#path.to.images <- paste0(r.dir,dat$point.media.deployment.campaign.key,"/",dat$point.media.data.equipment,"/",dat$point.media.deployment.key,"/images/",dat$point.media.key)
+dat$label.lineage_names[which(dat$label.lineage_names=="1.1 Biota > Worms > Unidentified TemporaryLabelDoNotUse")] <- "1.1 Biota > Worms > Unidentified"
+## remove "1.1 " or "2 " from all labels
+dat$label.lineage_names <- gsub("1.1 ", "", dat$label.lineage_names)
+dat$label.lineage_names <- as.factor(dat$label.lineage_names)
 
-## which ones are VME taxa
-idx.vme.ASAIDcount <- c(2, 8, 18, 22, 28, 63, 73)
-vme.ASAIDcount <- levels(ann.count.dat$Name_to_publish)[idx.vme.ASAIDcount]
-## Get corresponding AMC levels
-corresponding.amc <- unique(ann.count.dat$AMC[ann.count.dat$Name_to_publish %in% vme.ASAIDcount])
-idx.vme.AMC <- which(levels(ann.count.dat$AMC) %in% corresponding.amc)
-vme.AMC <- levels(ann.count.dat$AMC)[idx.vme.AMC]
+# ## add coralnet labels based on matching AMC ids from ann.transl with ann.cover.dat
+# ann.transl <- read.csv(paste0(SO.dir,"ARC_Data/annotation/translate_CN_squidle.csv"))
+# ann.cover.dat$CoralNet_ShortCode <- NA
+# for(i in 1:nrow(ann.transl)){
+#   sel <- which(ann.cover.dat$AMC_ID==ann.transl$AMC_id[i])
+#   if(length(sel>=1)){
+#     ann.cover.dat$CoralNet_ShortCode[sel] <- ann.transl$CoralNet_ShortCode[i]
+#   }
+# }
 
-## create function to:
-### load images for each label
-### plot them in a nice way
-load_and_plot <- function(label.idx=1, img.count=20){  ## default is 6 example images
-  ## select the labels to display
-  lab <- levels(ann.count.dat$AMC)[label.idx]
-  ## is that label a VME
-  if(lab%in%vme.AMC){
-    vme = "Yes"
-  }else vme = "No"
-  ## subset to only annotations with that label
-  lab.dat <- ann.count.dat[which(ann.count.dat$AMC==lab),]
-  ## how many are there?
-  l <- nrow(lab.dat)
-  ## if there are equal to or less than the number of images to display, we show all of them
-  ## if not, then we need to subset
-  if(l<=img.count){
-    temp.dat <- lab.dat
-  } else {
-    ## Get unique surveys for the current label
-    lab.surveys <- unique(lab.dat$SurveyID)
-    ## Sample at least one image from each survey
-    s <- unlist(lapply(lab.surveys, function(survey) {
-      sample(which(lab.dat$SurveyID == survey), 1)
-    }))
-    ## If fewer than img.count images, sample additional images to make up the count
-    if(length(s) < img.count){
-      remaining_images <- setdiff(1:l, s)
-      s <- c(s, sample(remaining_images, img.count - length(s)))
-    } else if(length(s) > img.count){
-      ## If more than img.count images, randomly select img.count images
-      s <- sample(s, img.count)
+## for each level in dat$label.lineage_names, select 20 random annotations, spread first across as many research campaigns as possible, then across as many deployments as possible
+ann.sel.list <- list()
+for (i in seq_along(levels(dat$label.lineage_names))) {
+  label <- levels(dat$label.lineage_names)[i]
+  # message(label)
+  label.dat <- dat[dat$label.lineage_names == label, ]
+  # Get unique campaigns for this label
+  campaigns <- unique(label.dat$point.media.deployment.campaign.key)
+  # print(campaigns)
+  # Sample one annotation from each campaign
+  sampled.idx <- NA
+  for(k in 1:length(campaigns)){
+    camp <- campaigns[k]
+    if(camp=="Antarctica_Peninsula_2019_PS118"){ ## some images from PS118 don't work well (weird dims)
+      next
     }
-    ## Subset the data to the selected images
-    temp.dat <- lab.dat[s, ]
+    idx <- which(label.dat$point.media.deployment.campaign.key == camp)
+    if(length(idx)>0){
+      sampled.idx[k] <- idx[sample(1:length(idx), 1)]
+    }
+  }
+  # If we have fewer than 20 samples, fill up with one annotation from each deployment that hasn't been included yet, skipping over annotations that are already included in sampled.idx
+  if (length(sampled.idx) < 20) {
+    remaining.idx <- setdiff(seq_len(nrow(label.dat)), sampled.idx)
+    deployments <- unique(label.dat$point.media.deployment.key[remaining.idx])
+    additional.idx <- unlist(lapply(deployments, function(dep) {
+      idx <- which(label.dat$point.media.deployment.key == dep & !(seq_len(nrow(label.dat)) %in% sampled.idx))
+      if (length(idx) > 0) idx[sample(1:length(idx), 1)] else NULL
+    }))
+    sampled.idx <- c(sampled.idx, additional.idx)
   }  
-  cat(paste0("### ",unique(temp.dat$AMC)," {-} \n \n"))
-  df <- data.frame("AMC_ID"=unique(temp.dat$AMC_ID),
-                   "Found_in_surveys"=paste(unique(lab.dat$SurveyID), collapse=", "),
-                   "Annotations"= l,
-                   "VME_taxa"=vme,
-                   "ASAID name"=unique(temp.dat$Name_to_publish))
-  # Generate the table with adjusted column widths
-  print(kable(df, booktabs = TRUE) %>%
-          kable_styling(latex_options = c("hold_position")) %>%
-          column_spec(1, width = "2cm") %>%  # Adjust width of the first column
-          column_spec(2, width = "7cm") %>%  # Adjust width of the second column
-          column_spec(3, width = "2cm") %>%  # Adjust width of the third column
-          column_spec(4, width = "2cm") %>%  # Adjust width of the fourth column
-          column_spec(5, width = "2cm"))     # Adjust width of the fifth column
-  # print(knitr::kable(data.frame("AMC_ID"=unique(temp.dat$AMC_ID),
-  #                               "Found_in_surveys"=paste(unique(lab.dat$SurveyID), collapse=", "),
-  #                               "Total_annotations"= l,
-  #                               "VME_taxa"=vme,
-  #                               "previous ASAID name"=unique(temp.dat$Name_to_publish)))
-  ## define path to library images
-  locs <- list.files(paste0(img.count.dir,unique(temp.dat$Label_after_review)), full.names=TRUE)
-  ## filenames without the "radius" bit in locs
-  locs_short <- unlist(lapply(basename(locs), function(x) gsub("_radius.*", "", x)))
-  ## Append x and y to Name in temp.dat
-  temp.dat <- temp.dat %>%  mutate(NameShort = substr(Name, 1, nchar(as.character(Name)) - 4))
-  temp.dat$NameInFileShort <- paste0(temp.dat$NameShort, "__x", temp.dat$x, "_y", temp.dat$y)
-  
-  img.find <- which(locs_short%in%temp.dat$NameInFileShort)
-  # match.idx <- match(temp.dat$NameInFileShort, locs_short)
-  match.idx <- match(temp.dat$NameInFile,locs_short[img.find])
-  img.sel <- locs[img.find][match.idx]
-  ## plot example images
-  if(img.count==9){
-    par(mfrow=c(3,3), oma=c(1,0,1,0), mar=c(2,0,0,0))
-  }else if(img.count==12){
-    par(mfrow=c(4,3), oma=c(1,0,1,0), mar=c(2,0,0,0))
-  }else{
-    par(mfrow=c(5,4), oma=c(1,0,1,0), mar=c(2,0,0,0))
+  ## if there are still fewer than 20 samples, fill up with random samples from the remaining annotations
+  if (length(sampled.idx) < 20) {
+    remaining.idx <- setdiff(seq_len(nrow(label.dat)), sampled.idx)
+    additional.idx <- remaining.idx[sample(1:length(remaining.idx), min(20 - length(sampled.idx), length(remaining.idx)))]
+    sampled.idx <- c(sampled.idx, additional.idx)
   }
-  if(l < img.count){z <- 1:l
-  }else z <- 1:img.count
-  for(k in z){
-    plot(load.image(img.sel[k]), axes=FALSE)
-    mtext(temp.dat$TransectID[k],side=1, cex=0.7)
+  ann.sel.list[[label]] <- label.dat[sampled.idx, ]
+}
+
+## the paths to the images online:
+image.paths <- unlist(lapply(ann.sel.list, function(df) df$point.media.path.images))
+image.paths <- unique(image.paths)
+## local path
+local.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_biological/Stills/ASAID_annotated_images/"
+
+## update ann.sel.list to point to the local files instead of the URLs, and the images on the local drive are all together in the same folder
+for(i in seq_along(ann.sel.list)){
+  df <- ann.sel.list[[i]]
+  df$point.media.path.images <- paste0(local.dir, basename(df$point.media.path.images))
+  ## check if all images exist
+  sel <- which(grepl("NA", df$point.media.path.images))
+  if(length(sel)>0){
+    df <- df[-sel,]
   }
-  cat("\\newpage\n \n")
+  ann.sel.list[[i]] <- df
+}
+
+## fix a few annotations
+ann.sel.list[[10]] <- ann.sel.list[[10]][-8,] ## one weird serolidae annotation
+ann.sel.list[[23]] <- ann.sel.list[[23]][-4,] ## one weird image
+ann.sel.list[[25]] <- ann.sel.list[[25]][-15,] ## one weird image
+ann.sel.list[[33]] <- ann.sel.list[[33]][-5,] ## one weird image
+ann.sel.list[[34]] <- ann.sel.list[[34]][-3,] ## one weird image
+ann.sel.list[[36]] <- ann.sel.list[[36]][-12,] ## one weird image
+ann.sel.list[[39]] <- ann.sel.list[[39]][-14,] ## one weird image
+ann.sel.list[[51]] <- ann.sel.list[[51]][-6,] ## one weird image
+ann.sel.list[[56]] <- ann.sel.list[[56]][-40,] ## one weird image
+
+## and let's remove all annotations from NBP1502 fromt he classification catalog
+for(i in seq_along(ann.sel.list)){
+  df <- ann.sel.list[[i]]
+  sel <- which(grepl("NBP1502", df$point.media.path.images))
+  if(length(sel)>0){
+    df <- df[-sel,]
+  }
+  ann.sel.list[[i]] <- df
+}
+
+## the plotting function
+load_and_plot <- function(label.idx = 1,
+                          img.count = 16,
+                          y_origin = c("bottom","top")) {
+  y_origin <- match.arg(y_origin)
+
+  # --- Resolve label ----
+  labs <- levels(dat$label.lineage_names)
+  if (label.idx < 1 || label.idx > length(labs)) {
+    warning("label.idx out of bounds.")
+    return(invisible(NULL))
+  }
+  label <- labs[label.idx]
+
+  # --- Data for the table & plotting ----
+  lab.all <- dat[dat$label.lineage_names == label, , drop = FALSE]
+  if (nrow(lab.all) == 0) {
+    warning(sprintf("No annotations found for label: %s", label))
+    return(invisible(NULL))
+  }
+
+  sel.df <- ann.sel.list[[label]]
+  if (is.null(sel.df) || nrow(sel.df) == 0) {
+    warning(sprintf("No selected annotations in ann.sel.list for label: %s", label))
+    return(invisible(NULL))
+  }
+
+  # limit to requested img.count
+  sel.df <- sel.df[seq_len(min(img.count, nrow(sel.df))), , drop = FALSE]
+
+  # --- Header + summary table ----
+  cat(paste0("### ", label, " {-} \n\n"))
+
+  df <- data.frame(
+    "Found in campaigns" = paste(unique(lab.all$point.media.deployment.campaign.key), collapse = ", "),
+    "Total annotations"  = nrow(lab.all),
+    check.names = FALSE
+  )
+
+  if (knitr::is_latex_output()) {
+    cat(knitr::kable(df, format = "latex", booktabs = TRUE))
+  } else {
+    cat(knitr::kable(df, format = "html"))
+  }
+
+  # --- Flexible panel layout (default: 4 columns) ----
+  n <- nrow(sel.df)
+  ncol <- if (n <= 9) 3 else 4
+  nrow <- ceiling(n / ncol)
+  op <- par(mfrow = c(nrow, ncol), oma = c(1, 0, 1, 0), mar = c(2, 0, 0, 0))
+
+  on.exit(par(op), add = TRUE)
+
+  # --- Helper: plot crop based on size of point.bbox (given as [x1, x2, y1, y2]) ----
+  for (k in seq_len(n)) {
+    p <- sel.df[k, , drop = FALSE]
+
+    # Try to load the full-res frame from local.dir
+    local.path <- paste0(local.dir, basename(p$point.media.path.images))
+    img <- try(imager::load.image(local.path), silent = TRUE)
+    #img <- try(imager::load.image(p$point.media.path.images), silent = TRUE)
+    if (inherits(img, "try-error")) {
+      # Graceful fallback tile
+      plot(NA, xlim = c(0, 1), ylim = c(0, 1), axes = FALSE, xlab = "", ylab = "")
+      text(0.5, 0.6, "Image not available", col = "red")
+      mtext(p$point.media.deployment.key, side = 1, cex = 0.7)
+      next
+    }
+
+    W <- imager::width(img)
+    H <- imager::height(img)
+
+    # Convert normalized coordinates -> pixel coordinates (point)
+    px <- as.numeric(p$point.x)
+    py <- as.numeric(p$point.y)
+
+    # y-origin: top (web) vs bottom (R image default)
+    py <- if (y_origin == "top") (1 - py) else py
+
+    x_pix <- max(1L, min(W, round(px * (W - 1)) + 1L))
+    y_pix <- max(1L, min(H, round(py * (H - 1)) + 1L))
+
+    # use p$point.bbox to define the crop (normalized bbox -> pixel xyxy) ----
+    # Parse bracketed bbox; accepts either string "[a,b,c,d]" or numeric length-4
+    bb_raw <- p$point.bbox
+    bb <- if (is.character(bb_raw)) {
+      as.numeric(strsplit(gsub("\\[|\\]", "", bb_raw), ",\\s*")[[1]])
+    } else {
+      as.numeric(bb_raw)
+    }
+    # Ensure we have 4 numbers and order them as (xmin, ymin, xmax, ymax) in [0,1]
+    if (length(bb) != 4) {
+      # Fallback to a small 100x100 window around the point if bbox is missing
+      x1 <- max(1L, x_pix - 49L); x2 <- min(W, x_pix + 50L)
+      y1 <- max(1L, y_pix - 49L); y2 <- min(H, y_pix + 50L)
+    } else {
+      # Min/max to be robust to input order like [x1, x2, y1, y2] or [x1, y1, x2, y2]
+      xmin <- min(bb[1], bb[3]); xmax <- max(bb[1], bb[3])
+      ymin <- min(bb[2], bb[4]); ymax <- max(bb[2], bb[4])
+
+      # Flip y if origin is "top": y_bottom = 1 - y_top
+      if (y_origin == "top") {
+        y1n <- 1 - ymax
+        y2n <- 1 - ymin
+      } else {
+        y1n <- ymin
+        y2n <- ymax
+      }
+
+      # Map normalized [0,1] -> pixel indices [1..W/H], inclusive
+      x1 <- max(1L, min(W, round(xmin * (W - 1)) + 1L))
+      x2 <- max(1L, min(W, round(xmax * (W - 1)) + 1L))
+      y1 <- max(1L, min(H, round(y1n * (H - 1)) + 1L))
+      y2 <- max(1L, min(H, round(y2n * (H - 1)) + 1L))
+
+      # Safety: ensure non-decreasing
+      if (x2 < x1) { tmp <- x1; x1 <- x2; x2 <- tmp }
+      if (y2 < y1) { tmp <- y1; y1 <- y2; y2 <- tmp }
+    }
+ 
+    # Crop
+    crop <- imager::imsub(img, x %in% x1:x2, y %in% y1:y2)
+
+    # # Resize to exactly 100x100 if needed
+    # cw <- imager::width(crop)
+    # ch <- imager::height(crop)
+    # if (cw != 100L || ch != 100L) {
+    #   sx <- 100 / cw
+    #   sy <- 100 / ch
+    #   crop <- imager::imresize(crop, size_x = 100, size_y = 100)
+    # }
+
+    # Show the crop
+    plot(crop, axes = FALSE)
+
+    # Caption: deployment (you can change this to campaign/key/etc.)
+    mtext(p$point.media.deployment.key, side = 1, cex = 0.7)
+  }
+  cat("\n\\newpage\n\n")
+  invisible(NULL)
 }
 ```
 
 # Mobile species classification catalog {-}
 
-This Classification Catalog shows example images for all labels used for the point-scoring method in the Antarctic Seafloor Annotated Imagery Database (AS-AID). It aims to give users an overview of the labels. This catalog represents a snapshot of the database at the time of publication of the associated data-paper.
+This Classification Catalog shows example images for all labels used in the exhaustive search for mobile species in the Antarctic Seafloor Annotated Imagery Database (AS-AID). This catalog represents a snapshot of the database at the time of publication of the associated data-paper.
 The labels used are based on the Australian Morphospecies Catalog, which is an extension of the CATAMI classification scheme. For more information, the CATAMI paper can be found under this [link](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0141039)  
   
-Up to nine randomly selected images are presented for each classification, alongside a table with the following information:  
+Up to 16 randomly selected images are presented for each classification, alongside a table with the following information:  
   
-* AMC_ID: matching identifier in the Australian Morphospecies Catalog, and extension of the CATAMI classification.  
-* Found_in_surveys: a list of all surveys in AS-AID in which this organism has been detected  
-* Total_annotations: the total number of annotations for this label  
-* VME-taxa: whether this label is identified as a CCAMLR Vulnerable Marine Ecosystem taxa  
+* Found in campaigns: a list of all campaigns in AS-AID in which this organism has been detected  
+* Total annotations: the total number of annotations for this label  
 
 Please direct any enquiries, questions or comments to Jan.Jansen@utas.edu.au
 

@@ -4,42 +4,42 @@
 
 ## Ascidia  
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 1:6){
+for(i in 2:8){
   load_and_plot(i)
 }
 ```
 
 ## Bryozoa
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 8:20){
+for(i in 10:22){
   load_and_plot(i)
 }
 ```
 
 ## Cnidaria
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in c(21:41)){
+for(i in c(23:43)){
   load_and_plot(i)
 }
 ```
 
 ## Macroalgae
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 77:78){
+for(i in 79:80){
   load_and_plot(i)
 }
 ```
 
 ## Porifera
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in 90:108){
+for(i in 93:111){
   load_and_plot(i)
 }
 ```
 
 ## Unidentified classifications
 ```{r, results='asis', echo=FALSE, fig.dim=c(10,10)}
-for(i in c(68:72,79:82)){
+for(i in c(70:74,81:85)){
   load_and_plot(i)
 }
 ```

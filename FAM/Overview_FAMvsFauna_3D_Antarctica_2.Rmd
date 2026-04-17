@@ -1,0 +1,577 @@
+---
+title: "3D plots - testing animations using Antarctic elevation data"
+author: "JJansen"
+output: html_document
+---
+
+Loosely following instructions [here](https://github.com/tylermorganwall/MusaMasterclass)  
+But using Tasmanian elevation data:  
+- Download:  
+    - select small region for elevation data: [link](https://elevation.fsdf.org.au/)  
+    - or a full 30m DEM [link](https://ecat.ga.gov.au/geonetwork/srv/eng/catalog.search#/metadata/70715)  
+Note that the coordinate system can be specified when downloading the data from elevation.fsdf.org.au  
+
+##### setting up the environment
+
+```{r, message=FALSE, warning=FALSE}
+options(rgl.useNULL=FALSE)
+library(raster)
+# library(spatstat)
+# library(spatstat.utils)
+library(rgdal)
+library(terra)
+library(ncdf4)
+library(sf)
+library(sp)
+
+setwd(here::here())
+
+sci.dir <- "C:/Users/jjansen/Desktop/science/"
+ARC_data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
+bio.dir <- paste0(sci.dir,"data_biological/")
+env.derived <- paste0(sci.dir,"data_environmental/derived/")
+env.dir <- "E:/science/data_environmental/"
+env.raw <- "E:/science/data_environmental/raw/"
+ant.proj <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+```
+
+##### load data
+
+```{r, error=TRUE}
+##### ROMS-data:
+## ROMS-run
+data.dat100 <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/output_sed_float_test3/")
+# data.dat <- paste0("Circumpolar_ROMS/10km_outputs/sed_test1/")
+# data.dat <- paste0(env.dir,"Circumpolar_ROMS/10km_outputs/sed_test5/")
+
+## load lon/lat information from ROMS-grid
+grd10k_nc <- nc_open(paste0(env.raw,"waom10extend_grd.nc"))
+lon_rho <- ncvar_get(grd10k_nc, varid="lon_rho")
+lat_rho <- ncvar_get(grd10k_nc, varid="lat_rho")
+
+#######################################
+#### Prepare empty rasters to assign correct projected values to
+roms.coords.proj <- rgdal::project(cbind(c(lon_rho), c(lat_rho)), proj=ant.proj)
+x.range <- c(min(roms.coords.proj[,1])-5000,max(roms.coords.proj[,1])+5000)
+y.range <- c(min(roms.coords.proj[,2])-5000,max(roms.coords.proj[,2])+5000)
+empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=10000)
+
+#### load other ROMS data (currents & depth)
+#depth
+h <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="h", level=1)
+## remove inland values for depth
+h2 <- empty.roms.ra
+h2[] <- h[]
+
+#######################################
+#### Prepare empty rasters to assign correct projected values to
+roms.coords.proj <- rgdal::project(cbind(c(lon_rho), c(lat_rho)), proj=ant.proj)
+x.range <- c(min(roms.coords.proj[,1])-5000,max(roms.coords.proj[,1])+5000)
+y.range <- c(min(roms.coords.proj[,2])-5000,max(roms.coords.proj[,2])+5000)
+empty.roms.ra <- raster(extent(c(x.range,y.range)), crs=ant.proj, resolution=10000)
+
+#### load other ROMS data (currents & depth)
+#depth
+h <- raster(paste0(data.dat100,"ocean_avg_0003.nc"), varname="h", level=1)
+## remove inland values for depth
+h2 <- empty.roms.ra
+h2[] <- h[]
+
+#seafloor currents (seafloor-layer is 1)
+u.raw <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="u", level=1)
+v.raw <- brick(paste0(data.dat100,"ocean_his_0003.nc"), varname="v", level=1)
+
+## sum up monthly values for a climatology (THIS SHOULD BE DONE ON HIGH RESOLUTION HISTORY FILES)
+u.sum <- sum(u.raw)
+v.sum <- sum(v.raw)
+u.sum.abs <- sum(abs(u.raw))
+v.sum.abs <- sum(abs(v.raw))
+
+## extract current speeds at rho-points where depth is defined
+## (in ROMS they are all at different locations):
+## u has one less column than the grid, so all coordinates need to be moved half a cell to the right for the grids to match up
+coord.grd.u <- coordinates(h)
+coord.grd.u[,1] <- coordinates(h)[,1]-0.5
+## v has one less row than the grid, so all coordinates need to be moved half a cell up for the grids to match up
+coord.grd.v <- coordinates(h)
+coord.grd.v[,2] <- coordinates(h)[,2]-0.5
+## now extract values at the rho-points and interpolate (because they are 2km away from the nearest original point), and place into projected raster
+u <- v <- empty.roms.ra
+u[] <- extract(u.sum, coord.grd.u, method="bilinear")
+v[] <- extract(v.sum, coord.grd.v, method="bilinear")
+#temporal mean seafloor current speed
+mean.uv <- sqrt(u^2+v^2)
+
+h2[is.na(mean.uv)] <- NA
+h3 <- h2
+h3[is.na(h2)] <- 0
+
+#######################################
+##### topography/bathymetry from GEBCO:
+### with land
+## 5km res
+# topo.dat.full <- raster(paste0(env.derived,"Circumpolar_EnvData_5km_bathy_gebco.grd"))
+## 500m res
+topo.dat.full.with.land <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_bathy_ibcso2_depth.tif"))
+#topo.dat.full <- raster(paste0(env.derived,"Circumpolar_EnvData_500m_bathy_ibcso2_depth.tif"))
+### underwater only
+topo.dat.full <- topo.dat.full.with.land #raster(paste0(env.derived,"Circumpolar_EnvData_500m_bathy_gebco_depth.grd"))
+## setting land to 0 instead of NA?
+topo.dat.full[which(topo.dat.full.with.land[]>0)] <- 0
+#topo.dat.full[which(topo.dat.full[]>=0)] <- 0
+
+#######################################
+##### projected coastline for plotting
+load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+## transform lines for plotting:
+sf_coast <- st_as_sf(coast.proj)
+
+##### particle floats
+#load(paste0(ARC_data.dir,"FAM/Floats_10km_100mday_test_lines.Rdata"))
+load(paste0(ARC_data.dir,"FAM/Floats_10km_100mday_test_lines_1month.Rdata"))
+## transform lines for plotting:
+#sf_lines <- st_as_sf(track_lines_b[seq(1,length(track_lines_b), by=4)]) ## reduce the total number of lines
+sf_lines <- st_as_sf(track_lines_b)
+
+#######################################
+## load biological data:
+load(paste0(ARC_data.dir, "Cell_level_bio_2pc_500m.Rdata"))
+load(paste0(ARC_data.dir, "Cell_level_env_500m.Rdata"))
+## calculate SF abundance per cell
+# SF_sel <- which(grepl("Bivalve|Bryo|Asci|Hydr|Spon|Octoc|Suspension|Basket|Anem|Stony|Barnac|UBS_B|UBS_Sp",names(cover_cells)))
+# coverSF_total <- rowSums(cover_cells[,SF_sel])
+## match up cover with metadata
+SF.dat <- cbind(cell_metadata_env[,2:20], cover_groupings)
+##SF cover in percent per cell, accounting for unscorable points
+SF.dat$cover_SF_prop <- (SF.dat$cover_SF/(SF.dat$cover_N*108-cover_mod$Unscorable))*100
+
+## assign colours to represent abundances
+# col.palette <- colorRampPalette(c("white","grey90","grey70","cyan","blue"))
+# col.palette <- colorRampPalette(c("white","grey90","lightcyan","cyan","blue"))
+# col.palette <- colorRampPalette(c("white","grey90","lawngreen","cyan3","blue"))
+# col.palette <- colorRampPalette(c("white","grey90","grey60","cyan","blue"))
+col.palette <- colorRampPalette(c("white","palegreen","palegreen4","cyan","blue"))
+SF.dat$coloursSF <- NA
+SF.dat$coloursSF[SF.dat$cover_SF_prop==0] <- col.palette(5)[1]
+SF.dat$coloursSF[SF.dat$cover_SF_prop>=0] <- col.palette(5)[2]
+SF.dat$coloursSF[SF.dat$cover_SF_prop>=1] <- col.palette(5)[3]
+SF.dat$coloursSF[SF.dat$cover_SF_prop>=10] <- col.palette(5)[4]
+SF.dat$coloursSF[SF.dat$cover_SF_prop>=50] <- col.palette(5)[5]
+## coordinates
+sf_points <- st_as_sf(SpatialPoints(SF.dat[,3:4], proj4string = crs(topo.dat.full, proj=TRUE)))
+
+richness.r <- raster(paste0(bio.dir,"Circumpolar_biodiversity_map_2km_richness_glmm_pred.tif"))
+richness.r500 <- resample(richness.r, topo.dat.full.with.land) 
+```
+
+```{r}
+## crop to smaller extent
+ross.extent     <- extent(c(-500000,500000,-2100000,-1150000))
+ap.extent       <- extent(c(-2750000,-2200000,1000000,2000000))
+mertz.extent    <- extent(c(1250000,1900000,-2300000,-1900000))
+filchner.extent <- extent(c(-1600000,-500000,300000,1200000))
+weddell.extent  <- extent(c(-1300000,-400000,800000,2000000))
+
+## bathymetry data
+# topo.dat.ross     <- crop(h3,ross.extent)
+topo.dat.ross     <- crop(topo.dat.full, ross.extent)
+topo.dat.ap       <- crop(topo.dat.full, ap.extent)
+topo.dat.mertz    <- crop(topo.dat.full, mertz.extent)
+topo.dat.filchner <- crop(topo.dat.full, filchner.extent)
+topo.dat.weddell  <- crop(topo.dat.full, weddell.extent)
+
+# ## current speed data
+curr.dat.ross     <- crop(mean.uv, ross.extent)
+curr.dat.ap       <- crop(mean.uv, ap.extent)
+curr.dat.mertz    <- crop(mean.uv, mertz.extent)
+curr.dat.filchner <- crop(mean.uv, filchner.extent)
+curr.dat.weddell  <- crop(mean.uv, weddell.extent)
+
+## biodiversity map data
+rich.dat.ross     <- crop(richness.r500, ross.extent)
+rich.dat.ap       <- crop(richness.r500, ap.extent)
+rich.dat.mertz    <- crop(richness.r500, mertz.extent)
+rich.dat.filchner <- crop(richness.r500, filchner.extent)
+rich.dat.weddell  <- crop(richness.r500, weddell.extent)
+```
+
+```{r, warning=FALSE, message=FALSE}
+## libraries and setting up data for 3d plotting
+library(ggplot2)
+library(whitebox)
+library(rayshader)
+library(rayrender)
+library(suncalc)
+library(lubridate)
+
+## parameters for 3d-plotting
+zscale <- 30 ## the higher the less exaggerated the height values are
+phi <- 40    ## vertical angle of view
+theta <- 300 ## horizontal angle of view
+zoom <- 0.7  ## zoom between 0 (close) and 1 (far)
+windowsize <- c(1000,1000)
+```
+
+```{r}
+prepare_overlays <- function(height.dat, topo.dat){
+  topo.ext <- raster::extent(as.vector(ext(topo.dat)))
+  
+  ## change data to matrix
+  topo_mat=raster_to_matrix(topo.dat)
+  height_mat=raster_to_matrix(height.dat)
+
+  ## calculate sphereshades and lineoverlays
+  sphereshades  = sphere_shade( topo_mat, texture="desert", colorintensity=3)
+  rayshades     = ray_shade(    topo_mat, sunaltitude=6, zscale=zscale, lambert=FALSE)
+  lambshades    = lamb_shade(   topo_mat, sunaltitude=6, zscale=zscale)
+  ambientshades = ambient_shade(topo_mat)
+  textureshades = texture_shade(topo_mat, detail=6/10, contrast=10, brightness = 11)
+  
+  heightshades  = height_shade(height_mat, texture=rev(heat.colors(256)))
+  coastoverlay = generate_line_overlay(sf_coast, extent=topo.ext, heightmap=topo_mat)
+  lineoverlay  = generate_line_overlay(sf_lines, extent=topo.ext, heightmap=topo_mat, color="black", offset=c(1500,-1500))
+  
+  SF_overlay_shadow = generate_point_overlay(sf_points, extent=topo.ext, heightmap=topo_mat, color="black", offset=c(1500,-1500), size=5, pch=21)
+  SF_overlay = generate_point_overlay(sf_points, extent=topo.ext, heightmap=topo_mat, color=SF.dat$coloursSF, size=5, pch=21)
+  
+  return(list(topo_mat = topo_mat,
+              sphereshades = sphereshades,
+              rayshades = rayshades,
+              lambshades = lambshades,
+              ambientshades = ambientshades,
+              textureshades = textureshades,
+              heightshades = heightshades,
+              coastoverlay = coastoverlay,
+              lineoverlay = lineoverlay,
+              SF_overlay_shadow = SF_overlay_shadow,
+              SF_overlay = SF_overlay
+  ))
+}
+```
+
+
+### Region specific overviews {.tabset}
+
+#### Ross Sea
+
+```{r, echo=FALSE, message=FALSE}
+## make raster suitable for plotting
+topo.dat <- aggregate(topo.dat.ross,2)
+curr.dat <- resample(curr.dat.ross, topo.dat.ross)
+rich.dat <- resample(rich.dat.ross, topo.dat.ross)
+
+rs <- prepare_overlays(curr.dat, topo.dat)
+```
+
+
+```{r, fig.width=8, eval=FALSE, echo=FALSE}
+## plot overview
+par(mfrow=c(1,2))
+plot(topo.dat)
+plot(coast.proj, add=TRUE)
+plot(rich.dat)
+plot(coast.proj, add=TRUE)
+```
+
+##### richness or current speeds on 3D bathymetry
+
+```{r, fig.height=10}
+rs$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(rs$heightshades, alphalayer = 0.6) %>%
+  add_overlay(rs$coastoverlay) %>% 
+  #add_overlay(rs$lineoverlay) %>%  
+  add_overlay(rs$SF_overlay_shadow) %>% 
+  add_overlay(rs$SF_overlay) %>%   
+  plot_map()
+```
+
+```{r, fig.height=10, eval=FALSE}
+rs$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(rs$heightshades, alphalayer = 0.6) %>%
+  add_overlay(rs$coastoverlay) %>% 
+  #add_overlay(rs$lineoverlay) %>%   
+  add_overlay(rs$SF_overlay_shadow) %>% 
+  add_overlay(rs$SF_overlay) %>% 
+  plot_3d(rs$topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, windowsize=windowsize)
+render_snapshot()
+```
+
+
+```{r, fig.height=10}
+rs$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(rs$heightshades, alphalayer = 0.6) %>%
+  add_overlay(rs$coastoverlay) %>% 
+  add_overlay(rs$lineoverlay) %>%  
+  add_overlay(rs$SF_overlay_shadow) %>% 
+  add_overlay(rs$SF_overlay) %>%   
+  plot_map()
+```
+
+```{r, fig.height=10, eval=FALSE}
+rs$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(rs$heightshades, alphalayer = 0.6) %>%
+  add_overlay(rs$coastoverlay) %>% 
+  add_overlay(rs$lineoverlay) %>%   
+  add_overlay(rs$SF_overlay_shadow) %>% 
+  add_overlay(rs$SF_overlay) %>% 
+  plot_3d(rs$topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, windowsize=windowsize)
+render_snapshot()
+```
+
+
+
+
+
+
+
+
+## ONLY UPDATED UNTIL HERE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, eval=FALSE, echo=FALSE}
+# angles= seq(0,360,length.out = 1441)[-1]
+# angles= c(seq(0,45,length.out = 121)[-1],seq(45,0,length.out = 121)[-1]) 
+angles= seq(0,45,length.out = 121)[-1] 
+for(i in 1:120) {
+  render_camera(theta=-45+angles[i])
+  render_snapshot(filename = sprintf("RossSea%i.png", i), 
+                  title_text = "Ross Sea | Particle Movements | Test",
+                  title_bar_color = "#1f5214", title_color = "white", title_bar_alpha = 1)
+}
+rgl::rgl.close()
+#av::av_encode_video(sprintf("RossSea%d.png",seq(1,1440,by=1)), framerate = 30, output = "RosSea.mp4")
+
+rgl::rgl.close()
+system("ffmpeg -framerate 60 -i RossSea%d.png -pix_fmt yuv420p RossSea.mp4")
+
+# ## create a gif: DOESN'T WORK PROPERLY
+# library(magick)
+# library(magrittr)
+# list.files(path='C:/Users/jjansen/Desktop/science/Scripts/z_animate/RossSea/', pattern = '*.png', full.names = TRUE) %>% 
+#         image_read() %>% # reads each path file
+#         image_join() %>% # joins image
+#         image_animate(fps=25) %>% # animates, can opt for number of loops
+#         image_write("RossSea.gif") # write to current dir
+```
+
+#### Weddell Sea
+
+```{r, echo=FALSE, eval=FALSE}
+## choose region and setup data
+region <- "Weddell"
+topo.dat <- aggregate(topo.dat.weddell,2)
+curr.dat <- resample(curr.dat.weddell, topo.dat.weddell)
+
+##########################
+
+## change data to matrix
+topo_mat=raster_to_matrix(topo.dat)
+curr_mat=raster_to_matrix(curr.dat)
+
+ws <- prepare_overlays()
+```
+
+
+```{r, fig.width=8, eval=FALSE, echo=FALSE}
+## plot overview
+par(mfrow=c(1,2))
+plot(topo.dat)
+plot(coast.proj, add=TRUE)
+plot(curr.dat)
+plot(coast.proj, add=TRUE)
+```
+
+##### current speeds on 3D bathymetry
+
+```{r, fig.height=10, eval=FALSE}
+ws$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(ws$heightshades, alphalayer = 0.6) %>%
+  add_overlay(ws$coastoverlay) %>% 
+  add_overlay(ws$lineoverlay) %>%  
+  add_overlay(ws$SF_overlay_shadow) %>% 
+  add_overlay(ws$SF_overlay) %>% 
+  plot_map()
+```
+
+```{r, fig.height=10, eval=FALSE}
+ws$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(ws$heightshades, alphalayer = 0.6) %>%
+  add_overlay(ws$coastoverlay) %>% 
+  add_overlay(ws$lineoverlay) %>%  
+  add_overlay(ws$SF_overlay_shadow) %>% 
+  add_overlay(ws$SF_overlay) %>% 
+  plot_3d(ws$topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, windowsize=windowsize)
+render_snapshot()
+```
+
+```{r, eval=FALSE, echo=FALSE, eval=FALSE}
+#angles= seq(0,360,length.out = 1441)[-1]
+angles= c(seq(0,45,length.out = 121)[-1],seq(45,0,length.out = 121)[-1]) 
+for(i in 1:240) {
+  render_camera(theta=-45+angles[i])
+  render_snapshot(filename = sprintf(paste0(region,"%i.png"), i), 
+                  title_text = paste0(region," | Particle Movements | Test"),
+                  title_bar_color = "#1f5214", title_color = "white", title_bar_alpha = 1)
+}
+rgl::rgl.close()
+system(paste0("ffmpeg -framerate 60 -i ",region,"%d.png -pix_fmt yuv420p ",region,".mp4"))
+```
+
+#### AP
+
+```{r, echo=FALSE, eval=FALSE}
+## choose region and setup data
+region <- "AP"
+topo.dat <- aggregate(topo.dat.ap,2)
+curr.dat <- resample(curr.dat.ap, topo.dat.ap)
+
+ap <- prepare_overlays()
+```
+
+
+```{r, fig.width=8, eval=FALSE, echo=FALSE}
+## plot overview
+par(mfrow=c(1,2))
+plot(topo.dat)
+plot(coast.proj, add=TRUE)
+plot(curr.dat)
+plot(coast.proj, add=TRUE)
+```
+
+##### current speeds on 3D bathymetry
+
+```{r, fig.height=10, eval=FALSE}
+ap$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(ap$heightshades, alphalayer = 0.6) %>%
+  add_overlay(ap$coastoverlay) %>% 
+  add_overlay(ap$lineoverlay) %>%   
+  add_overlay(ap$SF_overlay_shadow) %>% 
+  add_overlay(ap$SF_overlay) %>% 
+  plot_map()
+```
+
+```{r, fig.height=10, eval=FALSE}
+ap$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(ap$heightshades, alphalayer = 0.6) %>%
+  add_overlay(ap$coastoverlay) %>% 
+  add_overlay(ap$lineoverlay) %>%   
+  add_overlay(ap$SF_overlay_shadow) %>% 
+  add_overlay(ap$SF_overlay) %>% 
+  plot_3d(ap$topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, windowsize=windowsize)
+render_snapshot()
+```
+
+```{r, eval=FALSE, echo=FALSE}
+#angles= seq(0,360,length.out = 1441)[-1]
+angles= c(seq(0,45,length.out = 121)[-1],seq(45,0,length.out = 121)[-1]) 
+for(i in 1:240) {
+  render_camera(theta=-45+angles[i])
+  render_snapshot(filename = sprintf(paste0(region,"%i.png"), i), 
+                  title_text = paste0(region," | Particle Movements | Test"),
+                  title_bar_color = "#1f5214", title_color = "white", title_bar_alpha = 1)
+}
+rgl::rgl.close()
+system(paste0("ffmpeg -framerate 60 -i ",region,"%d.png -pix_fmt yuv420p ",region,".mp4"))
+```
+
+#### Mertz
+
+```{r, echo=FALSE, eval=FALSE}
+## choose region and setup data
+region <- "Mertz"
+topo.dat <- aggregate(topo.dat.mertz,2)
+curr.dat <- resample(curr.dat.mertz, topo.dat.mertz)
+
+m <- prepare_overlays()
+```
+
+
+```{r, fig.width=8, eval=FALSE, echo=FALSE}
+## plot overview
+par(mfrow=c(1,2))
+plot(topo.dat)
+plot(coast.proj, add=TRUE)
+plot(curr.dat)
+plot(coast.proj, add=TRUE)
+```
+
+##### current speeds on 3D bathymetry
+
+```{r, fig.height=10, eval=FALSE}
+m$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(m$heightshades, alphalayer = 0.6) %>%
+  add_overlay(m$coastoverlay) %>% 
+  add_overlay(m$lineoverlay) %>%   
+  add_overlay(m$SF_overlay_shadow) %>% 
+  add_overlay(m$SF_overlay) %>% 
+  plot_map()
+```
+
+
+```{r, fig.height=10, eval=FALSE}
+m$topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(m$heightshades, alphalayer = 0.6) %>%
+  add_overlay(m$coastoverlay) %>% 
+  add_overlay(m$lineoverlay) %>%   
+  add_overlay(m$SF_overlay_shadow) %>% 
+  add_overlay(m$SF_overlay) %>% 
+  plot_3d(m$topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, windowsize=windowsize)
+render_snapshot()
+```
+
+

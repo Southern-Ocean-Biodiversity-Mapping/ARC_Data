@@ -2,13 +2,17 @@
 ###### Environmental data preparation - Bathymetry & distance to canyons ######
 ###############################################################################
 ## define directory to store raw environmental data
+usr.dir <- "C:\\Users\\sajessop\\Dropbox\\Data\\"
+#usr.dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/"
+#usr.dir <- "/pvol/DropboxData/"
+
 # env.dir <- ".../" 
-env.dir <- "C:\\Users\\sajessop\\Dropbox\\Data\\data_environmental\\raw\\"
+env.dir <- paste0(usr.dir, "data_environmental\\raw\\")
 # env.dir <- "/perm_storage/shared_space/IBCSO_v2/"
 # canyons.dir <- "/perm_storage/shared_space/BioMAS/environmental_data/ArosioAmblasAntarcticCanyons/"
 
 ## define output directory
-out.dir <- "C:\\Users\\sajessop\\Dropbox\\Data\\data_environmental\\derived\\bathy_outputs\\"
+out.dir <- paste0(usr.dir, "data_environmental\\derived\\bathy_outputs\\")
 
 ## download IBCSO V2 bed and ice layers
 url <- "https://download.pangaea.de/dataset/937574/files/IBCSO_v2_bed.tif"

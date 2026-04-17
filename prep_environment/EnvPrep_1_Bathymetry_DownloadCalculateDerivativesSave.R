@@ -79,9 +79,11 @@ writeRaster(dist_water_m, filename=paste0(env.dir, "IBCSO_v2_2km_DistanceToCanyo
 library(whitebox)
 
 # 2km res
-# need to write raster with 2km res to disk as whitebox wont read the in memory raster
+# need to write 2km depth raster to disk as whitebox wont read the in memory raster
+writeRaster(r.2km$depth, paste0(env.dir, "IBCSO_v2_2km_depth.tif"), overwrite = TRUE)
+dem <- rast(paste0(env.dir, "IBCSO_v2_2km_depth.tif"))
 wbt_geomorphons(
-  dem = terra::aggregate(ibcso_bed, 4),
+  dem = dem,
   output = paste0("IBCSO_v2_2km_geomorph", ".tif"),
   search = 20,
   threshold = 5,

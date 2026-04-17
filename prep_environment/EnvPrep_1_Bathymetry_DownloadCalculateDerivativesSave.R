@@ -1,10 +1,14 @@
 ###############################################################################
 ###### Environmental data preparation - Bathymetry & distance to canyons ######
 ###############################################################################
-## define directory to store environmental data
-env.dir <- ".../" 
+## define directory to store raw environmental data
+# env.dir <- ".../" 
+env.dir <- "C:\\Users\\sajessop\\Dropbox\\Data\\data_environmental\\raw\\"
 # env.dir <- "/perm_storage/shared_space/IBCSO_v2/"
 # canyons.dir <- "/perm_storage/shared_space/BioMAS/environmental_data/ArosioAmblasAntarcticCanyons/"
+
+## define output directory
+out.dir <- "C:\\Users\\sajessop\\Dropbox\\Data\\data_environmental\\derived\\bathy_outputs\\"
 
 ## download IBCSO V2 bed and ice layers
 url <- "https://download.pangaea.de/dataset/937574/files/IBCSO_v2_bed.tif"
@@ -38,7 +42,7 @@ r.2km$slope[is.na(r.2km$depth[])] <- NA
 r.2km$tpi  [is.na(r.2km$depth[])] <- NA
 r.2km$tpi5 [is.na(r.2km$depth[])] <- NA
 r.2km$tpi11[is.na(r.2km$depth[])] <- NA
-writeRaster(r.2km[[c(1,3:6)]], filename=paste0(env.dir, "IBCSO_v2_2km_bathymetric_variables.tif"), overwrite=TRUE)
+writeRaster(r.2km[[c(1,3:6)]], filename=paste0(out.dir, "IBCSO_v2_2km_bathymetric_variables.tif"), overwrite=TRUE)
 
 ## at 500m resolution:
 r.500m <- r
@@ -48,7 +52,7 @@ r.500m$slope[is.na(r.500m$depth[])] <- NA
 r.500m$tpi  [is.na(r.500m$depth[])] <- NA
 r.500m$tpi5 [is.na(r.500m$depth[])] <- NA
 r.500m$tpi11[is.na(r.500m$depth[])] <- NA
-writeRaster(r.500m[[c(1,3:6)]], filename=paste0(env.dir, "IBCSO_v2_500m_bathymetric_variables.tif"), overwrite=TRUE)
+writeRaster(r.500m[[c(1,3:6)]], filename=paste0(out.dir, "IBCSO_v2_500m_bathymetric_variables.tif"), overwrite=TRUE)
 
 ##################################################
 #### Distance to underwater canyons identified from Arosio & Amblas 2025
@@ -69,3 +73,18 @@ writeRaster(dist_water_m, filename=paste0(env.dir, "IBCSO_v2_500m_DistanceToCany
 dist_water_m_2km <- aggregate(dist_water_m, 4)
 writeRaster(dist_water_m, filename=paste0(env.dir, "IBCSO_v2_2km_DistanceToCanyons.tif"), overwrite=TRUE)
 
+
+###############################################
+#### Geomorphology, based on https://github.com/jacquomo/Geomorphmetry_SeamapAus/blob/main/Geomorphometry_for_Australian_Marine_Parks.Rmd
+library(whitebox)
+
+# 2km res
+# need to write raster with 2km res to disk as whitebox wont read the in memory raster
+wbt_geomorphons(
+  dem = terra::aggregate(ibcso_bed, 4),
+  output = paste0("IBCSO_v2_2km_geomorph", ".tif"),
+  search = 20,
+  threshold = 5,
+  fdist = 20,
+  wd = out.dir
+)

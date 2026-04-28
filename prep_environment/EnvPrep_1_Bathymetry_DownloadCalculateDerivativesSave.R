@@ -9,8 +9,9 @@ usr <- "VM"
 source("prep_environment/EnvPrep_0_SourceFile.R")
 
 ## set input and output folders
-env.dir <- paste0(usr.main.dir,"data_environmental/raw/")
-out.dir <- paste0(usr.main.dir,"data_environmental/derived/bathy_outputs/")
+env.dir <- paste0(usr.main.dir,"/data_environmental/raw/")
+out.dir <- paste0(usr.main.dir,"/data_environmental/derived/bathy_outputs/")
+local.out <- "~/temp"
 
 ########################################
 ## download IBCSO V2 bed and ice layers
@@ -45,8 +46,18 @@ r.2km$slope[is.na(r.2km$depth[])] <- NA
 r.2km$tpi  [is.na(r.2km$depth[])] <- NA
 r.2km$tpi5 [is.na(r.2km$depth[])] <- NA
 r.2km$tpi11[is.na(r.2km$depth[])] <- NA
-writeRaster(r.2km[[c(1,3:6)]], filename=paste0(out.dir, "IBCSO_v2_2km_bathymetric_variables.tif"), overwrite=TRUE)
-
+writeRaster(r.2km[[c(1,3:6)]], filename=paste0(local.out, "IBCSO_v2_2km_bathymetric_variables.tif"), overwrite=TRUE)
+localr.2km <- paste0(local.out, "IBCSO_v2_2km_bathymetric_variables.tif")
+# command line code to transfer output from temp to dropbox
+system2(
+  "rclone",
+  args = c(
+    "copy",
+    localr.2km,
+    "dropbox:Data/data_environmental/derived/bathy_outputs/",
+    "--progress"
+  )
+)
 ## at 500m resolution:
 r.500m <- r
 r.500m$depth[r.500m$ibcso_ice>0] <- NA
@@ -55,8 +66,18 @@ r.500m$slope[is.na(r.500m$depth[])] <- NA
 r.500m$tpi  [is.na(r.500m$depth[])] <- NA
 r.500m$tpi5 [is.na(r.500m$depth[])] <- NA
 r.500m$tpi11[is.na(r.500m$depth[])] <- NA
-writeRaster(r.500m[[c(1,3:6)]], filename=paste0(out.dir, "IBCSO_v2_500m_bathymetric_variables.tif"), overwrite=TRUE)
-
+writeRaster(r.500m[[c(1,3:6)]], filename=paste0(local.out, "IBCSO_v2_500m_bathymetric_variables.tif"), overwrite=TRUE)
+localr.500m <- paste0(local.out, "IBCSO_v2_500m_bathymetric_variables.tif")
+# command line code to transfer output from temp to dropbox
+system2(
+  "rclone",
+  args = c(
+    "copy",
+    localr.500m,
+    "dropbox:Data/data_environmental/derived/bathy_outputs/",
+    "--progress"
+  )
+)
 ##################################################
 #### Distance to underwater canyons identified from Arosio & Amblas 2025
 r.500m <- rast(paste0(env.dir, "IBCSO_v2_500m_bathymetric_variables.tif"))
@@ -82,6 +103,19 @@ writeRaster(dist_water_m, filename=paste0(out.dir, "IBCSO_v2_2km_DistanceToCanyo
 library(whitebox)
 
 # 2km res
+# need to write 2km depth raster to disk as whitebox wont read the in memory raster
+writeRaster(r.2km$depth, paste0(env.dir, "IBCSO_v2_2km_depth.tif"), overwrite = TRUE)
+dem <- rast(paste0(env.dir, "IBCSO_v2_2km_depth.tif"))
+wbt_geomorphons(
+  dem = dem,
+  output = paste0("IBCSO_v2_2km_geomorph", ".tif"),
+  search = 20,
+  threshold = 5,
+  fdist = 20,
+  wd = out.dir
+)
+
+# 500m res
 # need to write 2km depth raster to disk as whitebox wont read the in memory raster
 writeRaster(r.2km$depth, paste0(env.dir, "IBCSO_v2_2km_depth.tif"), overwrite = TRUE)
 dem <- rast(paste0(env.dir, "IBCSO_v2_2km_depth.tif"))

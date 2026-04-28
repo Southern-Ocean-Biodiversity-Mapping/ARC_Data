@@ -5,7 +5,7 @@ if(usr == "VM"){
 }
 
 if(usr =="SJ"){
-  usr.main.dir <- "C:/Users/sajessop/Dropbox/Data/"
+  usr.main.dir <- "~/Data"
 }
 
 if(usr == "JJ"){

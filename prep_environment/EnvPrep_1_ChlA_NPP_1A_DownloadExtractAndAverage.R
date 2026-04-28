@@ -8,8 +8,8 @@
 usr <- "VM"
 source("prep_environment/EnvPrep_0_SourceFile.R")
 ## set input and output folders
-npp.dir <- paste0(usr.main.dir,"/data_environmental/raw/NPP_Files")
-out.dir <- paste0(usr.main.dir,"/data_environmental/derived/NPP")
+npp.dir <- paste0(usr.main.dir,"data_environmental/raw/NPP_Files")
+out.dir <- paste0(usr.main.dir,"data_environmental/derived/NPP")
 
 #########################################
 #### Download NPP files from the web

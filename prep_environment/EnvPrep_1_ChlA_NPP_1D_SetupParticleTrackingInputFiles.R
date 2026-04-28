@@ -13,9 +13,9 @@ usr <- "VM"
 source("prep_environment/EnvPrep_0_SourceFile.R")
 
 ## set input and output folders
-env.dir <- paste0(usr.main.dir,"/data_environmental/derived/ROMS_2k_files/")
-out.dir <- paste0(usr.main.dir,"/data_environmental/derived/NPP/")
-roms.dir <- paste0(usr.roms.dir,"/data_environmental/raw/ROMS_2k_files/")
+env.dir <- paste0(usr.main.dir,"data_environmental/derived/ROMS_2k_files/")
+out.dir <- paste0(usr.main.dir,"data_environmental/derived/NPP/")
+roms.dir <- paste0(usr.roms.dir,"data_environmental/raw/ROMS_2k_files/")
 
 ########################################################
 library(spatstat)

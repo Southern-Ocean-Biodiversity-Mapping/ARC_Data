@@ -61,40 +61,40 @@ writeRaster(r2, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_m
 ##### - limit to 2500m depth
 ##### - mask
 #######################################################
-
-ice_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_ice.grd"))
-sst_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SST.grd"))
-ssh_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SSH.grd"))
-
-## load bathy file:
-bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
- 
-
-if(ext(ice_stack)!=ext(bathy_shelf)){
-  ice_stack <- crop(ice_stack, bathy_shelf)
-}
-if(res=="500m"){
-  ice_stack<-terra::project(ice_stack, bathy_shelf)
-  ice_stack <- resample(ice_stack, bathy_shelf)
-  ice_stack_shelf<-mask(ice_stack, bathy_shelf)
-}else{
-  ## bring to resolution and 2500m depth range, and mask
-ice_stack<-terra::project(ice_stack, bathy_shelf)
-ice_stack_shelf<-mask(ice_stack, bathy_shelf)
-}
-
-sst_stack<-terra::project(sst_stack, bathy_shelf)
-sst_stack_shelf<-mask(sst_stack, bathy_shelf)
-
-ssh_stack<-terra::project(ssh_stack, bathy_shelf)
-ssh_stack_shelf<-mask(ssh_stack, bathy_shelf)
-
-## set filenames to save to:
-savestring2 <- paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_")
-
-writeRaster(ice_stack_shelf, filename=paste0(savestring2,"ICE.tif"), overwrite=TRUE)
-writeRaster(sst_stack_shelf, filename=paste0(savestring2,"SST.tif"), overwrite=TRUE)
-writeRaster(ssh_stack_shelf, filename=paste0(savestring2,"SSH.tif"), overwrite=TRUE)
+# 
+# ice_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_ice.grd"))
+# sst_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SST.grd"))
+# ssh_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SSH.grd"))
+# 
+# ## load bathy file:
+# bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
+#  
+# 
+# if(ext(ice_stack)!=ext(bathy_shelf)){
+#   ice_stack <- crop(ice_stack, bathy_shelf)
+# }
+# if(res=="500m"){
+#   ice_stack<-terra::project(ice_stack, bathy_shelf)
+#   ice_stack <- resample(ice_stack, bathy_shelf)
+#   ice_stack_shelf<-mask(ice_stack, bathy_shelf)
+# }else{
+#   ## bring to resolution and 2500m depth range, and mask
+# ice_stack<-terra::project(ice_stack, bathy_shelf)
+# ice_stack_shelf<-mask(ice_stack, bathy_shelf)
+# }
+# 
+# sst_stack<-terra::project(sst_stack, bathy_shelf)
+# sst_stack_shelf<-mask(sst_stack, bathy_shelf)
+# 
+# ssh_stack<-terra::project(ssh_stack, bathy_shelf)
+# ssh_stack_shelf<-mask(ssh_stack, bathy_shelf)
+# 
+# ## set filenames to save to:
+# savestring2 <- paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_")
+# 
+# writeRaster(ice_stack_shelf, filename=paste0(savestring2,"ICE.tif"), overwrite=TRUE)
+# writeRaster(sst_stack_shelf, filename=paste0(savestring2,"SST.tif"), overwrite=TRUE)
+# writeRaster(ssh_stack_shelf, filename=paste0(savestring2,"SSH.tif"), overwrite=TRUE)
 
 #######################################################
 ##### GEOMORPH & DISTANCE TO CANYONS
@@ -103,20 +103,20 @@ writeRaster(ssh_stack_shelf, filename=paste0(savestring2,"SSH.tif"), overwrite=T
 ##### - mask
 #######################################################
 ## load bathy file:
-bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2_depth.tif"))
+bathy_shelf <- rast(paste0(env.derived, "Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2bed.tif"))
 
 ## load files
 if(res=="500m"){
   geomorph <- rast(paste0(env.derived, "Circumpolar_EnvData_geomorphology.tif"))
   dist2cany <- rast(paste0(env.derived, "Circumpolar_EnvData_500m_shelf_distance2canyons.tif"))
 } else{
-  geomorph <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_geomorphology.tif"))
-  dist2cany <- rast(paste0(env.derived, "Circumpolar_EnvData_2km_shelf_distance2canyons.tif"))
+  geomorph  <- rast(paste0(env.derived, "bathy_outputs/IBCSO_v2_2km_geomorph.tif"))
+  dist2cany <- rast(paste0(env.derived, "bathy_outputs/IBCSO_v2_2km_DistanceToCanyons.tif"))
 }
 
 ## mask to 2500m depth range and extent
-geomorph_shelf<-mask(geomorph, bathy_shelf)
-dist2cany_shelf<-mask(dist2cany, bathy_shelf)
+geomorph_shelf <-mask(geomorph,  bathy_shelf$depth)
+dist2cany_shelf<-mask(dist2cany, bathy_shelf$depth)
 
 ## save to:
 writeRaster(geomorph_shelf, filename=paste0(savestring2,"geomorphology.tif"), overwrite=TRUE)

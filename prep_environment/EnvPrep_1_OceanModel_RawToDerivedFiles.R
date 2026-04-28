@@ -13,8 +13,8 @@ usr <- "VM"
 source("prep_environment/EnvPrep_0_SourceFile.R")
 
 ## set folders
-env.dir <- paste0(usr.main.dir,"/data_environmental/derived/ROMS_2k_files/")
-roms.dir <- paste0(usr.roms.dir,"/data_environmental/raw/ROMS_2k_files/")
+env.dir <- paste0(usr.main.dir,"data_environmental/derived/ROMS_2k_files/")
+roms.dir <- paste0(usr.roms.dir,"data_environmental/raw/ROMS_2k_files/")
 
 ############################
 

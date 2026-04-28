@@ -3,7 +3,7 @@ usr <- "VM"
 source("prep_environment/EnvPrep_0_SourceFile.R")
 
 ## set input and output folders
-env.dir <- paste0(usr.main.dir,"/data_environmental/derived/NPP")
+env.dir <- paste0(usr.main.dir,"data_environmental/derived/NPP")
 
 ###############################################
 library(terra)

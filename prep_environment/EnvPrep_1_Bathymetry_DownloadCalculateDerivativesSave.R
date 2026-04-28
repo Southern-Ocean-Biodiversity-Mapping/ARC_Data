@@ -9,8 +9,8 @@ usr <- "VM"
 source("prep_environment/EnvPrep_0_SourceFile.R")
 
 ## set input and output folders
-env.dir <- paste0(usr.main.dir,"/data_environmental/raw/")
-out.dir <- paste0(usr.main.dir,"/data_environmental/derived/bathy_outputs/")
+env.dir <- paste0(usr.main.dir,"data_environmental/raw/")
+out.dir <- paste0(usr.main.dir,"data_environmental/derived/bathy_outputs/")
 
 ########################################
 ## download IBCSO V2 bed and ice layers
@@ -72,9 +72,9 @@ ra.comb <- sum(ocean,canyon_r, na.rm=TRUE)
 ## calculate distance to canyons (which have value = 2)
 dist_water_m <- gridDist(ra.comb, target=2)
 
-writeRaster(dist_water_m, filename=paste0(env.dir, "IBCSO_v2_500m_DistanceToCanyons.tif"), overwrite=TRUE)
+writeRaster(dist_water_m, filename=paste0(out.dir, "IBCSO_v2_500m_DistanceToCanyons.tif"), overwrite=TRUE)
 dist_water_m_2km <- aggregate(dist_water_m, 4)
-writeRaster(dist_water_m, filename=paste0(env.dir, "IBCSO_v2_2km_DistanceToCanyons.tif"), overwrite=TRUE)
+writeRaster(dist_water_m, filename=paste0(out.dir, "IBCSO_v2_2km_DistanceToCanyons.tif"), overwrite=TRUE)
 
 
 ###############################################

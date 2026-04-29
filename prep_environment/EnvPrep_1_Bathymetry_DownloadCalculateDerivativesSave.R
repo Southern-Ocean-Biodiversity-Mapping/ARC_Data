@@ -6,7 +6,7 @@
 usr <- "VM"
 #usr <- "SJ"
 #usr <- "JJ
-source("prep_environment/EnvPrep_0_SourceFile.R")
+source("0_SourceFile.R")
 
 ## set input and output folders
 env.dir <- paste0(usr.main.dir,"/data_environmental/raw/")
@@ -80,8 +80,8 @@ system2(
 )
 ##################################################
 #### Distance to underwater canyons identified from Arosio & Amblas 2025
-r.500m <- rast(paste0(env.dir, "IBCSO_v2_500m_bathymetric_variables.tif"))
-canyons <- vect("/perm_storage/shared_space/BioMAS/environmental_data/ArosioAmblasAntarcticCanyons/Antarctica_drainage_2025_complete.shp")
+r.500m <- rast(paste0(out.dir, "IBCSO_v2_500m_bathymetric_variables.tif"))
+canyons <- vect(paste0(env.dir, "ArosioAmblasAntarcticCanyons/Antarctica_drainage_2025_complete.shp"))
 ## filter to canyons that reach shallower than 3000m
 canyons_shallow <- subset(canyons, canyons$Z_Max > -3000)
 ## Create ocean mask from which to calculate distances: water=1, land/ice=NA
@@ -91,11 +91,11 @@ canyon_r <- rasterize(canyons_shallow, r.500m$depth, field=1, touches=TRUE)
 ## Identify target cells (canyon-on-water cells)
 ra.comb <- sum(ocean,canyon_r, na.rm=TRUE)
 ## calculate distance to canyons (which have value = 2)
-dist_water_m <- gridDist(ra.comb, target=2)
+dist_water_m <- gridDist(ra.comb, target=2, overwrite=TRUE)
 
 writeRaster(dist_water_m, filename=paste0(out.dir, "IBCSO_v2_500m_DistanceToCanyons.tif"), overwrite=TRUE)
 dist_water_m_2km <- aggregate(dist_water_m, 4)
-writeRaster(dist_water_m, filename=paste0(out.dir, "IBCSO_v2_2km_DistanceToCanyons.tif"), overwrite=TRUE)
+writeRaster(dist_water_m_2km, filename=paste0(out.dir, "IBCSO_v2_2km_DistanceToCanyons.tif"), overwrite=TRUE)
 
 
 ###############################################

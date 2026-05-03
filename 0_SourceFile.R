@@ -2,6 +2,7 @@
 if(usr == "VM"){
   usr.main.dir <- "/pvol/"
   usr.roms.dir <- "/pvol3TB/"
+  usr.dropbox.dir <- "/pvol/DropboxData/"
 }
 
 if(usr =="SJ"){

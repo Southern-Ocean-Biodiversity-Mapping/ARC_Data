@@ -4,7 +4,6 @@
 ## aggregating data from 500m resolution to 2km resolution
 ## saving files into a single tif-file
 
-
 ## specify user and setup directory to look up data from
 usr <- "VM"
 #usr <- "SJ"
@@ -14,12 +13,16 @@ source("0_SourceFile.R")
 ## set folders
 env.derived  <- paste0(usr.main.dir, "data_environmental/derived/")
 env.raw      <- paste0(usr.main.dir, "data_environmental/raw/")
+roms.dir     <- paste0(usr.roms.dir,"data_environmental/derived/ROMS_2k_files/")
+roms.dir2    <- paste0(usr.dropbox.dir,"data_environmental/derived/ROMS/")
 
 ##############################################################################################################
 ##############################################################################################################
 
 #res <- "500m"
 res <- "2km"
+
+library(terra)
 
 #######################################################
 ##### Bathymetry
@@ -118,6 +121,8 @@ if(res=="500m"){
 geomorph_shelf <-mask(geomorph,  bathy_shelf$depth)
 dist2cany_shelf<-mask(dist2cany, bathy_shelf$depth)
 
+names(dist2cany_shelf) <- "distance2canyons"
+
 ## save to:
 writeRaster(geomorph_shelf, filename=paste0(savestring2,"geomorphology.tif"), overwrite=TRUE)
 writeRaster(dist2cany_shelf, filename=paste0(savestring2,"distance2canyons.tif"), overwrite=TRUE)
@@ -167,172 +172,105 @@ l.names <- gsub(".tif","",l.names.1)
 npp <- rast(l)
 names(npp) <- l.names
 
-waom_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-waom_list<-waom_list[grep(paste0(".",res,"_shelf_waom"), waom_list)]
+## 4k res temp and sal
+waom_list<-list.files(path = roms.dir2, pattern="tif$",  full.names=TRUE) 
+waom_list<-waom_list[grep(res, waom_list)]
+# waom_list<-waom_list[grep(paste0(".",res,"_shelf_waom"), waom_list)]
 waom_names <- gsub(".*waom4k_|\\..*","",waom_list)
 
 waom <- rast(waom_list)
 names(waom) <- waom_names
 
+## project to SO
+npp_proj <-project(npp,  r2$depth)
+waom_proj<-project(waom, r2$depth)
+
 ## mask to 2500m depth range and extent
-npp_shelf<-mask(npp, bathy_shelf)
-waom_shelf<-mask(waom, bathy_shelf)
+npp_shelf <-mask(npp_proj,  r2$depth)
+waom_shelf<-mask(waom_proj, r2$depth)
 
 ## save to:
-writeRaster(npp_shelf, filename=paste0(savestring2,"NPP.tif"))
-writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k.tif"))
-
-#######################################################
-
-##### read in all files and save as one single tif:
-env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-#subset to  "shelf" files
-env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
-# env_list<-env_list[-grep(paste0(".",res,"_shelf_mask_scaled"), env_list)]
-# env_list<-env_list[-grep("polynomials", env_list)]
-
-env_stack <- rast(env_list[-c(13)])
-writeRaster(env_stack, filename=paste0(savestring2,"unscaled_variables.tif"), overwrite=TRUE)
-
-## remove files, commented to stop accidently deleting things
-#file.remove(env_list)
-
-#env_stack2 <- c(subset(test,1:25),subset(env_stack,1:2),subset(test,28:39),subset(env_stack,3:9))
+writeRaster(npp_shelf, filename=paste0(savestring2,"NPP_climatology_OctMar_2002To2020_filled12boxes.tif"))
+writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k_bottomtempsal.tif"))
 
 #######################################################
 ##### FAM and 2km model current speeds (THIS FIXES )
 #######################################################
-fam.dir <- paste0(sci.dir,"data_environmental/FAM_outputs/")
-roms.dir <- paste0(sci.dir,"data_environmental/ROMS_2k_files/")
-
-flux01 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0001_28days_flux.tif"))
-flux02 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0002_28days_flux.tif"))
-flux05 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0005_28days_flux.tif"))
-flux005 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r00005_28days_flux.tif"))
-flux.mean <- mean(flux005,flux01,flux02, flux05, na.rm=TRUE)
-log.flux.mean <- log(flux.mean)
-sed01 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0001_28days_sed.tif"))
-sed02 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0002_28days_sed.tif"))
-sed05 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r0005_28days_sed.tif"))
-sed005 <- rast(paste0(fam.dir,"tracking2D_NPP9_200mday_21days_traj_r00005_28days_sed.tif"))
-sed.mean <- mean(sed005,sed01,sed02, sed05, na.rm=TRUE)
-fam <- c(flux005,flux01,flux02,flux05,flux.mean,log.flux.mean, sed005,sed01,sed02,sed05,sed.mean)
-names(fam) <- c("flux00005","flux0001","flux0002","flux0005","flux.mean","log.flux.mean","sed00005","sed0001","sed0002","sed0005","sed.mean")
-
+#### current speeds
 ## these are averages for a single month in summer
 uv_absmean <- rast(paste0(roms.dir,"ocean_his_bottom_uv_absmean.tif"))
-uv_mean <- rast(paste0(roms.dir,"ocean_his_bottom_uv_mean.tif"))
-uv_max <- rast(paste0(roms.dir,"ocean_his_bottom_uv_max.tif"))
-w_absmean <- rast(paste0(roms.dir,"ocean_his_bottom_w_absmean.tif"))
-w_mean <- rast(paste0(roms.dir,"ocean_his_bottom_w_mean.tif"))
-currents <- c(uv_absmean,uv_mean,uv_max,w_absmean,w_mean)
+uv_mean    <- rast(paste0(roms.dir,"ocean_his_bottom_uv_mean.tif"))
+uv_max     <- rast(paste0(roms.dir,"ocean_his_bottom_uv_max.tif"))
+w_absmean  <- rast(paste0(roms.dir,"ocean_his_bottom_w_absmean.tif"))
+w_mean     <- rast(paste0(roms.dir,"ocean_his_bottom_w_mean.tif"))
+currents   <- c(uv_absmean,uv_mean,uv_max,w_absmean,w_mean)
 names(currents) <- c("uv_absmean","uv_mean","uv_max","w_absmean","w_mean")
 
-## need to match extents of the rasters first before masking
+#### food-availability simulations
+fam.dir <-  paste0(usr.roms.dir,"FAM_outputs/")
+
+all.fam.files <- list.files(fam.dir, full.names=TRUE)
+fam.files.sed <- all.fam.files[grep("sed_circumpolar", all.fam.files)]
+fam.files.flux<- all.fam.files[grep("flux_circumpolar", all.fam.files)]
+
+flux <- rast(fam.files.flux)
+names(flux) <- gsub("_circumpolar.tif","",basename(fam.files.flux))
+sed <- rast(fam.files.sed)
+names(sed) <- gsub("_circumpolar.tif","",basename(fam.files.sed))
+
+sel.cafe <- grep("cafe", names(flux))
+sel.cbpm <- grep("cbpm", names(flux))
+sel.eppl <- grep("eppl", names(flux))
+sel.vpmg <- grep("vpmg", names(flux))
+
+flux.mean.cafe <- mean(flux[[sel.cafe]], na.rm=TRUE)
+flux.mean.cbpm <- mean(flux[[sel.cbpm]], na.rm=TRUE)
+flux.mean.eppl <- mean(flux[[sel.eppl]], na.rm=TRUE)
+flux.mean.vpmg <- mean(flux[[sel.vpmg]], na.rm=TRUE)
+log.flux.mean.cafe <- log(flux.mean.cafe)
+log.flux.mean.cbpm <- log(flux.mean.cbpm)
+log.flux.mean.eppl <- log(flux.mean.eppl)
+log.flux.mean.vpmg <- log(flux.mean.vpmg)
+sed.mean.cafe <- mean(sed[[sel.cafe]], na.rm=TRUE)
+sed.mean.cbpm <- mean(sed[[sel.cbpm]], na.rm=TRUE)
+sed.mean.eppl <- mean(sed[[sel.eppl]], na.rm=TRUE)
+sed.mean.vpmg <- mean(sed[[sel.vpmg]], na.rm=TRUE)
+
+fam <- c(flux.mean.cafe,flux.mean.cbpm,flux.mean.eppl,flux.mean.vpmg,
+         log.flux.mean.cafe,log.flux.mean.cbpm,log.flux.mean.eppl,log.flux.mean.vpmg,
+         sed.mean.cafe,sed.mean.cbpm,sed.mean.eppl,sed.mean.vpmg)
+names(fam) <-  c("flux.mean.cafe","flux.mean.cbpm","flux.mean.eppl","flux.mean.vpmg",
+                 "log.flux.mean.cafe","log.flux.mean.cbpm","log.flux.mean.eppl","log.flux.mean.vpmg",
+                 "sed.mean.cafe","sed.mean.cbpm","sed.mean.eppl","sed.mean.vpmg")
+
+
+#### need to match extents of the rasters first before masking
 fam.resampled <- resample(fam, r.mask2, method="near")
 currents.resampled <- resample(currents, r.mask2, method="near")
 
-#plot(fam.resampled)
-sed.na <- which(is.na(fam.resampled$sed.mean[]))
-flux.na <- which(is.na(fam.resampled$flux.mean[]))
-fam.resampled$sed.mean[sed.na[-which(sed.na%in%flux.na)]] <- 0
+## 
+for(i in 1:4){
+  print(i)
+  sed.na <- which(is.na(fam.resampled[[i+8]][]))
+  flux.na<- which(is.na(fam.resampled[[i]][]))
+  all.na <- which(sed.na%in%flux.na)
+  fam.resampled[[i+8]][sed.na[-all.na]] <- 0
+}
 
 fam2 <- mask(fam.resampled, r.mask2)
 currents2 <- mask(currents.resampled, r.mask2)
 
+## save to:
+writeRaster(fam2,      filename=paste0(savestring2,"FAM_mean_12boxfilled_NPP9_200mday_21days_r0001to0005_28days.tif"))
+writeRaster(currents2, filename=paste0(savestring2,"waom2k_bottomcurrents.tif"))
 
-###############################
-unscaled.vars <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables_old.tif"))
-bedbathy <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_bathy_ibcso2bed.tif"))
-
-unscaled.vars[[1:5]] <- bedbathy[[1:5]]
-
-## drop sd and substitute current vals
-unscaled.vars <- unscaled.vars[[-44]]
-unscaled.vars$seafloorcurrents_max <- currents2$uv_max
-unscaled.vars$seafloorcurrents_mean <- currents2$uv_mean
-unscaled.vars$seafloorcurrents_absolute <- currents2$uv_absmean
-unscaled.vars$seafloorcurrents_residual <- currents2$uv_absmean-currents2$uv_mean
-
-unscaled.vars <- c(unscaled.vars,fam2)
-
-#writeRaster(unscaled.vars, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"), overwrite=TRUE)
+#######################################################
+##### read in all files and save as one single tif:
+env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
+#subset to  "shelf" files
+env_list<-env_list[grep(paste0(".",res,"_shelf_mask"), env_list)]
+env_stack <- rast(env_list)
+writeRaster(env_stack, filename=paste0(savestring2,"unscaled_variables.tif"), overwrite=TRUE)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##########
-## some random code below that I (Jan) used when changing environmental .grd files to .tif 
-# env_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-# #subset to  "shelf" files
-# env_list<-env_list[grep(".500m_shelf", env_list)]
-# env_list<-env_list[-grep(".500m_shelf_scaled", env_list)]
-# #for the single rasters layer names are missing. Extract from file name.
-# env_names<-gsub(".*_|\\..*","",env_list)
-# 
-# for(i in 1:length(env_names)){
-#   ra.loop <- raster(env_list[[i]])
-#   writeRaster(ra.loop, sub(".gri*", ".tif", env_list[[i]]))
-# }
-# 
-# 
-# nams <- c("SST_mean","SST_sd","SST_sp_mean","SST_sp_sd","SST_su_mean","SST_su_sd")
-# 
-# ra.loop <- stack(env_list[[1]])
-# for(i in 1:nlayers(ra.loop)){
-#   writeRaster(ra.loop[[i]], sub("SST.gri*", paste0(nams[i],".tif"), env_list[[1]]))
-# }
-# 
-# #stack all environmental layers and make sure they have appropriate names (currently manual and a bit messy!)
-# env_stack<-raster::stack(env_list)
-# 
-# env_list<-list.files(path = env.derived, pattern="gri$",  full.names=TRUE) 
-# #subset to  "shelf" files
-# env_list<-env_list[grep(".500m_shelf_scaled", env_list)]
-# #for the single rasters layer names are missing. Extract from file name.
-# env_names<-gsub(".*_|\\..*","",env_list)
-# 
-# for(i in 1:length(env_names)){
-#   ra.loop <- raster(env_list[[i]])
-#   writeRaster(ra.loop, sub(".gri*", ".tif", env_list[[i]]))
-# }
-
-##########
-## how many cells per resolution?
-# ## restrict depth range and mask to remove areas off the shelf
-# r3 <- r2
-# r3[r2<(-2500)] <- NA
-# r4 <- mask(r3,t)
-# r5 <- aggregate(r4,4)
-# r6 <- aggregate(r4,8)
-# 
-# ## 500m res, 0-3000m depth, raw,    -> 23.6 million cells
-# length(which(!is.na(r2[])))
-# ## 500m res, 0-2500m depth, raw,    -> 17.6 million cells
-# length(which(!is.na(r3[])))
-# ## 500m res, 0-2500m depth, masked, -> 16.1 million cells
-# length(which(!is.na(r4[])))
-# ## 2km res,  0-2500m depth, masked, -> 987k cells
-# length(which(!is.na(r5[])))
-# ## 4km res,  0-2500m depth, masked, -> 241k cells
-# length(which(!is.na(r6[])))

@@ -1,361 +1,393 @@
-##########
-## WHAT THIS SCRIPT DOES:
-## - loading and cleaning biological and environmental data
-## - removing correlated environmental variables
-## - scaling environmental data (at the sampling locations)
-## - setting up derivatives of biological data, such as cover, richness etc, and saving for analysis later
-## - scaling and adding polynomials to environmental rasters (circumpolar)
-## - create a environmental dataframe with one row per cell (circumpolar), one column per variable
-##########
+############################################################
+# 02_env_extract_and_scale_cover_points_2km.R
+#
+# Purpose
+# -------
+# Starting from the NEW "wide" cover-point annotation tables
+# (one row per cell/image, one column per label), this script:
+#
+# 1) Loads environmental rasters (unscaled variables + polynomials/etc)
+# 2) Extracts environmental values at sampled cells (2 km)
+# 3) Merges environmental predictors with cover-point response data
+# 4) Scales predictors (z-score) and saves scaling parameters
+# 5) Creates a scaled environmental raster stack for prediction
+# 6) Creates a dataframe of scaled values for all shelf cells (for prediction)
+#
+# Inputs (NEW format)
+# -------------------
+# - ASAID_cover_points_counts_by_cell_wide.csv
+# - ASAID_cover_points_counts_by_image_wide.csv (optional, loaded but not required)
+# - Circumpolar_EnvData_2km_shelf_mask_unscaled_variables.tif
+# - Circumpolar_EnvData_2km_shelf_mask_unscaled_polynomials_etc.tif
+#
+# Outputs
+# -------
+# - cover_cell_metadata_env.rds
+# - cover_cells_env.rds
+# - cover_cell_metadata_env_scaled.rds
+# - scaling_params_cover_2km.rds
+# - Circumpolar_EnvData_2km_shelf_mask_scaled.tif
+# - Circumpolar_EnvData_2km_shelf_mask_scaled_dataframe.rds
+#
+############################################################
 
-##### Setting up----
-library(PerformanceAnalytics) ## plotting correlations
-library(terra)
+############################
+# 0) USER SETTINGS (EDIT ME)
+############################
 
-user = "Jan"
-#user = "charley"
-#user="nicole"
-if (user == "Jan") {
-  sci.dir <-      "C:/Users/jjansen/OneDrive - University of Tasmania/science/"
-  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
-  #bio.dir <-      paste0(sci.dir,"data_biological/")
-  ## remote repository (DOESN'T WORK YET):
-  # env.dir <- "https://data.imas.utas.edu.au/data_transfer/admin/files/EnvironmentalData/"
-  ## common paths (after "sci.dir")
-  tools.dir <-    paste0(sci.dir,"SouthernOceanBiodiversityMapping/Useful_Functions_Tools/")
-  ARC_Data.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Data/")
-} 
-if (user == "charley") {
-  
-  sci.dir <- "C:/Users/cgros/code/IMAS/"
-  ARC_Data.dir <- paste0(sci.dir,"ARC_Data/")
-  env.derived <-  "C:/Users/cgros/data/SO_env_layers/derived/"
-  tools.dir <-    paste0(sci.dir,"Useful_Functions_Tools/")
-}
-if (user == "nicole") {
-  
-  sci.dir <-    "C:/Users/hillna/OneDrive - University of Tasmania/UTAS_work/Projects/Benthic Diversity ARC/"
-  ARC_Data.dir <- paste0(sci.dir,"Analysis/ARC_Data/")
-  env.derived <-  paste0(sci.dir,"data_environmental/derived/")
-  tools.dir <-    paste0(sci.dir,"Analysis/Useful_Functions_Tools/")
-}
+# Folder where your NEW wide annotation outputs are written
+# (From our annotation scripts; you requested "cover" in the filename.)
+annotation_output_dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/data_biological/ASAID_image_annotations/derived_outputs"
 
-biodiv.dir <- paste0(sci.dir,"SouthernOceanBiodiversityMapping/ARC_Benthic_Mapping/biodiversity/")
+# Environmental rasters folder (2 km rasters live here)
+env_dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/data_environmental/derived"
 
-##############################################################################################################
-##############################################################################################################
-## Running this script for both data at 500m res and at 2km res
-
-#res <- "500m"
+# Resolution label used in environmental filenames
 res <- "2km"
 
-######################################
-##### load biological and environmental data
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Data_",res,"_202312.Rdata"))
-## cell_metadata, count_cells, cover_cells
-## image_metadata, count_images, cover_images
+# Environmental raster filenames (unscaled)
+env_file_vars <- paste0("Circumpolar_EnvData_", res, "_shelf_mask_unscaled_variables.tif")
+env_file_poly <- paste0("Circumpolar_EnvData_", res, "_shelf_mask_unscaled_polynomials_etc.tif")
 
-load(paste0(ARC_Data.dir,"annotation/Circumpolar_Annotation_Env_Data_",res,"_202412.Rdata"))
-## cell_metadata_env, count_cells_env, cover_cells_env
-## image_metadata_env
+# NEW annotation wide tables (cover points)
+cover_cell_counts_file  <- file.path(annotation_output_dir, "ASAID_points_cover_by_cell_wide.csv")
+cover_image_counts_file <- file.path(annotation_output_dir, "ASAID_points_cover_by_image_wide.csv")  # optional
 
-##############################################################################################################
-## environmental data
-##############################################################################################################
+# Output folder
+output_dir <- annotation_output_dir
 
-##### add information about number of unscorable points per cell
-cell_metadata_env$cover_points_total <- rowSums(cover_cells)
-cell_metadata_env$cover_points_scorable <- rowSums(cover_cells)-cover_cells$Unscorable
+# Label column that should be excluded from scorable totals (kept as a column)
+unscorable_label_name <- "Unscorable"  # the *original* label text
 
-######################################################################################################
-##### check correlations (essentially the same between 500m and 2km resolution)
-## for 2km res:
-## first batch:
-chart.Correlation(cell_metadata_env[,24:37])
-# remove tpi5, arag_mean, no3_mean & sd, po4_mean & sd
-chart.Correlation(dplyr::select(cell_metadata_env[,24:37],-c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd")))
+# Optional: correlation threshold for auto-dropping predictors (set NULL to skip auto-drop)
+cor_threshold <- NULL   # e.g., 0.7; NULL means "do not auto-drop"
 
-## second batch:
-chart.Correlation(cell_metadata_env[,39:50])
-#remove ice prop & mean & max, ice summer sd
-chart.Correlation(dplyr::select(cell_metadata_env[,39:50],-c("ice_prop", "ice_mean", "ice_max", "ice_su_sd","npp_sd")))
+# manual list of environmental variables to remove (to mimic your earlier workflow)
+env_remove <- c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd")
 
-## third batch:
-chart.Correlation(cell_metadata_env[,51:62])
-#remove ssh summer mean & sd, ssh spring mean, sst seasonal means, yearly sd and spring sd,  flux0001, flux0002
-chart.Correlation(dplyr::select(cell_metadata_env[,51:62],-c("ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean")))#,"flux0001","flux0002")))
+# Predictors that are categorical codes and must NOT be z-scaled
+categorical_vars <- c("geomorphology")
 
-## fourth batch:
-chart.Correlation(cell_metadata_env[,63:82])
-#remove seafloorcurrents_absolute, individual flux and sed runs
-chart.Correlation(dplyr::select(cell_metadata_env[,63:82],-c("seafloorcurrents_absolute","flux0001","flux0002","flux0005","flux00005","sed0001","sed0002","sed0005","sed00005")))
+############################
+# 1) PACKAGES
+############################
 
-# ## together: note that npp_mean-susp08 are correlated, and tpi-tpi11
-env.remove <- c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd",
-                "ice_prop", "ice_mean", "ice_max", "ice_su_sd","npp_sd",
-                "ssh_su_mean","ssh_su_sd","ssh_sp_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean",
-                "seafloorcurrents_absolute","flux00005","flux0001","flux0002","flux0005","sed00005","sed0001","sed0002","sed0005")
-env.sel.remove <- which(names(cell_metadata_env)%in%env.remove)
-env.sel.remove.metadata <- c(1:23,83,84)
-# chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,1:15])
-# chart.Correlation(cell_metadata_env[,-c(env.sel.remove.metadata,env.sel.remove,37)][,16:29])
+needed_pkgs <- c("data.table", "dplyr", "terra")
+# install.packages(setdiff(needed_pkgs, rownames(installed.packages())))
 
-'%!in%' <- function(x,y)!('%in%'(x,y))
-env.sel <- which(names(cell_metadata_env)%!in%env.remove)
-sel.not.correlated <- (1:length(names(cell_metadata_env)))[-c(env.sel.remove.metadata,env.sel.remove)]
+invisible(lapply(needed_pkgs, require, character.only = TRUE))
 
-######################################################################################################
-##### scale environmental data
-cell_metadata_env_scaled <- cell_metadata_env
-scale.means <- NA
-scale.sd <- NA
-sel.not.to.be.scaled <- c(env.sel.remove.metadata,38)
-for(i in (1:ncol(cell_metadata_env_scaled))[-sel.not.to.be.scaled]){
-  scale.means[i] <- mean(cell_metadata_env_scaled[,i], na.rm=TRUE)
-  scale.sd[i] <- sd(cell_metadata_env_scaled[,i], na.rm=TRUE)
-  cell_metadata_env_scaled[,i] <- (cell_metadata_env_scaled[,i]-scale.means[i])/scale.sd[i]
+
+############################
+# 2) LOAD COVER COUNTS (CELL + IMAGE)
+############################
+cover_cells_wide <- data.table::fread(cover_cell_counts_file)
+message("Loaded cover cell-wide table: ", nrow(cover_cells_wide), " rows; ", ncol(cover_cells_wide), " columns.")
+
+# Image-wide table is optional for this script (not required for cell-level extraction)
+cover_images_wide <- NULL
+if (file.exists(cover_image_counts_file)) {
+  cover_images_wide <- data.table::fread(cover_image_counts_file)
+  message("Loaded cover image-wide table: ", nrow(cover_images_wide), " rows; ", ncol(cover_images_wide), " columns.")
+} else {
+  message("Note: cover image-wide file not found (this is OK for cell-level env extraction).")
 }
 
-######################################################################################################
-## to specify a spatial latent factor we need coordinates for each transect, calculated here:
-transect.xy <- aggregate(image_metadata$proj_coord_x~image_metadata$transectID_full, FUN=mean)
-transect.xy[,3] <- aggregate(image_metadata$proj_coord_y~image_metadata$transectID_full, FUN=mean)[,2]
-names(transect.xy) <- c("transectID_full", "proj_coord_x", "proj_coord_y")
+# Sanity checks: required columns from the new format
+required_cols <- c("cell_id", "n_total_excl_unscorable", "n_total_incl_unscorable")
+missing_cols <- setdiff(required_cols, names(cover_cells_wide))
+if (length(missing_cols) > 0) {
+  stop("Cover cell-wide table is missing expected columns:\n  ",
+       paste(missing_cols, collapse = ", "),
+       "\n\nThis script expects the new wide format with 'cell_id' and totals columns.")
+}
 
-######################################################################################################
-save(cell_metadata_env, transect.xy, sel.not.correlated,
-     cell_metadata_env_scaled, scale.means, scale.sd,
-     file=paste0(ARC_Data.dir,"Cell_level_env_",res,"_202412.Rdata"))
+# Define cover_N = number of scorable points (excluding Unscorable)
+# This matches your old meaning of cover_N.
+cover_cells_wide <- cover_cells_wide |>
+  dplyr::mutate(
+    cover_N = n_total_excl_unscorable
+  )
+
+# Identify the column name that corresponds to Unscorable (if present)
+# In the new wide file, label columns were made syntactic (make.names()) in the earlier script.
+# We detect Unscorable robustly by checking for likely column names.
+possible_unscorable_cols <- c("Unscorable", "X.Unscorable", "Unscorable.", "Unscorable..")
+unscorable_col <- intersect(possible_unscorable_cols, names(cover_cells_wide))
+unscorable_col <- if (length(unscorable_col) > 0) unscorable_col[1] else NA_character_
+
+if (!is.na(unscorable_col)) {
+  cover_cells_wide <- cover_cells_wide |>
+    dplyr::mutate(
+      cover_points_total    = n_total_incl_unscorable,
+      cover_points_scorable = n_total_excl_unscorable,
+      cover_points_unscorable = .data[[unscorable_col]]
+    )
+} else {
+  # Unscorable may be absent if it never occurs in the dataset
+  cover_cells_wide <- cover_cells_wide |>
+    dplyr::mutate(
+      cover_points_total    = n_total_incl_unscorable,
+      cover_points_scorable = n_total_excl_unscorable,
+      cover_points_unscorable = 0
+    )
+  message("Unscorable column not found in cover data; assuming 0 unscorable points everywhere.")
+}
+
+# Subset to sampled cells (at least 1 scorable point)
+cover_cells_sampled <- cover_cells_wide |>
+  dplyr::filter(cover_N > 0)
+
+message("Sampled cells (cover_N > 0): ", nrow(cover_cells_sampled))
 
 
-######################################################################################################
-##### scaling rasters and preparing circumpolar cell data for predictions
-######################################################################################################
-## we only need res, env.derived and cell_metadata_env:
-rm(list=setdiff(ls(), c("res","scale.means","scale.sd","env.derived","cell_metadata_env_scaled","sel.not.correlated","env.sel.remove.metadata")))
+############################
+# 3) LOAD ENVIRONMENTAL STACK
+############################
 
-## get file names of all environmental rasters and bricks and load into one big stack----
-pred_stack <- rast(c(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_variables.tif"),
-                    paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_unscaled_polynomials_etc.tif")))
+env_path_vars <- file.path(env_dir, env_file_vars)
+env_path_poly <- file.path(env_dir, env_file_poly)
 
-## matching up metadata with pred-layers
-sel.vars <- names(cell_metadata_env_scaled)[sel.not.correlated]
-sel.ra <- which(names(pred_stack)%in%sel.vars)
-#names(pred_stack)[which(names(pred_stack)%in%sel.vars)]
-pred_stack.nc <- subset(pred_stack,sel.ra)
-names(pred_stack.nc)
+env_stack <- terra::rast(c(env_path_vars, env_path_poly))
+message("Loaded env_stack with ", terra::nlyr(env_stack), " layers.")
 
-## split scaling into runs of 4:
-seq_split <- split(1:nlyr(pred_stack.nc), ceiling(seq_along(1:nlyr(pred_stack.nc))/4))
-for(j in 1:length(seq_split)){
-  ## creating an empty stack of 10 layers
-  pred_stack_scaled <- rast(pred_stack.nc[[seq_split[[j]]]])
-  for(i in 1:4){
-    l <- seq_split[[j]][i]
-    print(l)
-    if(is.na(l)) break
-    k <- names(pred_stack.nc)[l]
-    ## we don't want to scale geomorphology
-    if(k=="geomorphology"){
-      pred_stack_scaled[[i]] <- pred_stack.nc[[l]]
-    }else{
-      ## select which layers match between the stack and the cell_metadata
-      c.sel <- which(names(cell_metadata_env_scaled)==k)
-      s.sel <- which(names(pred_stack.nc)==k)
-      # pred_stack_scaled[[i]] <- rast(pred_stack.nc$depth)
-      ## scale the raster
-      pred_stack_scaled[[i]] <- (pred_stack.nc[[s.sel]]-scale.means[c.sel])/scale.sd[c.sel]
+
+############################
+# 4) CREATE CELL METADATA (COORDS) + EXTRACT ENV BY CELL ID
+############################
+# Use the FIRST layer as a reference raster for geometry (extent/res/CRS)
+r_ref <- env_stack[[1]]
+
+# Get xy coordinates (projected) for each sampled cell
+cell_ids <- cover_cells_sampled$cell_id
+
+xy <- terra::xyFromCell(r_ref, cell_ids)  # returns matrix with columns x,y
+cell_meta <- data.frame(
+  cell_id = cell_ids,
+  proj_coord_x = xy[,1],
+  proj_coord_y = xy[,2]
+)
+
+# Convert projected coords to lon/lat for convenience (optional but useful for QC/maps)
+pts_xy <- terra::vect(cell_meta, geom = c("proj_coord_x", "proj_coord_y"), crs = terra::crs(r_ref))
+pts_ll <- terra::project(pts_xy, "EPSG:4326")
+ll <- terra::crds(pts_ll)
+
+cell_meta$lon <- ll[,1]
+cell_meta$lat <- ll[,2]
+
+# Extract environmental values by cell index (fast & robust)
+env_vals <- terra::extract(env_stack, cell_ids)
+# terra::extract returns a data.frame with ID column first
+env_vals <- env_vals[, -1, drop = FALSE]
+
+cell_metadata_env <- cbind(cell_meta, env_vals)
+
+message("Extracted environmental values for ", nrow(cell_metadata_env), " sampled cells.")
+
+
+############################
+# 5) MERGE ENV + COVER RESPONSE (CELL-LEVEL)
+############################
+
+# Merge environmental predictors onto cover cell-wide table (sampled subset)
+cover_cells_env <- cover_cells_sampled |>
+  dplyr::left_join(cell_metadata_env, by = "cell_id")
+
+# Save unscaled outputs
+saveRDS(cell_metadata_env, file.path(output_dir, paste0("cover_cell_metadata_env_", res, ".rds")))
+saveRDS(cover_cells_env,    file.path(output_dir, paste0("cover_cells_env_", res, ".rds")))
+
+message("Saved unscaled merged objects to: ", output_dir)
+
+
+############################
+# 6) SELECT PREDICTORS + SCALE (Z-SCORE), BUT DO NOT SCALE CATEGORICALS
+############################
+
+# Identify which columns are environmental predictors:
+metadata_cols <- c("cell_id", "proj_coord_x", "proj_coord_y", "lon", "lat")
+env_cols <- setdiff(names(cell_metadata_env), metadata_cols)
+
+# Remove any variables in env_remove (if present)
+env_cols_kept <- setdiff(env_cols, intersect(env_cols, env_remove))
+
+# Ensure categorical vars are kept (unless you explicitly removed them)
+categorical_vars <- intersect(categorical_vars, env_cols_kept)
+
+# Optional: auto-drop highly correlated predictors (numeric-only, exclude categoricals)
+if (!is.null(cor_threshold)) {
+  message("Auto-dropping predictors with |cor| > ", cor_threshold, " (pairwise), numeric-only.")
+
+  numeric_candidates <- setdiff(env_cols_kept, categorical_vars)
+  x <- cell_metadata_env[, numeric_candidates, drop = FALSE]
+
+  # keep only numeric columns (extra safety)
+  is_num <- sapply(x, is.numeric)
+  x <- x[, is_num, drop = FALSE]
+
+  cmat <- stats::cor(x, use = "pairwise.complete.obs")
+
+  # greedy drop: remove later variable in each high-correlation pair
+  high <- which(abs(cmat) > cor_threshold & upper.tri(cmat), arr.ind = TRUE)
+  drop_vars <- character(0)
+  if (nrow(high) > 0) drop_vars <- unique(colnames(cmat)[high[, 2]])
+
+  env_cols_kept <- setdiff(env_cols_kept, drop_vars)
+  message("Dropped ", length(drop_vars), " predictors by correlation threshold.")
+}
+
+# Scale (z-score): (x - mean)/sd for numeric continuous predictors only
+cell_metadata_env_scaled <- cell_metadata_env
+
+scale_means <- rep(NA_real_, length(env_cols_kept))
+scale_sds   <- rep(NA_real_, length(env_cols_kept))
+names(scale_means) <- env_cols_kept
+names(scale_sds)   <- env_cols_kept
+
+for (v in env_cols_kept) {
+  
+  # Do NOT scale categorical predictors
+  if (v %in% categorical_vars) {
+    scale_means[v] <- NA_real_
+    scale_sds[v]   <- NA_real_
+    next
+  }
+  
+  mu <- mean(cell_metadata_env_scaled[[v]], na.rm = TRUE)
+  sdv <- sd(cell_metadata_env_scaled[[v]], na.rm = TRUE)
+  scale_means[v] <- mu
+  scale_sds[v]   <- sdv
+  
+  if (is.finite(sdv) && sdv > 0) {
+    cell_metadata_env_scaled[[v]] <- (cell_metadata_env_scaled[[v]] - mu) / sdv
+  } else {
+    cell_metadata_env_scaled[[v]] <- 0
+  }
+}
+
+# Keep a record of predictors included for modelling:
+sel_predictors <- env_cols_kept
+
+# Save scaled metadata + scaling parameters
+saveRDS(cell_metadata_env_scaled, file.path(output_dir, paste0("cover_cell_metadata_env_scaled_", res, ".rds")))
+saveRDS(
+  list(
+    predictors = sel_predictors,
+    categorical_vars = categorical_vars,
+    means = scale_means,
+    sds = scale_sds,
+    env_remove = env_remove,
+    cor_threshold = cor_threshold
+  ),
+  file.path(output_dir, paste0("scaling_params_cover_", res, ".rds"))
+)
+
+message("Saved scaled cell metadata and scaling parameters (categoricals left unscaled).")
+
+############################
+# 7) SCALE THE ENVIRONMENTAL RASTER STACK FOR PREDICTIONS (DISK-BASED)
+#    - does NOT scale categorical predictors (e.g., geomorphology)
+############################
+
+# Subset env_stack to the selected predictors (only those present in the raster)
+sel_ra <- which(names(env_stack) %in% sel_predictors)
+pred_stack_nc <- terra::subset(env_stack, sel_ra)
+
+# terra temp settings
+terra_tmp <- file.path(output_dir, "terra_tmp")
+if (!dir.exists(terra_tmp)) dir.create(terra_tmp, recursive = TRUE)
+terra::terraOptions(tempdir = terra_tmp, memfrac = 0.3)
+
+# Process in groups (4 layers at a time)
+idx_groups <- split(1:terra::nlyr(pred_stack_nc),
+                    ceiling(seq_along(1:terra::nlyr(pred_stack_nc)) / 4))
+
+tmp_files <- character(0)
+
+for (g in seq_along(idx_groups)) {
+  idx <- idx_groups[[g]]
+  
+  grp <- pred_stack_nc[[idx]]
+  grp_scaled <- grp
+  
+  for (j in seq_along(idx)) {
+    lyr_name <- names(grp)[j]
+    
+    # Do NOT scale categorical layers
+    if (lyr_name %in% categorical_vars) {
+      grp_scaled[[j]] <- grp[[j]]
+      next
+    }
+    
+    mu  <- scale_means[lyr_name]
+    sdv <- scale_sds[lyr_name]
+    
+    if (!is.na(mu) && !is.na(sdv) && is.finite(sdv) && sdv > 0) {
+      grp_scaled[[j]] <- (grp[[j]] - mu) / sdv
+    } else {
+      grp_scaled[[j]] <- grp[[j]] * 0
     }
   }
-  writeRaster(pred_stack_scaled, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled_temporaryfile",j,".tif"), overwrite=TRUE)
+  
+  f_out <- file.path(env_dir, paste0("tmp_scaled_", res, "_group_", g, ".tif"))
+  terra::writeRaster(grp_scaled, f_out, overwrite = TRUE,
+                     wopt = list(gdal = c("COMPRESS=LZW")))
+  tmp_files <- c(tmp_files, f_out)
+  
+  message("Wrote temp scaled file: ", f_out)
 }
 
-## combine the temporary files into one
-file_list<-list.files(path = env.derived, pattern="tif$",  full.names=TRUE) 
-#subset to  "shelf" files
-file_list<-file_list[grep(paste0(".",res,"_shelf_mask_scaled_temporary"), file_list)]
-# ## we need to reorder the list so that #10 comes after 9...
-#file_list <- file_list[c(1,3:10,2)]
-## read in and save as one file
-all_temporary_files <- rast(file_list)
-writeRaster(all_temporary_files, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"), overwrite=TRUE)
-#file.remove(file_list)
+# Combine temp files into final scaled stack (file-backed)
+scaled_raster_out <- file.path(env_dir, paste0("Circumpolar_EnvData_", res, "_shelf_mask_scaled.tif"))
+scaled_all <- terra::rast(tmp_files)
+terra::writeRaster(scaled_all, filename = scaled_raster_out, overwrite = TRUE,
+                   wopt = list(gdal = c("COMPRESS=LZW")))
 
-##############################################
-## creating a dataframe with scaled values, one row per environmental cell
-env_stack_scaled <- rast(paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled.tif"))
-sel <- which(!is.na(env_stack_scaled$depth[]))
+message("Wrote scaled prediction raster stack:\n  ", scaled_raster_out)
 
-## res=="2km" takes about 2min
-## res=="500m" takes about 1-2hrs
-## split into groups of 3:
-seq_split <- split(1:nlyr(env_stack_scaled), ceiling(seq_along(1:nlyr(env_stack_scaled))/3))
-tempdat1 <- cbind(env_stack_scaled[[seq_split[[1]]]][sel])
-tempdat2 <- cbind(env_stack_scaled[[seq_split[[2]]]][sel])
-tempdat3 <- cbind(env_stack_scaled[[seq_split[[3]]]][sel])
-tempdat4 <- cbind(env_stack_scaled[[seq_split[[4]]]][sel])
-tempdat5 <- cbind(env_stack_scaled[[seq_split[[5]]]][sel])
-tempdat6 <- cbind(env_stack_scaled[[seq_split[[6]]]][sel])
-tempdat7 <- cbind(env_stack_scaled[[seq_split[[7]]]][sel])
-tempdat8 <- cbind(env_stack_scaled[[seq_split[[8]]]][sel])
-tempdat9 <- cbind(env_stack_scaled[[seq_split[[9]]]][sel])
-tempdat10 <- cbind(env_stack_scaled[[seq_split[[10]]]][sel])
-tempdat11 <- cbind(env_stack_scaled[[seq_split[[11]]]][sel])
-# tempdat12 <- cbind(env_stack_scaled[[seq_split[[12]]]][sel])
-# tempdat13 <- cbind(env_stack_scaled[[seq_split[[13]]]][sel])
-# tempdat14 <- cbind(env_stack_scaled[[seq_split[[14]]]][sel])
-# tempdat15 <- cbind(env_stack_scaled[[seq_split[[15]]]][sel])
-# tempdat16 <- cbind(env_stack_scaled[[seq_split[[16]]]][sel])
-# tempdat17 <- cbind(env_stack_scaled[[seq_split[[17]]]][sel])
-pred_stack.dat <- data.frame(cbind(tempdat1,tempdat2,tempdat3,tempdat4,tempdat5,tempdat6,tempdat7,tempdat8,tempdat9,tempdat10,tempdat11))#,tempdat12,tempdat13,tempdat14,tempdat15,tempdat16,tempdat17))
-pred_stack.dat$gear <- "OFOS"
-pred_stack.dat$cover_cells_survey <- "PS96"
-pred_stack.dat$cover_cells_transect1 <- "PS96_001"
-save(pred_stack.dat, file=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_mask_scaled_dataframe.Rdata"))
+# Optional cleanup
+# file.remove(tmp_files)
 
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+############################
+# 8) CREATE A SCALED PREDICTION DATAFRAME (ONE ROW PER CELL)
+############################
 
-# pred_stack.dat1 <- cbind(env_stack_scaled$depth[sel], env_stack_scaled$depth2[sel],
-#                          env_stack_scaled$distance2canyons[sel], env_stack_scaled$distance2canyons2[sel])
-# pred_stack.dat2 <- cbind(env_stack_scaled$logslope[sel], env_stack_scaled$slope[sel],
-#                          env_stack_scaled$tpi[sel], env_stack_scaled$tpi11[sel])
-# pred_stack.dat3 <- cbind(env_stack_scaled$tpi5[sel], env_stack_scaled$waom4k_test_flux08[sel],
-#                          env_stack_scaled$waom4k_test_settle08[sel], env_stack_scaled$waom4k_test_susp08[sel])
-# pred_stack.dat4 <- cbind(env_stack_scaled$waom4k_seafloorcurrents_absolute[sel], env_stack_scaled$waom4k_seafloorcurrents_mean[sel],
-#                          env_stack_scaled$waom4k_seafloorcurrents_residual[sel])
-# pred_stack.dat5 <- cbind(env_stack_scaled$waom4k_seafloorsalinity[sel], env_stack_scaled$waom4k_seafloortemperature[sel])
-# 
-# pred_stack.dat <- data.frame(cbind(pred_stack.dat1, pred_stack.dat2, pred_stack.dat3, pred_stack.dat4, pred_stack.dat5, 10))
-# names(pred_stack.dat) <- c("depth", "depth2", "distance2canyons","distance2canyons2",
-#                            "logslope","slope","tpi","tpi11",
-#                            "tpi5", "waom4k_test_flux08","waom4k_test_settle08","waom4k_test_susp08",
-#                            "waom4k_seafloorcurrents_absolute","waom4k_seafloorcurrents_mean","waom4k_seafloorcurrents_residual",
-#                            "waom4k_seafloorsalinity","waom4k_seafloortemperature",
-#                            "annotated_area")
+# Use the scaled stack we just wrote (or pred_stack_scaled in memory)
+env_stack_scaled <- terra::rast(scaled_raster_out)
+
+# Define "valid shelf cells" as those with non-NA depth (common convention)
+# Adjust if your mask uses a different layer.
+if (!("depth" %in% names(env_stack_scaled))) {
+  stop("Expected a 'depth' layer to define valid shelf cells, but it is not present in the scaled stack.")
+}
+
+valid_cells <- which(!is.na(env_stack_scaled[["depth"]][]))
+
+# Extract all scaled predictor values for valid cells
+# (This can be memory-heavy; for 2km it is usually manageable.)
+pred_vals <- terra::extract(env_stack_scaled, cells = valid_cells)
+pred_vals <- pred_vals[, -1, drop = FALSE]
+
+pred_xy <- terra::xyFromCell(env_stack_scaled[[1]], valid_cells)
+pred_df <- data.frame(
+  cell_id = valid_cells,
+  proj_coord_x = pred_xy[,1],
+  proj_coord_y = pred_xy[,2],
+  pred_vals
+)
+
+# Save dataframe for prediction workflows
+pred_df_out <- file.path(env_dir, paste0("Circumpolar_EnvData_", res, "_shelf_mask_scaled_dataframe.rds"))
+saveRDS(pred_df, pred_df_out)
+
+message("Saved scaled prediction dataframe:\n  ", pred_df_out)
 
 
+############################
+# 9) DONE
+############################
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# ## get file names of all environmental rasters and bricks and load into one big stack----
-# #all files with "gri" extension
-# env_list<-list.files(path = env.derived, pattern="gri$",  full.names=TRUE) 
-# #subset to  "shelf" files
-# env_list<-env_list[grep(".500m_shelf", env_list)]
-# #for the single rasters layer names are missing. Extract from file name.
-# env_names<-gsub(".*_|\\..*","",env_list)
-# #stack all environmental layers and make sure they have appropriate names (currently manual and a bit messy!)
-# env_stack<-stack(env_list)
-# names(env_stack)
-# names(env_stack)[1:6]<-env_names[1:6]
-# names(env_stack)[15:23]<-paste(rep(c("CARS_NO3", "CARS_O2", "CARS_PO4"),each=3),c("mean", "seas_range", "std_dev"), sep="_")
-# names(env_stack)[24] <-"distance2canyons"
-# names(env_stack)[35]<-"NPP_su_mean"
-# names(env_stack)[36:41]<-c("ssh_mean","ssh_sd","ssh_sp_mean","ssh_sp_sd","ssh_su_mean","ssh_su_sd")
-# names(env_stack)[42:47]<-c("sst_mean","sst_sd","sst_sp_mean","sst_sp_sd","sst_su_mean","sst_su_sd")
-# names(env_stack)[48:57]<-c("waom2k_seafloorcurrents", "waom2k_seafloortemperature", "waom4k_seafloorcurrents_absolute", "waom4k_seafloorcurrents_mean", 
-#                            "waom4k_seafloorcurrents_residual", "waom4k_seafloorsalinity", "waom4k_seafloortemperature",
-#                            "waom4k_test_flux08","waom4k_test_settle08","waom4k_test_susp08")
-# 
-# 
-# ## only select rasters we actually need
-# pred_stack <- raster::subset(env_stack, c(1,2,4,23,50,52,53,55))
-# #logslope
-# names(pred_stack)[2] <- "logslope"
-# pred_stack$logslope <- log(env_stack$slope)
-# #depth2
-# pred_stack$depth2 <- pred_stack$depth
-# pred_stack$depth2 <- raster(pred_stack$depth)
-# sel <- which(!is.na(pred_stack$depth[]))
-# depth2.dat <- poly(pred_stack$depth[sel],2)[,2] ## takes 10min or so
-# pred_stack$depth2[sel] <- depth2.dat
-# #dist2cany2
-# pred_stack$distance2canyons2 <- pred_stack$distance2canyons
-# pred_stack$distance2canyons2 <- raster(pred_stack$distance2canyons)
-# sel <- which(!is.na(pred_stack$distance2canyons[]))
-# distance2canyons2.dat <- poly(pred_stack$distance2canyons[sel],2)[,2] ## takes 10min or so
-# pred_stack$distance2canyons2[sel] <- distance2canyons2.dat
-# 
-# 
-# plot(pred_stack)
-# 
-# pred_stack_scaled <- pred_stack
-# for(i in 1:nlayers(pred_stack_scaled)){
-#   k <- names(pred_stack_scaled)[i]
-#   c.sel <- which(names(cell_metadata_env_scaled)==k)
-#   pred_stack_scaled[[i]] <- raster(pred_stack$depth)
-#   pred_stack_scaled[[i]] <- (pred_stack[[i]]-scale.means[c.sel])/scale.sd[c.sel]
-# }
-# 
-# plot(pred_stack_scaled)
-# 
+message("All steps completed successfully.")
+message("Env outputs directory:\n  ", output_dir)

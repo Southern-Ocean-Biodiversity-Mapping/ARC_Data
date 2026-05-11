@@ -1,9 +1,7 @@
 ############################################################
-# 02_env_extract_and_scale_cover_points_2km.R
-#
 # Purpose
 # -------
-# Starting from the NEW "wide" cover-point annotation tables
+# Starting from a "wide" cover-point annotation tables
 # (one row per cell/image, one column per label), this script:
 #
 # 1) Loads environmental rasters (unscaled variables + polynomials/etc)
@@ -35,12 +33,21 @@
 # 0) USER SETTINGS (EDIT ME)
 ############################
 
-# Folder where your NEW wide annotation outputs are written
-# (From our annotation scripts; you requested "cover" in the filename.)
-annotation_output_dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/data_biological/ASAID_image_annotations/derived_outputs"
+## specify user and setup directory to look up data from
+#usr <- "VM"
+#usr <- "SJ"
+usr <- "JJ"
+source("0_SourceFile.R")
 
-# Environmental rasters folder (2 km rasters live here)
-env_dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/data_environmental/derived"
+## set folders
+bio.dir      <- paste0(usr.main.dir, "data_biological/")
+env.derived  <- paste0(usr.main.dir, "data_environmental/derived")
+## Output folder for merged and scaled datasets (make sure this exists or is created before running)
+output_dir <- paste0(usr.main.dir,"data_products/modelling_files/circum_antarctic")
+## Folder containing the downloaded ASAID annotation CSVs
+annotation_dir <- paste0(bio.dir,"ASAID_image_annotations")
+## Folder where annotation outputs are written
+annotation_output_dir <- paste0(bio.dir,"ASAID_image_annotations/derived_outputs")
 
 # Resolution label used in environmental filenames
 res <- "2km"
@@ -53,8 +60,6 @@ env_file_poly <- paste0("Circumpolar_EnvData_", res, "_shelf_mask_unscaled_polyn
 cover_cell_counts_file  <- file.path(annotation_output_dir, "ASAID_points_cover_by_cell_wide.csv")
 cover_image_counts_file <- file.path(annotation_output_dir, "ASAID_points_cover_by_image_wide.csv")  # optional
 
-# Output folder
-output_dir <- annotation_output_dir
 
 # Label column that should be excluded from scorable totals (kept as a column)
 unscorable_label_name <- "Unscorable"  # the *original* label text
@@ -67,6 +72,9 @@ env_remove <- c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", 
 
 # Predictors that are categorical codes and must NOT be z-scaled
 categorical_vars <- c("geomorphology")
+
+
+
 
 ############################
 # 1) PACKAGES
@@ -145,8 +153,8 @@ message("Sampled cells (cover_N > 0): ", nrow(cover_cells_sampled))
 # 3) LOAD ENVIRONMENTAL STACK
 ############################
 
-env_path_vars <- file.path(env_dir, env_file_vars)
-env_path_poly <- file.path(env_dir, env_file_poly)
+env_path_vars <- file.path(env.derived, env_file_vars)
+env_path_poly <- file.path(env.derived, env_file_poly)
 
 env_stack <- terra::rast(c(env_path_vars, env_path_poly))
 message("Loaded env_stack with ", terra::nlyr(env_stack), " layers.")
@@ -178,8 +186,6 @@ cell_meta$lat <- ll[,2]
 
 # Extract environmental values by cell index (fast & robust)
 env_vals <- terra::extract(env_stack, cell_ids)
-# terra::extract returns a data.frame with ID column first
-env_vals <- env_vals[, -1, drop = FALSE]
 
 cell_metadata_env <- cbind(cell_meta, env_vals)
 
@@ -302,35 +308,32 @@ terra::terraOptions(tempdir = terra_tmp, memfrac = 0.3)
 # Process in groups (4 layers at a time)
 idx_groups <- split(1:terra::nlyr(pred_stack_nc),
                     ceiling(seq_along(1:terra::nlyr(pred_stack_nc)) / 4))
-
 tmp_files <- character(0)
-
 for (g in seq_along(idx_groups)) {
+  ## select the layers to process
   idx <- idx_groups[[g]]
-  
   grp <- pred_stack_nc[[idx]]
   grp_scaled <- grp
-  
+  ## loop across each layer in the group and scale (except categoricals)
   for (j in seq_along(idx)) {
     lyr_name <- names(grp)[j]
-    
     # Do NOT scale categorical layers
     if (lyr_name %in% categorical_vars) {
       grp_scaled[[j]] <- grp[[j]]
       next
     }
-    
+    ## load mean and sd values
     mu  <- scale_means[lyr_name]
     sdv <- scale_sds[lyr_name]
-    
+    ## scale
     if (!is.na(mu) && !is.na(sdv) && is.finite(sdv) && sdv > 0) {
       grp_scaled[[j]] <- (grp[[j]] - mu) / sdv
     } else {
       grp_scaled[[j]] <- grp[[j]] * 0
     }
   }
-  
-  f_out <- file.path(env_dir, paste0("tmp_scaled_", res, "_group_", g, ".tif"))
+  ## write out the layers temporarily
+  f_out <- file.path(env.derived, paste0("tmp_scaled_", res, "_group_", g, ".tif"))
   terra::writeRaster(grp_scaled, f_out, overwrite = TRUE,
                      wopt = list(gdal = c("COMPRESS=LZW")))
   tmp_files <- c(tmp_files, f_out)
@@ -339,7 +342,7 @@ for (g in seq_along(idx_groups)) {
 }
 
 # Combine temp files into final scaled stack (file-backed)
-scaled_raster_out <- file.path(env_dir, paste0("Circumpolar_EnvData_", res, "_shelf_mask_scaled.tif"))
+scaled_raster_out <- file.path(env.derived, paste0("Circumpolar_EnvData_", res, "_shelf_mask_scaled.tif"))
 scaled_all <- terra::rast(tmp_files)
 terra::writeRaster(scaled_all, filename = scaled_raster_out, overwrite = TRUE,
                    wopt = list(gdal = c("COMPRESS=LZW")))
@@ -367,8 +370,7 @@ valid_cells <- which(!is.na(env_stack_scaled[["depth"]][]))
 
 # Extract all scaled predictor values for valid cells
 # (This can be memory-heavy; for 2km it is usually manageable.)
-pred_vals <- terra::extract(env_stack_scaled, cells = valid_cells)
-pred_vals <- pred_vals[, -1, drop = FALSE]
+pred_vals <- terra::extract(env_stack_scaled, valid_cells)
 
 pred_xy <- terra::xyFromCell(env_stack_scaled[[1]], valid_cells)
 pred_df <- data.frame(
@@ -379,7 +381,7 @@ pred_df <- data.frame(
 )
 
 # Save dataframe for prediction workflows
-pred_df_out <- file.path(env_dir, paste0("Circumpolar_EnvData_", res, "_shelf_mask_scaled_dataframe.rds"))
+pred_df_out <- file.path(env.derived, paste0("Circumpolar_EnvData_", res, "_shelf_mask_scaled_dataframe.rds"))
 saveRDS(pred_df, pred_df_out)
 
 message("Saved scaled prediction dataframe:\n  ", pred_df_out)

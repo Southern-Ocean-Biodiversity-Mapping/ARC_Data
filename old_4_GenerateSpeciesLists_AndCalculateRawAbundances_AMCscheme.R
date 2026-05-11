@@ -9,6 +9,24 @@
 ###     the annotation library, the image data, 500m res and 2km res data                       ###
 ###################################################################################################
 
+## specify user and setup directory to look up data from
+#usr <- "VM"
+#usr <- "SJ"
+usr <- "JJ"
+source("0_SourceFile.R")
+
+## set folders
+bio.dir      <- paste0(usr.main.dir, "data_biological/")
+env.derived  <- paste0(usr.main.dir, "data_environmental/derived")
+## Output folder for merged and scaled datasets (make sure this exists or is created before running)
+output_dir <- paste0(usr.main.dir,"data_products/modelling_files/circum_antarctic")
+## Folder containing the downloaded ASAID annotation CSVs
+annotation_dir <- paste0(bio.dir,"ASAID_image_annotations")
+## Folder where annotation outputs are written
+annotation_output_dir <- paste0(bio.dir,"ASAID_image_annotations/derived_outputs")
+
+
+
 # 1) libraries and paths 
 library(tidyverse)
 library(writexl)

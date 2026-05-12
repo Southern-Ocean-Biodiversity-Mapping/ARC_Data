@@ -76,15 +76,16 @@ points_files <- list.files(annotation_dir, pattern = points_pattern, full.names 
 # 3) READ AND COMBINE CSVs
 ############################
 
-# Columns we expect (based on the ASAID/Squidle export structure)
-# (We keep point.media.key and deployment key for traceability, even if not used in aggregation.)
+# Columns we need
 keep_cols <- c(
   "point.pose.lat",
   "point.pose.lon",
   "label.lineage_names",
   "point.media.key",
-  "point.media.deployment.key",
-  "timestamp"
+  "point.media.deployment.key",          
+  "point.media.deployment.campaign.key", 
+  "point.media.data.equipment",          
+  "timestamp"                             
 )
 
 read_one_points_file <- function(f) {
@@ -95,10 +96,14 @@ read_one_points_file <- function(f) {
     select = keep_cols,
     colClasses = list(
       numeric   = c("point.pose.lat", "point.pose.lon"),
-      character = c("label.lineage_names",
-                    "point.media.key",
-                    "point.media.deployment.key",
-                    "timestamp")
+      character = c(
+        "label.lineage_names",
+        "point.media.key",
+        "point.media.deployment.key",
+        "point.media.deployment.campaign.key",
+        "point.media.data.equipment",
+        "timestamp"
+      )
     ),
     showProgress = FALSE
   )
@@ -114,6 +119,10 @@ read_one_points_file <- function(f) {
   
   # Ensure timestamp is definitely character (extra belt-and-braces)
   dt[, timestamp := as.character(timestamp)]
+  
+  # Extract year
+  dt[, year := substr(timestamp, 1, 4)]
+  dt[, year := as.factor(year)]
   
   dt
 }
@@ -132,24 +141,17 @@ raster_path <- file.path(env.derived, raster_file)
 r <- terra::rast(raster_path)
 message("Raster loaded. CRS: ", terra::crs(r))
 
-# Create a SpatVector from lon/lat in WGS84 (EPSG:4326)
-# (Your annotations provide lat/lon in degrees; the raster is projected.)
 pts_vec_ll <- terra::vect(
   all_pts,
   geom = c("point.pose.lon", "point.pose.lat"),
   crs = "EPSG:4326"
 )
 
-# Project points to the raster CRS
 pts_vec_xy <- terra::project(pts_vec_ll, terra::crs(r))
 
-# Compute terra cell index for each point
 cell_id <- terra::cellFromXY(r, terra::crds(pts_vec_xy))
-
-# Attach cell_id back onto the data table
 all_pts[, cell_id := cell_id]
 
-# Drop points that fall outside the raster extent (cell_id = NA)
 n_outside <- sum(is.na(all_pts$cell_id))
 if (n_outside > 0) {
   message("Dropping ", n_outside, " annotations outside raster extent.")
@@ -158,137 +160,147 @@ if (n_outside > 0) {
 
 message("Annotations with valid raster cell_id: ", nrow(all_pts))
 
+############################
+# 4b) CELL-LEVEL METADATA
+############################
+
+cell_metadata <- all_pts |>
+  dplyr::as_tibble() |>
+  dplyr::select(
+    cell_id,
+    surveyID   = point.media.deployment.campaign.key,
+    transectID = point.media.deployment.key,
+    gear       = point.media.data.equipment,
+    year
+  ) |>
+  dplyr::group_by(cell_id) |>
+  dplyr::summarise(
+    surveyID   = dplyr::first(surveyID),
+    transectID = dplyr::first(transectID),
+    gear       = dplyr::first(gear),
+    year       = dplyr::first(year),
+    .groups = "drop"
+  )
 
 ############################
 # 5) COUNT ANNOTATIONS PER CELL PER LABEL (LONG)
 ############################
 
-# Count occurrences of each label within each cell
 counts_long <- all_pts |>
   dplyr::as_tibble() |>
   dplyr::count(cell_id, label.lineage_names, name = "n")
 
-message("Unique cells with annotations: ", dplyr::n_distinct(counts_long$cell_id))
-message("Unique labels: ", dplyr::n_distinct(counts_long$label.lineage_names))
-
-
 ############################
-# 6) MAKE SAFE COLUMN NAMES FOR WIDE OUTPUT
+# 6) MAKE SAFE COLUMN NAMES
 ############################
 
-# Label strings include spaces, symbols, and punctuation.
-# For a shareable "analysis-ready" file, we create safe column names
-# and save a lookup table.
 labels <- sort(unique(counts_long$label.lineage_names))
-
-safe_names <- make.names(labels, unique = TRUE)  # syntactic + unique
+safe_names <- make.names(labels, unique = TRUE)
 
 label_lookup <- dplyr::tibble(
   label_lineage_names = labels,
   column_name = safe_names
 )
 
-# Join safe column name into the long table
 counts_long2 <- counts_long |>
-  dplyr::left_join(label_lookup, by = c("label.lineage_names" = "label_lineage_names"))
-
-
-############################
-# 7) WIDE TABLE: ONE ROW PER CELL, ONE COLUMN PER LABEL
-############################
-
-counts_wide <- counts_long2 |>
-  dplyr::select(cell_id, column_name, n) |>
-  tidyr::pivot_wider(
-    names_from = column_name,
-    values_from = n,
-    values_fill = 0
-  ) |>
-  dplyr::arrange(cell_id)
-
-# Compute totals excluding Unscorable (but keep an Unscorable column if present)
-# We identify the Unscorable column via the lookup.
-unscorable_col <- label_lookup$column_name[label_lookup$label_lineage_names == unscorable_label]
-
-# If Unscorable never occurs in the data, unscorable_col will be character(0).
-label_cols <- setdiff(names(counts_wide), "cell_id")
-label_cols_excl_unscorable <- label_cols
-
-if (length(unscorable_col) == 1 && unscorable_col %in% label_cols) {
-  label_cols_excl_unscorable <- setdiff(label_cols, unscorable_col)
-}
-
-counts_wide <- counts_wide |>
-  dplyr::mutate(
-    n_total_excl_unscorable = if (length(label_cols_excl_unscorable) > 0) {
-      rowSums(dplyr::across(dplyr::all_of(label_cols_excl_unscorable)))
-    } else {
-      0
-    },
-    n_total_incl_unscorable = if (length(label_cols) > 0) {
-      rowSums(dplyr::across(dplyr::all_of(label_cols)))
-    } else {
-      0
-    }
-  ) |>
-  # Put totals near the front for readability
-  dplyr::relocate(n_total_excl_unscorable, n_total_incl_unscorable, .after = cell_id)
-
-
-############################
-# 7b) WIDE TABLE: ONE ROW PER IMAGE, ONE COLUMN PER LABEL
-############################
-
-# Count occurrences of each label within each image
-counts_long_image <- all_pts |>
-  dplyr::as_tibble() |>
-  dplyr::count(point.media.key, label.lineage_names, name = "n")
-
-# Join safe column names (same mapping as cell output)
-counts_long_image2 <- counts_long_image |>
   dplyr::left_join(
     label_lookup,
     by = c("label.lineage_names" = "label_lineage_names")
   )
 
-# Pivot to wide: one row per image, one column per label
-counts_wide_image <- counts_long_image2 |>
+############################
+# 7) WIDE TABLE: ONE ROW PER CELL
+############################
+
+counts_wide <- counts_long2 |>
+  dplyr::select(cell_id, column_name, n) |>
+  tidyr::pivot_wider(
+    names_from  = column_name,
+    values_from = n,
+    values_fill = 0
+  ) |>
+  dplyr::arrange(cell_id) |>
+  dplyr::left_join(cell_metadata, by = "cell_id")
+
+############################
+# 7a) DEFINE TRUE LABEL COLUMNS (FIXES ALL ERRORS)
+############################
+
+# Label columns are NUMERIC columns excluding cell_id
+label_cols <- names(counts_wide)[sapply(counts_wide, is.numeric)]
+label_cols <- setdiff(label_cols, "cell_id")
+
+# Identify unscorable column safely
+unscorable_col <- intersect(
+  label_cols,
+  label_lookup$column_name[
+    label_lookup$label_lineage_names == unscorable_label
+  ]
+)
+
+label_cols_excl_unscorable <- setdiff(label_cols, unscorable_col)
+
+############################
+# 7b) TOTALS PER CELL (SAFE WITH |>)
+############################
+# Compute totals explicitly
+tot_excl <- if (length(label_cols_excl_unscorable) > 0) {
+  rowSums(
+    as.matrix(counts_wide[, label_cols_excl_unscorable, drop = FALSE]),
+    na.rm = TRUE
+  )
+} else {
+  rep(0, nrow(counts_wide))
+}
+
+tot_incl <- if (length(label_cols) > 0) {
+  rowSums(
+    as.matrix(counts_wide[, label_cols, drop = FALSE]),
+    na.rm = TRUE
+  )
+} else {
+  rep(0, nrow(counts_wide))
+}
+
+# Attach totals
+counts_wide$n_total_excl_unscorable <- tot_excl
+counts_wide$n_total_incl_unscorable <- tot_incl
+
+# Reorder for readability
+counts_wide <- counts_wide |>
+  dplyr::relocate(
+    n_total_excl_unscorable,
+    n_total_incl_unscorable,
+    .after = cell_id
+  )
+
+counts_wide <- counts_wide |>
+  dplyr::relocate(surveyID, transectID, gear, year, .after = cell_id)
+
+############################
+# 7c) WIDE TABLE: ONE ROW PER IMAGE
+############################
+
+counts_long_image <- all_pts |>
+  dplyr::as_tibble() |>
+  dplyr::count(point.media.key, label.lineage_names, name = "n")
+
+counts_wide_image <- counts_long_image |>
+  dplyr::left_join(
+    label_lookup,
+    by = c("label.lineage_names" = "label_lineage_names")
+  ) |>
   dplyr::select(point.media.key, column_name, n) |>
   tidyr::pivot_wider(
-    names_from = column_name,
+    names_from  = column_name,
     values_from = n,
     values_fill = 0
   ) |>
   dplyr::arrange(point.media.key)
 
-# Totals per image (exclude Unscorable from the main total, but keep its column)
-image_label_cols <- setdiff(names(counts_wide_image), "point.media.key")
-image_label_cols_excl_unscorable <- image_label_cols
-
-if (length(unscorable_col) == 1 && unscorable_col %in% image_label_cols) {
-  image_label_cols_excl_unscorable <- setdiff(image_label_cols, unscorable_col)
-}
-
-counts_wide_image <- counts_wide_image |>
-  dplyr::mutate(
-    n_total_excl_unscorable = if (length(image_label_cols_excl_unscorable) > 0) {
-      rowSums(dplyr::across(dplyr::all_of(image_label_cols_excl_unscorable)))
-    } else {
-      0
-    },
-    n_total_incl_unscorable = if (length(image_label_cols) > 0) {
-      rowSums(dplyr::across(dplyr::all_of(image_label_cols)))
-    } else {
-      0
-    }
-  ) |>
-  dplyr::relocate(n_total_excl_unscorable, n_total_incl_unscorable, .after = point.media.key)
-
-
 ############################
 # 8) LABEL TOTALS ACROSS ALL CELLS
 ############################
-
 # Sum each label column across all cells.
 label_totals <- counts_wide |>
   dplyr::select(dplyr::all_of(label_cols)) |>
@@ -298,13 +310,6 @@ label_totals <- counts_wide |>
                       values_to = "n_total") |>
   dplyr::left_join(label_lookup, by = "column_name") |>
   dplyr::arrange(dplyr::desc(n_total))
-
-# Also provide totals excluding Unscorable (for quick filtering decisions)
-label_totals <- label_totals |>
-  dplyr::mutate(
-    is_unscorable = (label_lineage_names == unscorable_label)
-  )
-
 
 ############################
 # 9) WRITE OUTPUT FILES

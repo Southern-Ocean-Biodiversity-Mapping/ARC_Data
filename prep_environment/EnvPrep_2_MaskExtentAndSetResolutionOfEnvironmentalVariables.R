@@ -7,7 +7,7 @@
 ## specify user and setup directory to look up data from
 usr <- "VM"
 #usr <- "SJ"
-#usr <- "JJ
+#usr <- "JJ"
 source("0_SourceFile.R")
 
 ## set folders
@@ -194,7 +194,7 @@ writeRaster(npp_shelf, filename=paste0(savestring2,"NPP_climatology_OctMar_2002T
 writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k_bottomtempsal.tif"))
 
 #######################################################
-##### FAM and 2km model current speeds (THIS FIXES )
+##### FAM and 2km model current speeds
 #######################################################
 #### current speeds
 ## these are averages for a single month in summer
@@ -204,7 +204,9 @@ uv_max     <- rast(paste0(roms.dir,"ocean_his_bottom_uv_max.tif"))
 w_absmean  <- rast(paste0(roms.dir,"ocean_his_bottom_w_absmean.tif"))
 w_mean     <- rast(paste0(roms.dir,"ocean_his_bottom_w_mean.tif"))
 currents   <- c(uv_absmean,uv_mean,uv_max,w_absmean,w_mean)
-names(currents) <- c("uv_absmean","uv_mean","uv_max","w_absmean","w_mean")
+names(currents) <- c("seafloorcurrents_absolutemean","seafloorcurrents_mean","seafloorcurrents_maximum","w_absmean","w_mean")
+currents$seafloorcurrents_residual <- currents$seafloorcurrents_absolutemean - currents$seafloorcurrents_mean
+
 
 #### food-availability simulations
 fam.dir <-  paste0(usr.roms.dir,"FAM_outputs/")

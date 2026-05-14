@@ -14,6 +14,6 @@ if(usr == "JJ"){
 }
 
 ## polar stereographic projection for Antarctica:
-stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
-
+#stereo <- "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+stereo <- "EPSG:9354"
 

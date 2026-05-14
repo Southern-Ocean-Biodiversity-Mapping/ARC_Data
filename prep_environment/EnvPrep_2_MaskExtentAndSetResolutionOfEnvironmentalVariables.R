@@ -64,7 +64,7 @@ writeRaster(r2, filename=paste0(env.derived,"Circumpolar_EnvData_",res,"_shelf_m
 ##### - limit to 2500m depth
 ##### - mask
 #######################################################
-# 
+
 # ice_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_ice.grd"))
 # sst_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SST.grd"))
 # ssh_stack <- rast(paste0(env.raw, "Circumpolar_EnvData_SSH.grd"))
@@ -161,7 +161,7 @@ bsose_res <- terra::project(bsose_stack, bathy_shelf$depth)
 bsose_shelf<-mask(bsose_res, bathy_shelf$depth)
 
 ## save to:
-writeRaster(bsose_shelf, filename=paste0(savestring2,"bsose.tif"))
+writeRaster(bsose_shelf, filename=paste0(savestring2,"bsose.tif"), overwrite=TRUE)
 
 #######################################################
 ##### NPP and WAOM-OUTPUT
@@ -190,8 +190,8 @@ npp_shelf <-mask(npp_proj,  r2$depth)
 waom_shelf<-mask(waom_proj, r2$depth)
 
 ## save to:
-writeRaster(npp_shelf, filename=paste0(savestring2,"NPP_climatology_OctMar_2002To2020_filled12boxes.tif"))
-writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k_bottomtempsal.tif"))
+writeRaster(npp_shelf, filename=paste0(savestring2,"NPP_climatology_OctMar_2002To2020_filled12boxes.tif"), overwrite=TRUE)
+writeRaster(waom_shelf, filename=paste0(savestring2,"waom4k_bottomtempsal.tif"), overwrite=TRUE)
 
 #######################################################
 ##### FAM and 2km model current speeds
@@ -206,7 +206,6 @@ w_mean     <- rast(paste0(roms.dir,"ocean_his_bottom_w_mean.tif"))
 currents   <- c(uv_absmean,uv_mean,uv_max,w_absmean,w_mean)
 names(currents) <- c("seafloorcurrents_absolutemean","seafloorcurrents_mean","seafloorcurrents_maximum","w_absmean","w_mean")
 currents$seafloorcurrents_residual <- currents$seafloorcurrents_absolutemean - currents$seafloorcurrents_mean
-
 
 #### food-availability simulations
 fam.dir <-  paste0(usr.roms.dir,"FAM_outputs/")
@@ -245,26 +244,24 @@ names(fam) <-  c("flux.mean.cafe","flux.mean.cbpm","flux.mean.eppl","flux.mean.v
                  "log.flux.mean.cafe","log.flux.mean.cbpm","log.flux.mean.eppl","log.flux.mean.vpmg",
                  "sed.mean.cafe","sed.mean.cbpm","sed.mean.eppl","sed.mean.vpmg")
 
+## common projection
+fam.proj <- project(fam, r2$depth)
+currents.proj <- project(currents, r2$depth)
 
-#### need to match extents of the rasters first before masking
-fam.resampled <- resample(fam, r.mask2, method="near")
-currents.resampled <- resample(currents, r.mask2, method="near")
-
-## 
-for(i in 1:4){
+## replace NAs with zero where not on land and not deeper than 2500m
+sel <- which(!is.na(r2$depth[]))
+for(i in 1:nlyr(fam.proj)){
   print(i)
-  sed.na <- which(is.na(fam.resampled[[i+8]][]))
-  flux.na<- which(is.na(fam.resampled[[i]][]))
-  all.na <- which(sed.na%in%flux.na)
-  fam.resampled[[i+8]][sed.na[-all.na]] <- 0
+  sel.fam <- which(is.na(fam.proj[[i]][sel]))
+  fam.proj[[i]][sel[sel.fam]] <- 0
 }
 
-fam2 <- mask(fam.resampled, r.mask2)
-currents2 <- mask(currents.resampled, r.mask2)
+fam2 <- mask(fam.proj, r.mask2)
+currents2 <- mask(currents.proj, r.mask2)
 
 ## save to:
-writeRaster(fam2,      filename=paste0(savestring2,"FAM_mean_12boxfilled_NPP9_200mday_21days_r0001to0005_28days.tif"))
-writeRaster(currents2, filename=paste0(savestring2,"waom2k_bottomcurrents.tif"))
+writeRaster(fam2,      filename=paste0(savestring2,"FAM_mean_12boxfilled_NPP9_200mday_21days_r0001to0005_28days.tif"), overwrite=TRUE)
+writeRaster(currents2, filename=paste0(savestring2,"waom2k_bottomcurrents.tif"), overwrite=TRUE)
 
 #######################################################
 ##### read in all files and save as one single tif:

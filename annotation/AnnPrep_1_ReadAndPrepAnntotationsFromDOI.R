@@ -263,14 +263,14 @@ tot_incl <- if (length(label_cols) > 0) {
 }
 
 # Attach totals
-counts_wide$n_total_excl_unscorable <- tot_excl
-counts_wide$n_total_incl_unscorable <- tot_incl
+counts_wide$cover_points_N <- tot_incl
+counts_wide$cover_points_scorable <- tot_excl
 
 # Reorder for readability
 counts_wide <- counts_wide |>
   dplyr::relocate(
-    n_total_excl_unscorable,
-    n_total_incl_unscorable,
+    cover_points_N,
+    cover_points_scorable,
     .after = cell_id
   )
 

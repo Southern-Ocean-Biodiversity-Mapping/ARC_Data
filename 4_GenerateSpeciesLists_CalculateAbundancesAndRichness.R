@@ -44,6 +44,7 @@ res <- "2km"
 
 cover_cells_env_file <- file.path(output_dir, paste0("cover_cells_env_", res, ".rds"))
 cell_meta_scaled_file <- file.path(output_dir, paste0("cover_cell_metadata_env_scaled_", res, ".rds"))
+cell_meta_file <- file.path(output_dir, paste0("cover_cell_metadata_env_", res, ".rds"))
 scaling_params_file   <- file.path(output_dir, paste0("scaling_params_cover_", res, ".rds"))
 
 prevalence_xlsx_out <- file.path(output_dir, paste0("cover_prevalence_summary_", res, ".xlsx"))
@@ -78,31 +79,24 @@ library(purrr)
 ############################
 
 cover_cells_env <- readRDS(cover_cells_env_file) |> as_tibble()
+cell_meta <- readRDS(cell_meta_file) |> as_tibble()
 cell_meta_scaled <- readRDS(cell_meta_scaled_file) |> as_tibble()
 scaling_params <- readRDS(scaling_params_file)
 
 predictor_cols <- scaling_params$predictors
 
 # Ensure only sampled cells
-cover_cells_env <- cover_cells_env |> filter(cover_N > 0)
+cover_cells_env <- cover_cells_env |> filter(cover_points_N > 0)
 
 
 ############################
 # 3) IDENTIFY RESPONSE COLUMNS
 ############################
-
-############################
-# 3) IDENTIFY RESPONSE COLUMNS (STRICT)
-############################
-meta_cols <- c("cell_id", "proj_coord_x", "proj_coord_y", "lon", "lat")
-
+meta_cols <- c("cell_id", "surveyID", "transectID", "gear", "year",
+               "proj_coord_x", "proj_coord_y", "lon", "lat")
 total_cols <- c(
-  "cover_points_total",
-  "cover_points_scorable",
-  "cover_points_unscorable",
-  "cover_N",
-  "n_total_excl_unscorable",
-  "n_total_incl_unscorable"
+  "cover_points_N",
+  "cover_points_scorable"
 )
 
 # ALSO explicitly remove predictors
@@ -170,7 +164,7 @@ summary_df <- data.frame(
   )
 )
 
-# Create full template structure matching your Excel file
+# Create full template structure for aggregating rare morphospecies labels
 template_df <- summary_df %>%
   mutate(
     count_img = NA,
@@ -205,7 +199,6 @@ message("Template curation file written to: ", prevalence_xlsx_out)
 ############################
 # 5) LOAD AND APPLY CURATION
 ############################
-
 if (!file.exists(curation_xlsx)) {
   stop(
     "Curation file not found.\n",
@@ -268,17 +261,28 @@ cover_curated <- long_df |>
     values_fill = 0
   )
 
+## simplify labels (first remove start, then remove "...")
+names(cover_curated)[-1] <- gsub("X1\\.1\\.Biota\\...", "", names(cover_curated)[-1])
+names(cover_curated)[-1] <- gsub("\\.\\.\\.", "_", names(cover_curated)[-1])
+## replace "..3D" with "3D", and "..2D." with "2D"
+names(cover_curated)[-1] <- gsub("\\.\\.3D", "3D", names(cover_curated)[-1])
+names(cover_curated)[-1] <- gsub("\\.\\.2D.", "2D", names(cover_curated)[-1])
+
 ## REATTACH METADATA
 meta_keep <- cover_cells_env |>
   select(
     cell_id,
     any_of(c(
-      "n_total_excl_unscorable",
-      "n_total_incl_unscorable",
-      "cover_points_total",
+      "surveyID",
+      "transectID",
+      "gear",
+      "year",
+      "proj_coord_x",
+      "proj_coord_y",
+      "lon",
+      "lat",
+      "cover_points_N",
       "cover_points_scorable",
-      "cover_points_unscorable",
-      "cover_N",
       "richness_raw",
       "total_abundance"
     ))
@@ -304,7 +308,7 @@ resp_pa[response_cols] <- lapply(resp_pa[response_cols], function(x) as.integer(
 # Proportions
 resp_prop <- resp_counts
 resp_prop[response_cols] <- lapply(response_cols, function(v) {
-  resp_counts[[v]] / cover_curated$cover_N
+  resp_counts[[v]] / cover_curated$cover_points_scorable
 })
 names(resp_prop)[-1] <- response_cols
 
@@ -312,6 +316,10 @@ names(resp_prop)[-1] <- response_cols
 ############################
 # 7) FINAL MODELLING DATASET
 ############################
+
+predictors <- cell_meta |>
+  select(cell_id, all_of(predictor_cols)) |>
+  mutate(across(any_of(categorical_vars), as.factor))
 
 predictors_scaled <- cell_meta_scaled |>
   select(cell_id, all_of(predictor_cols)) |>
@@ -322,17 +330,13 @@ predictors_scaled <- cell_meta_scaled |>
   mutate(across(any_of(categorical_vars), as.factor))
 
 modelling_df <- resp_counts |>
-  left_join(meta_keep %>% select(cell_id, richness_raw, total_abundance), by = "cell_id") |>
+  left_join(meta_keep, by = "cell_id") |>
   left_join(predictors_scaled, by = "cell_id")
 
-# Cell-level biodiversity metrics (clean subset)
-cell_metrics <- cover_cells_env |>
-  select(cell_id, richness_raw, total_abundance, n_total_excl_unscorable, n_total_incl_unscorable)
-         
+
 ############################
 # 8) SAVE OUTPUT
 ############################
-
 output <- list(
   metadata = list(
     resolution = res,
@@ -345,8 +349,9 @@ output <- list(
     presence_absence = resp_pa,
     proportions = resp_prop
   ),
-  cell_metrics = cell_metrics,   # Cell-level biodiversity summaries
-  predictors = predictors_scaled,  # Environmental predictors
+  cell_metrics = meta_keep,   # Cell-level biodiversity summaries
+  predictors = predictors,  # Environmental predictors
+  predictors_scaled = predictors_scaled,  # Environmental predictors
   modelling_dataframe = modelling_df,
   prevalence_table = summary_df
 )

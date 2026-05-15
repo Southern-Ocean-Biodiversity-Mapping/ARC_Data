@@ -57,8 +57,8 @@ env_file_vars <- paste0("Circumpolar_EnvData_", res, "_shelf_mask_unscaled_varia
 env_file_poly <- paste0("Circumpolar_EnvData_", res, "_shelf_mask_unscaled_polynomials_etc.tif")
 
 # NEW annotation wide tables (cover points)
-cover_cell_counts_file  <- file.path(annotation_output_dir, "ASAID_points_cover_by_cell_wide.csv")
-cover_image_counts_file <- file.path(annotation_output_dir, "ASAID_points_cover_by_image_wide.csv")  # optional
+cover_cell_counts_file  <- file.path(annotation_output_dir, "ASAID_points_counts_by_cell_wide.csv")
+cover_image_counts_file <- file.path(annotation_output_dir, "ASAID_points_counts_by_image_wide.csv")  # optional
 
 
 # Label column that should be excluded from scorable totals (kept as a column)
@@ -101,54 +101,6 @@ if (file.exists(cover_image_counts_file)) {
   message("Note: cover image-wide file not found (this is OK for cell-level env extraction).")
 }
 
-# Sanity checks: required columns from the new format
-required_cols <- c("cell_id", "n_total_excl_unscorable", "n_total_incl_unscorable")
-missing_cols <- setdiff(required_cols, names(cover_cells_wide))
-if (length(missing_cols) > 0) {
-  stop("Cover cell-wide table is missing expected columns:\n  ",
-       paste(missing_cols, collapse = ", "),
-       "\n\nThis script expects the new wide format with 'cell_id' and totals columns.")
-}
-
-# Define cover_N = number of scorable points (excluding Unscorable)
-# This matches your old meaning of cover_N.
-cover_cells_wide <- cover_cells_wide |>
-  dplyr::mutate(
-    cover_N = n_total_excl_unscorable
-  )
-
-# Identify the column name that corresponds to Unscorable (if present)
-# In the new wide file, label columns were made syntactic (make.names()) in the earlier script.
-# We detect Unscorable robustly by checking for likely column names.
-possible_unscorable_cols <- c("Unscorable", "X.Unscorable", "Unscorable.", "Unscorable..")
-unscorable_col <- intersect(possible_unscorable_cols, names(cover_cells_wide))
-unscorable_col <- if (length(unscorable_col) > 0) unscorable_col[1] else NA_character_
-
-if (!is.na(unscorable_col)) {
-  cover_cells_wide <- cover_cells_wide |>
-    dplyr::mutate(
-      cover_points_total    = n_total_incl_unscorable,
-      cover_points_scorable = n_total_excl_unscorable,
-      cover_points_unscorable = .data[[unscorable_col]]
-    )
-} else {
-  # Unscorable may be absent if it never occurs in the dataset
-  cover_cells_wide <- cover_cells_wide |>
-    dplyr::mutate(
-      cover_points_total    = n_total_incl_unscorable,
-      cover_points_scorable = n_total_excl_unscorable,
-      cover_points_unscorable = 0
-    )
-  message("Unscorable column not found in cover data; assuming 0 unscorable points everywhere.")
-}
-
-# Subset to sampled cells (at least 1 scorable point)
-cover_cells_sampled <- cover_cells_wide |>
-  dplyr::filter(cover_N > 0)
-
-message("Sampled cells (cover_N > 0): ", nrow(cover_cells_sampled))
-
-
 ############################
 # 3) LOAD ENVIRONMENTAL STACK
 ############################
@@ -167,7 +119,7 @@ message("Loaded env_stack with ", terra::nlyr(env_stack), " layers.")
 r_ref <- env_stack[[1]]
 
 # Get xy coordinates (projected) for each sampled cell
-cell_ids <- cover_cells_sampled$cell_id
+cell_ids <- cover_cells_wide$cell_id
 
 xy <- terra::xyFromCell(r_ref, cell_ids)  # returns matrix with columns x,y
 cell_meta <- data.frame(
@@ -176,7 +128,7 @@ cell_meta <- data.frame(
   proj_coord_y = xy[,2]
 )
 
-# Convert projected coords to lon/lat for convenience (optional but useful for QC/maps)
+# Convert projected coords to lon/lat for convenience
 pts_xy <- terra::vect(cell_meta, geom = c("proj_coord_x", "proj_coord_y"), crs = terra::crs(r_ref))
 pts_ll <- terra::project(pts_xy, "EPSG:4326")
 ll <- terra::crds(pts_ll)
@@ -197,7 +149,7 @@ message("Extracted environmental values for ", nrow(cell_metadata_env), " sample
 ############################
 
 # Merge environmental predictors onto cover cell-wide table (sampled subset)
-cover_cells_env <- cover_cells_sampled |>
+cover_cells_env <- cover_cells_wide |>
   dplyr::left_join(cell_metadata_env, by = "cell_id")
 
 # Save unscaled outputs
@@ -224,21 +176,16 @@ categorical_vars <- intersect(categorical_vars, env_cols_kept)
 # Optional: auto-drop highly correlated predictors (numeric-only, exclude categoricals)
 if (!is.null(cor_threshold)) {
   message("Auto-dropping predictors with |cor| > ", cor_threshold, " (pairwise), numeric-only.")
-
   numeric_candidates <- setdiff(env_cols_kept, categorical_vars)
   x <- cell_metadata_env[, numeric_candidates, drop = FALSE]
-
   # keep only numeric columns (extra safety)
   is_num <- sapply(x, is.numeric)
   x <- x[, is_num, drop = FALSE]
-
   cmat <- stats::cor(x, use = "pairwise.complete.obs")
-
   # greedy drop: remove later variable in each high-correlation pair
   high <- which(abs(cmat) > cor_threshold & upper.tri(cmat), arr.ind = TRUE)
   drop_vars <- character(0)
   if (nrow(high) > 0) drop_vars <- unique(colnames(cmat)[high[, 2]])
-
   env_cols_kept <- setdiff(env_cols_kept, drop_vars)
   message("Dropped ", length(drop_vars), " predictors by correlation threshold.")
 }

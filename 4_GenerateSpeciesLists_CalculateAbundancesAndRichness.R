@@ -317,6 +317,10 @@ predictors_scaled <- cell_meta_scaled |>
   select(cell_id, all_of(predictor_cols)) |>
   mutate(across(any_of(categorical_vars), as.factor))
 
+predictors_scaled <- cell_meta_scaled |>
+  select(cell_id, all_of(predictor_cols)) |>
+  mutate(across(any_of(categorical_vars), as.factor))
+
 modelling_df <- resp_counts |>
   left_join(meta_keep %>% select(cell_id, richness_raw, total_abundance), by = "cell_id") |>
   left_join(predictors_scaled, by = "cell_id")

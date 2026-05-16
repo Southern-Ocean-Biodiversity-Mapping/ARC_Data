@@ -15,6 +15,7 @@ env.derived  <- paste0(usr.main.dir, "data_environmental/derived/")
 env.raw      <- paste0(usr.main.dir, "data_environmental/raw/")
 roms.dir     <- paste0(usr.roms.dir,"data_environmental/derived/ROMS_2k_files/")
 roms.dir2    <- paste0(usr.dropbox.dir,"data_environmental/derived/ROMS/")
+fam.dir    <- paste0(usr.dropbox.dir,"data_environmental/derived/FAM_outputs/")
 
 ##############################################################################################################
 ##############################################################################################################
@@ -208,8 +209,6 @@ names(currents) <- c("seafloorcurrents_absolutemean","seafloorcurrents_mean","se
 currents$seafloorcurrents_residual <- currents$seafloorcurrents_absolutemean - currents$seafloorcurrents_mean
 
 #### food-availability simulations
-fam.dir <-  paste0(usr.roms.dir,"FAM_outputs/")
-
 all.fam.files <- list.files(fam.dir, full.names=TRUE)
 fam.files.sed <- all.fam.files[grep("sed_circumpolar", all.fam.files)]
 fam.files.flux<- all.fam.files[grep("flux_circumpolar", all.fam.files)]
@@ -260,7 +259,7 @@ fam2 <- mask(fam.proj, r.mask2)
 currents2 <- mask(currents.proj, r.mask2)
 
 ## save to:
-writeRaster(fam2,      filename=paste0(savestring2,"FAM_mean_12boxfilled_NPP9_200mday_21days_r0001to0005_28days.tif"), overwrite=TRUE)
+writeRaster(fam2,      filename=paste0(savestring2,"FAM_mean_12boxfilled_NPP9_200mday_21days_r00005tor0005_28days.tif"), overwrite=TRUE)
 writeRaster(currents2, filename=paste0(savestring2,"waom2k_bottomcurrents.tif"), overwrite=TRUE)
 
 #######################################################

@@ -29,7 +29,7 @@ npp.model.list <- c("cafe_12boxfilled",
                     "vpmg_12boxfilled",
                     "cbpm_12boxfilled")
 
-for(z in 1:4){
+for(z in 2:4){
   npp.model <- npp.model.list[z]
   # # NPP model label used in filenames
   # npp.model <- "cafe_12boxfilled"
@@ -58,7 +58,7 @@ for(z in 1:4){
   looping_time_2d <- 0.25
   runtime_2d <- 1
   sedimentation_2d <- TRUE
-  particle_radius <- 0.001 #0.00005
+  particle_radius <- 0.00005
   # only the decimal part for the character string
   r_str <- sub("^0\\.", "", format(particle_radius, scientific = FALSE, trim = TRUE))
   

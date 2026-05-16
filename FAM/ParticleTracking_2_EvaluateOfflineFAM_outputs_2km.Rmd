@@ -77,7 +77,7 @@ plot(flux.ra$tracking2D_vpmg_r0001_flux)
 
 ```{r, fig.height=10, fig.width=10}
 xlim=c(-500000,500000)
-ylim=c(-2500000,-1500000)
+ylim=c(-2300000,-1300000)
 par(mfrow=c(4,4))
 plot(npp.ra$NPP_cafe_mean, xlim=xlim, ylim=ylim)
 plot(npp.ra$NPP_cbpm_mean, xlim=xlim, ylim=ylim)

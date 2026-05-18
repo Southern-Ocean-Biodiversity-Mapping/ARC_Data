@@ -10,7 +10,7 @@
 ####
 
 #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #####
-#### DON'T JUST RUN TEH SCRIPT, IT'S HOURS OF COMPUTING TIME!!! #####
+#### DON'T JUST RUN THE SCRIPT, IT'S HOURS OF COMPUTING TIME!!! #####
 #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #####
 
 

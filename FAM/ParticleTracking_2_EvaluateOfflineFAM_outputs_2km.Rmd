@@ -1,0 +1,779 @@
+---
+title: "ROMS FAM 2km analysis"
+author: "Jan Jansen"
+output: html_document
+---
+
+###########################################
+########## Evaluate ROMS outputs ##########
+###########################################
+
+## read in circumpolar tifs
+
+```{r}
+## specify user and setup directory to look up data from
+usr <- "VM"
+source("0_SourceFile.R")
+
+## set folders
+dropbox.dir <- paste0(usr.dropbox.dir,"data_environmental/")
+
+## 
+npp.files  <- list.files(paste0(dropbox.dir,"derived/productivity/"), pattern="filled", full.names=TRUE)
+sink.files <- list.files(paste0(dropbox.dir,"derived/FAM_outputs/"), pattern="bottomnpp", full.names=TRUE)
+flux.files <- list.files(paste0(dropbox.dir,"derived/FAM_outputs/"), pattern="flux", full.names=TRUE)
+sed.files  <- list.files(paste0(dropbox.dir,"derived/FAM_outputs/"), pattern="sed", full.names=TRUE)
+
+## fam in- and outputs
+sink.ra <- rast(sink.files)
+flux.ra <- rast(flux.files)
+sed.ra  <- rast(sed.files)
+npp.ra.unproj  <- rast(npp.files)
+npp.ra <- terra::project(npp.ra.unproj, sink.ra)
+
+## name raster layers
+names(npp.ra)  <- gsub("climatology_OctMar_2002To2020_filled12boxes_","",basename(npp.files))
+names(npp.ra)  <- gsub(".tif","",names(npp.ra))
+names(sink.ra) <- gsub("_12boxfilled_NPP9_200mday_21days_bottomnpp_circumpolar.tif","",basename(sink.files))
+names(flux.ra) <- gsub("12boxfilled_NPP9_200mday_21days_","",basename(flux.files))
+names(flux.ra) <- gsub("_circumpolar.tif","",names(flux.ra))
+names(flux.ra) <- gsub("_28days","",names(flux.ra))
+names(sed.ra) <- gsub("12boxfilled_NPP9_200mday_21days_","",basename(sed.files))
+names(sed.ra) <- gsub("_circumpolar.tif","",names(sed.ra))
+names(sed.ra) <- gsub("_28days","",names(sed.ra))
+
+## bathymetry and current speed
+r.stack <- rast(paste0(dropbox.dir,"derived/Circumpolar_EnvData_2km_shelf_mask_unscaled_variables.tif"))
+r.d <- r.stack$depth
+r.c <- r.stack$seafloorcurrents_mean
+
+## load coastline
+load(paste0(dropbox.dir,"derived/Circumpolar_Coastline.Rdata"))
+```
+
+## compare NPP, sinking, settling, flux
+
+```{r, fig.height=10, fig.width=10}
+par(mfrow=c(4,4))
+plot(npp.ra$NPP_cafe_mean)
+plot(npp.ra$NPP_cbpm_mean)
+plot(npp.ra$NPP_eppl_mean)
+plot(npp.ra$NPP_vpmg_mean)
+plot(sink.ra$tracking3D_cafe)
+plot(sink.ra$tracking3D_cbpm)
+plot(sink.ra$tracking3D_eppl)
+plot(sink.ra$tracking3D_vpmg)
+plot(sed.ra$tracking2D_cafe_r0001_sed)
+plot(sed.ra$tracking2D_cbpm_r0001_sed)
+plot(sed.ra$tracking2D_eppl_r0001_sed)
+plot(sed.ra$tracking2D_vpmg_r0001_sed)
+plot(flux.ra$tracking2D_cafe_r0001_flux)
+plot(flux.ra$tracking2D_cbpm_r0001_flux)
+plot(flux.ra$tracking2D_eppl_r0001_flux)
+plot(flux.ra$tracking2D_vpmg_r0001_flux)
+```
+
+
+
+```{r, fig.height=10, fig.width=10}
+xlim=c(-500000,500000)
+ylim=c(-2300000,-1300000)
+par(mfrow=c(4,4))
+plot(npp.ra$NPP_cafe_mean, xlim=xlim, ylim=ylim)
+plot(npp.ra$NPP_cbpm_mean, xlim=xlim, ylim=ylim)
+plot(npp.ra$NPP_eppl_mean, xlim=xlim, ylim=ylim)
+plot(npp.ra$NPP_vpmg_mean, xlim=xlim, ylim=ylim)
+plot(sink.ra$tracking3D_cafe, xlim=xlim, ylim=ylim)
+plot(sink.ra$tracking3D_cbpm, xlim=xlim, ylim=ylim)
+plot(sink.ra$tracking3D_eppl, xlim=xlim, ylim=ylim)
+plot(sink.ra$tracking3D_vpmg, xlim=xlim, ylim=ylim)
+plot(sed.ra$tracking2D_cafe_r0001_sed, xlim=xlim, ylim=ylim)
+plot(sed.ra$tracking2D_cbpm_r0001_sed, xlim=xlim, ylim=ylim)
+plot(sed.ra$tracking2D_eppl_r0001_sed, xlim=xlim, ylim=ylim)
+plot(sed.ra$tracking2D_vpmg_r0001_sed, xlim=xlim, ylim=ylim)
+plot(flux.ra$tracking2D_cafe_r0001_flux, xlim=xlim, ylim=ylim)
+plot(flux.ra$tracking2D_cbpm_r0001_flux, xlim=xlim, ylim=ylim)
+plot(flux.ra$tracking2D_eppl_r0001_flux, xlim=xlim, ylim=ylim)
+plot(flux.ra$tracking2D_vpmg_r0001_flux, xlim=xlim, ylim=ylim)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## compare to Diatom abundances
+
+
+
+## compare to TOC
+
+TO DO
+
+```{r}
+## load TOC data
+sed.dir <- "C:/Users/jjansen/OneDrive - University of Tasmania/science/data_biological/sediment_data/"
+mertz.toc.dat <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_CEAMARC_sediment_isotopes.csv"))
+mertz.toc.locs <- terra::project(as.matrix(mertz.toc.dat[,2:3]),from="+proj=longlat",to=ant.proj)
+ross.toc.dat <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_villinski_2008.csv"))
+ross.toc.locs <- terra::project(as.matrix(ross.toc.dat[,c(3,2)]),from="+proj=longlat",to=ant.proj)
+
+## CHECK IF DATA IS MISSING (COORDS OR TOC IN FOLDER "biological_data/sediment data")
+ap1 <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_AP_Isla_2018.csv"))
+ap2 <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_AP_Isla_2021.csv"))
+ap3 <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_AP_Taylor_2020.csv"))
+
+ap.locs <- read.csv(paste0(sed.dir,"Circumpolar_TOC_coords_DeMaster_Taylor.csv"), skip=12)[-12,-1]
+ap.locs$deg <- as.numeric(ap.locs$deg)
+# Convert to decimal degrees
+ap.locs$lat <- ap.locs$deg + ap.locs$min/60
+ap.locs$lon <- -(ap.locs$deg.1 + ap.locs$min.1 / 60)  # Negative for West longitude
+## values above don't match with other datasets, what's happening?
+
+## other data (mostly peninsula)
+oth.toc.dat.raw <- read.csv(paste0(sed.dir,"Circumpolar_TOC_data_Leventer.csv"), skip=4)[-c(90,95),] ## rows 90 and 95 have no coordinates
+oth.toc.dat <- oth.toc.dat.raw[,8]
+oth.toc.locs.raw <- read.csv(paste0(sed.dir,"Circumpolar_TOC_coords_Leventer.csv"))
+oth.toc.locs <- terra::project(as.matrix(oth.toc.locs.raw[-c(90,95),c(5,4)]),from="+proj=longlat",to=ant.proj)
+
+## COMBINE DATA FOR "ALL OF ANTARCTIC"
+ant.toc.dat <- c(oth.toc.dat, ross.toc.dat[,5], mertz.toc.dat[,7])
+ant.toc.locs <- rbind(oth.toc.locs, ross.toc.locs, mertz.toc.locs)
+```
+
+# Prepare data
+
+```{r, fig.dim=10}
+#cols=rev(magma(99))
+#cols=rev(viridis(99))
+library(RColorBrewer)
+cols.lower <- colorRampPalette(c("#F2F2F2","#FDE725FF"))
+cols=c(cols.lower(10), rev(viridis(99)))
+```
+
+# Comparison with TOC
+
+```{r}
+
+```
+
+```{r}
+## extract values at toc-locations
+mertz.df <- data.frame("sink.vals"=rep(NA,nrow(mertz.toc.locs)))
+mertz.df$sink.vals <- extract(track3D.ra.list[[9]],mertz.toc.locs)[,1]
+mertz.df$sed5      <- extract(sed.list5[[9]],    mertz.toc.locs)[,1]
+mertz.df$sed2      <- extract(sed.list2[[9]],    mertz.toc.locs)[,1]
+mertz.df$sed1      <- extract(sed.list1[[9]],    mertz.toc.locs)[,1]
+mertz.df$sed05     <- extract(sed.list05[[9]],   mertz.toc.locs)[,1]
+mertz.df$sedsum    <- extract(sed.list.sum[[9]], mertz.toc.locs)[,1]
+mertz.df$sedsum2   <- extract(sed.list.sum2[[9]],mertz.toc.locs)[,1]
+
+ross.df <- data.frame("sink.vals"=rep(NA,nrow(ross.toc.locs)))
+ross.df$sink.vals <- extract(track3D.ra.list[[1]],ross.toc.locs)[,1]
+ross.df$sed5    <- extract(sed.list5[[1]],   ross.toc.locs)[,1]
+ross.df$sed2    <- extract(sed.list2[[1]],   ross.toc.locs)[,1]
+ross.df$sed1    <- extract(sed.list1[[1]],   ross.toc.locs)[,1]
+ross.df$sed05   <- extract(sed.list05[[1]],  ross.toc.locs)[,1]
+ross.df$sedsum  <- extract(sed.list.sum[[1]],ross.toc.locs)[,1]
+ross.df$sedsum2<- extract(sed.list.sum2[[1]],ross.toc.locs)[,1]
+
+## the below datasets need to loop through the 10 regions to fill the values
+ant.df <- data.frame("sink.vals"=rep(NA,nrow(ant.toc.locs)))
+ant.df$sink.vals <- extract(track3D.ra.list[[1]],ant.toc.locs)[,1]
+ant.df$sed5    <- extract(sed.list5[[1]],   ant.toc.locs)[,1]
+ant.df$sed2    <- extract(sed.list2[[1]],   ant.toc.locs)[,1]
+ant.df$sed1    <- extract(sed.list1[[1]],   ant.toc.locs)[,1]
+ant.df$sed05   <- extract(sed.list05[[1]],  ant.toc.locs)[,1]
+ant.df$sedsum  <- extract(sed.list.sum[[1]],ant.toc.locs)[,1]
+ant.df$sedsum2<- extract(sed.list.sum2[[1]],ant.toc.locs)[,1]
+
+for(i in 2:10){
+  #print(i)
+  l <- extract(track3D.ra.list[[i]],ant.toc.locs)
+  l5  <- extract(sed.list5[[i]], ant.toc.locs)
+  l2  <- extract(sed.list2[[i]], ant.toc.locs)
+  l1  <- extract(sed.list1[[i]], ant.toc.locs)
+  l05 <- extract(sed.list05[[i]],ant.toc.locs)
+  ls  <- extract(sed.list.sum[[i]],ant.toc.locs)
+  ls2 <- extract(sed.list.sum2[[i]],ant.toc.locs)
+  if(any(!is.na(l))){
+    l.na.sel <- which(is.na(l))
+    ant.df$sink.vals[-l.na.sel] <- l[-l.na.sel,]
+  }  
+  if(any(!is.na(l5))){
+    l5.na.sel <- which(is.na(l5))
+    ant.df$sed5[-l5.na.sel] <- l5[-l5.na.sel,]
+  }
+  if(any(!is.na(l2))){
+    l2.na.sel <- which(is.na(l2))
+    ant.df$sed2[-l2.na.sel] <- l2[-l2.na.sel,]
+  }
+  if(any(!is.na(l1))){
+    l1.na.sel <- which(is.na(l1))
+    ant.df$sed1[-l1.na.sel] <- l1[-l1.na.sel,]
+  }
+  if(any(!is.na(l05))){
+    l05.na.sel <- which(is.na(l05))
+    ant.df$sed05[-l05.na.sel] <- l05[-l05.na.sel,]
+  }
+  if(any(!is.na(ls))){
+    ls.na.sel <- which(is.na(ls))
+    ant.df$sedsum[-ls.na.sel] <- ls[-ls.na.sel,]
+  }
+  if(any(!is.na(ls2))){
+    ls2.na.sel <- which(is.na(ls2))
+    ant.df$sedsum2[-ls2.na.sel] <- ls2[-ls2.na.sel,]
+  }
+}
+
+oth.df <- ant.df[1:nrow(oth.toc.locs),]
+```
+
+```{r, fig.height=10, fig.width=10}
+main.names <- c("sinking", "settling 5", "settling 2", "settling 1", "settling 05", "settling sum", "settling+sink sum")
+
+par(mfrow=c(3,3), mar=c(3,2,2,1))
+x = ross.df
+y = ross.toc.dat[,5]
+for(i in 1:7){
+  plot(x[,i], y, main= paste0("Ross ", main.names[i]))
+  legend("topright",legend=paste0("cor= ",round(cor(x=x[,i], y=y, use="complete.obs"),2)), bty="n")
+  legend("topleft", legend=paste0("R^2= ",round(summary(lm(y~x[,i]))$r.squared,2)), bty="n")
+}
+
+par(mfrow=c(3,3))
+x = mertz.df
+y = mertz.toc.dat[,7]
+for(i in 1:7){
+  plot(x[,i], y, main= paste0("Mertz ", main.names[i]))
+  legend("topright", legend=paste0("cor= ",round(cor(x=x[,i], y=y, use="complete.obs"),2)), bty="n")
+  legend("topleft", legend=paste0("R^2= ",round(summary(lm(y~x[,i]))$r.squared,2)), bty="n")
+}
+
+par(mfrow=c(3,3))
+x = oth.df
+y = oth.toc.dat
+for(i in 1:7){
+  plot(x[,i], y, main= paste0("Other ", main.names[i]))
+  legend("topright", legend=paste0("cor= ",round(cor(x=x[,i], y=y, use="complete.obs"),2)), bty="n")
+  legend("topleft", legend=paste0("R^2= ",round(summary(lm(y~x[,i]))$r.squared,2)), bty="n")
+}
+
+par(mfrow=c(3,3))
+x = ant.df
+y = ant.toc.dat
+for(i in 1:7){
+  plot(x[,i], y, main= paste0("All ", main.names[i]))
+  legend("topright", legend=paste0("cor= ",round(cor(x=x[,i], y=y, use="complete.obs"),2)), bty="n")
+  legend("topleft", legend=paste0("R^2= ",round(summary(lm(y~x[,i]))$r.squared,2)), bty="n")
+}
+
+par(mfrow=c(3,3))
+x = log(ant.df)
+y = log(ant.toc.dat)
+for(i in 1:7){
+  plot(x[,i], y, main= paste0("All log ", main.names[i]))
+  legend("topright", legend=paste0("cor= ",round(cor(x=x[,i], y=y, use="complete.obs"),2)), bty="n")
+  legend("topleft", legend=paste0("R^2= ",round(summary(lm(y~x[,i]))$r.squared,2)), bty="n")
+}
+```
+
+
+## Region by region - Pred vs Observed on Map:
+
+```{r, fig.height=10}
+## observed values
+cex_values <- sqrt(ant.toc.dat*10/pi)
+## predicted-observed values (proportional to max value on each scale)
+## positive means overprediction
+pred.vals <- ant.df$sedsum/max(ant.df$sedsum, na.rm=TRUE)
+obs.vals <- ant.toc.dat/max(ant.toc.dat)
+res.vals <- pred.vals-obs.vals
+neg.vals <- which(res.vals<0)
+cex.vals.raw <- res.vals
+cex.vals.raw[neg.vals] <- cex.vals.raw[neg.vals]*-1
+
+cex.vals <- sqrt(cex.vals.raw*20/pi)
+
+for(i in 1:10){
+par(mfrow=c(1,1))
+plot(sed.list.sum[[i]], range=c(0,6000), main=paste0("Region ",i," settling model summed output"), col=cols)
+#points(ant.toc.locs, cex=cex.vals, col="red")
+points(ant.toc.locs[neg.vals,], cex=cex.vals[neg.vals], col="red", lwd=3)
+points(ant.toc.locs[-neg.vals,], cex=cex.vals[-neg.vals], col="purple", lwd=3)
+add_legend("topright",col=c("red","purple"), legend=c("under-predicted", "over-predicted"), cex=1, pch=1)
+}
+```
+
+## Region by region - Pred vs Observed vs depth and current speeds and tpi:
+
+```{r, fig.height=10}
+# 
+#### load non-ROMS data
+# ## load projected coastline for plotting
+# load(paste0(env.derived,"Circumpolar_Coastline.Rdata"))
+# ## load circumpolar Diatom data
+# load(paste0(ARC_data_dir,"FAM/Circumpolar_Diatom_metadata.Rdata"))
+# ## load Mertz Diatom data
+# mertz.diatom.dat <- read.csv("C:/Users/jjansen/Desktop/science/PhD/1 bentho-pelagic-coupling/DiatomAbundance.csv")
+# mertz.diatom.locs <- project(as.matrix(mertz.diatom.dat[,c(4,3)]),proj=ant.proj)
+
+
+## depth and current speed
+sample.depths <-        extract(r.d, ant.toc.locs)[,1]
+sample.currents.mean <- extract(r.c, ant.toc.locs)[,1]
+sample.currents.max <-  extract(r.stack$seafloorcurrents_max, ant.toc.locs)[,1]
+sample.tpi <-           extract(r.t, ant.toc.locs)[,1]
+par(mfrow=c(2,2))
+plot(sample.depths,res.vals, main="depth vs proxy-residuals")
+plot(sample.currents.mean,res.vals, main="currents mean vs proxy-residuals")
+plot(sample.currents.max,res.vals, main="currents max vs proxy-residuals")
+plot(sample.tpi,res.vals, main="tpi vs proxy-residuals")
+
+#summary(lm(res.vals~sample.depths+sample.currents.max+sample.currents.mean))
+
+```
+
+```{r, fig.height=10, eval=FALSE}
+cex=ross.toc.dat[,5]
+plot(sed.list1[[1]], range=c(0,1500), main=paste0("Region 01 settling model output"))
+points(ross.toc.locs, cex=cex)
+
+plot(flux.list1[[1]], main=paste0("Region 01 particle flux"))
+points(ross.toc.locs, cex=cex)
+
+plot(log(flux.list1[[1]]), main=paste0("Region 01 particle flux"))
+points(ross.toc.locs, cex=cex)
+```
+
+# Distances from sources to sinks, and from sinks to sources
+
+Note that the Ross Sea raster is wrong, need to recreate the raster
+
+```{r}
+d.to.sink.avg.files <- list.files("C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/FAM_outputs/", pattern="disttosinkavg", full.names=TRUE)
+d.to.sink.avg <- list()
+d.sink.4k <- list()
+
+d.to.source.avg.files <- list.files("C:/Users/jjansen/OneDrive - University of Tasmania/science/data_environmental/FAM_outputs/", pattern="disttosourceavg", full.names=TRUE)
+d.to.source.avg <- list()
+d.source.4k <- list()
+
+for(i in 1:10){
+  d.to.sink.avg[[i]] <- rast(d.to.sink.avg.files[i])
+  d.to.source.avg[[i]] <- rast(d.to.source.avg.files[i])
+  #plot(d.to.sink.avg[[i]])
+  ## lower res:
+  d.sink.4k[[i]] <- terra::aggregate(d.to.sink.avg[[i]], fact=2, na.rm=TRUE)
+  d.source.4k[[i]] <- terra::aggregate(d.to.source.avg[[i]], fact=2, na.rm=TRUE)
+  plot(d.sink.4k[[i]],   col=cols, main=paste0("distance to sink - Region ",i))
+  plot(d.source.4k[[i]], col=cols, main=paste0("distance to source - Region ",i))
+}
+```
+
+
+
+
+
+
+# 3D representations of particle flux and trajectories
+
+#### setup data
+
+```{r}
+## load flux and sedimentation
+RS.s <- sed.list.sum[[1]]
+RS.s[RS.s>1500] <- 1500
+RS.f <- flux.list.sum[[1]]
+RS.f[RS.f>1000000] <- 1000000
+
+## match raster dimensions
+RS.d <- crop(r.d,RS.s)
+RS.c <- crop(r.c,RS.s)
+RS.t <- crop(r.t,RS.s)
+RS.npp <- crop(r.npp,RS.s)
+```
+
+```{r}
+#### load trajectories
+#load(paste0(fam.dir,"/tracking2D_Region01_NPP9_200mday_21days_traj_r0001_28days_Region01.Rdata"))
+load(paste0(fam.dir,"/tracking2D_Region01_NPP1_200mday_21days_traj_28days.Rdata"))
+#track.2D$ptrack_x_list
+#track.2D$ptrack_y_list
+
+## x-coords for each particle (when looping, need to keep particle ids in mind)
+x.crds <- matrix(track.2D$ptrack_x_list[[1]])
+y.crds <- matrix(track.2D$ptrack_y_list[[1]])
+for(i in 2:113){
+  #print(i) 
+  fill.here <- track.2D$id_list[[i]]
+  x.crds <- cbind(x.crds, NA)
+  x.crds[fill.here,i] <- track.2D$ptrack_x_list[[i]]
+  y.crds <- cbind(y.crds, NA)
+  y.crds[fill.here,i] <- track.2D$ptrack_y_list[[i]]
+}
+
+#### translate coordinates to lines
+
+## Combine particle locations into a data frame
+df <- data.frame(
+  particle = rep(1:nrow(x.crds), each=ncol(x.crds)),
+  time = rep(1:ncol(x.crds), times=nrow(x.crds)),
+  x = as.vector(t(x.crds)),
+  y = as.vector(t(y.crds))
+)
+df <- na.omit(df) ## some particles didn't make it to the end, for whatever reason I don't know
+
+# ## Add lines to the existing plot, coloring by time (veeeeery slow)
+# particles <- unique(df$particle)
+# colors <- rainbow(max(df$time))
+# plot(RS.d)
+# for (particle in particles) {
+#   particle_data <- df[df$particle == particle, ]
+#   for (i in 1:(nrow(particle_data) - 1)) {
+#     lines(particle_data$x[i:(i+1)], particle_data$y[i:(i+1)], col = colors[particle_data$time[i]])
+#   }
+# }
+
+library(sf)
+## Create a list of line geometries
+lines_list <- lapply(split(df, df$particle), function(p) {
+  if (nrow(p) > 1) {  ## Ensure there are at least two points
+    st_linestring(as.matrix(p[, c("x", "y")]))
+  } else {
+    NULL
+  }
+})
+## Remove NULL entries
+valid_indices <- !sapply(lines_list, is.null)
+lines_list <- lines_list[valid_indices]
+## Create an sf object
+lines_sf <- st_sfc(lines_list, crs = ant.proj)
+## Create an sf object with particle IDs
+lines_sf <- st_sf(particle = unique(df$particle)[valid_indices], geometry = lines_sf)
+
+lines_sf_subset <- lines_sf[seq(1,nrow(lines_sf),by=100),]
+
+## Plot
+plot(RS.d)
+plot(lines_sf_subset, add=TRUE, col="black")
+
+# ## Plot the lines
+# library(ggplot2)
+# ggplot() +
+#   geom_sf(data = lines_sf) +
+#   theme_minimal() +
+#   labs(title = "Particle Movement")
+## colouring lines by time takes long because each segment of the lines needs to be coloured differently
+# # Add lines to the existing plot
+# for(i in seq(1, nrow(lines_sf), by = 100)) {
+#   coords <- st_coordinates(lines_sf[i, ])
+#   lines(coords[, 1], coords[, 2], col = rainbow(nrow(coords))[coords[, 3]])
+# }
+# # Plot the lines with color by time
+# ggplot() +
+#   geom_sf(data = lines_sf[1:100,], aes(color = time)) +
+#   theme_minimal() +
+#   labs(title = "Movement of First 10 Particles Over Time", color = "Time")
+```
+
+
+```{r}
+## plot 3D
+library(rayshader)
+library(raster)
+library(sf)
+##### change data to matrix
+topo.dat <- RS.d
+topo_mat=raster_to_matrix(RS.d)
+curr_mat=raster_to_matrix(RS.c)
+flux_mat=raster_to_matrix(RS.f)
+sed_mat=raster_to_matrix(RS.s)
+
+topo_mat[1:10,1:10]
+
+sf_coast <- st_as_sf(coast.proj)
+##### sample site information
+## from "Readin_Circumpolar_DownwardImage_Data.Rmd"
+# load(paste0(ARC_Data.dir,"Circumpolar_DownwardImages_metadata.Rdata"))
+# sf_points <- st_as_sf(polar.dat.PS81)
+
+
+##### plot basemap
+# topo_mat %>%
+#   height_shade() %>%
+#   plot_map()
+# 
+# topo_mat %>%
+#   sphere_shade() %>%
+#   plot_map()
+# 
+# topo_mat %>%
+#   # sphere_shade() %>%
+#   height_shade() %>%
+#   #add_water(detect_water(topo_mat, min_area=length(topo_mat)/10000), color="white") %>%
+#   add_shadow(ray_shade(topo_mat, zscale=33, sunaltitude=6, lambert=FALSE), max_darken=0.5) %>%
+#   add_shadow(lamb_shade(topo_mat, zscale=33, sunaltitude=6), max_darken=0.5) %>%
+#   add_shadow(ambient_shade(topo_mat), max_darken=0.1) %>%
+#   plot_map()
+
+base_map2 = topo_mat %>%
+  height_shade() %>%
+  add_overlay(sphere_shade(topo_mat, texture = "desert", colorintensity = 3), alphalayer=0.5) %>%
+  add_shadow(lamb_shade(topo_mat, zscale=33, sunaltitude=6), max_darken=0.3) %>%
+  add_shadow(ambient_shade(topo_mat)) %>%
+  # add_shadow(ray_shade(topo_mat, zscale=33, sunaltitude=6, lambert=FALSE), max_darken=0.5) %>%
+  add_shadow(texture_shade(topo_mat,detail=6/10,contrast=10,brightness = 11), 0.1)# %>%
+  #add_water(detect_water(topo_mat, min_area=length(topo_mat)/10000), color="white")
+```
+
+```{r, fig.height=10}
+plot_map(base_map2)
+```
+
+## variables on 3D bathymetry
+
+```{r}
+zscale <- 100 ## the higher the less exaggerated the height values are
+phi <- 40    ## vertical angle of view
+theta <- 300 ## horizontal angle of view
+zoom <- 0.7  ## zoom between 0 (close) and 1 (far)
+windowsize <- c(1000,1000)
+
+## calculate sphereshades and lineoverlays
+sphereshades = sphere_shade(topo_mat, texture="desert", colorintensity=3)
+rayshades = ray_shade(topo_mat, sunaltitude=6, zscale=zscale, lambert=FALSE)
+lambshades = lamb_shade(topo_mat, sunaltitude=6, zscale=zscale)
+ambientshades = ambient_shade(topo_mat)
+textureshades = texture_shade(topo_mat,detail=6/10,contrast=10,brightness = 11)
+
+currentoverlay  = height_shade(curr_mat, texture=rev(heat.colors(256)))
+fluxoverlay     = height_shade(flux_mat, texture=rev(heat.colors(256)))
+sedimentoverlay = height_shade(sed_mat,  texture=rev(heat.colors(256)))
+
+coastoverlay = generate_line_overlay(sf_coast, extent=ext(topo.dat), heightmap=topo_mat)
+tracksoverlay = generate_line_overlay(lines_sf_subset, extent=ext(topo.dat), heightmap=topo_mat)
+#sampleoverlay = generate_point_overlay(sf_points, extent=extent(topo.dat), heightmap=topo_mat+500, color="deepskyblue")
+#sampleoverlay_shades = generate_point_overlay(sf_points, extent=extent(topo.dat), heightmap=topo_mat, color="black", offset=c(1500,-1500))
+```
+
+### current speed
+
+```{r, fig.height=15}
+topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(currentoverlay, alphalayer = 0.6) %>% 
+  add_overlay(coastoverlay) %>% 
+  add_overlay(tracksoverlay) %>% 
+#  add_overlay(sampleoverlay_shades) %>%   
+#  add_overlay(sampleoverlay) %>%
+  plot_map()
+```
+
+```{r, fig.height=15}
+topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(currentoverlay, alphalayer = 0.6) %>%
+    add_overlay(coastoverlay) %>% 
+    add_overlay(tracksoverlay) %>% 
+#  add_overlay(sampleoverlay_shades) %>%   
+#  add_overlay(sampleoverlay) %>%
+    plot_3d(topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, 
+          windowsize=windowsize)
+render_snapshot()
+```
+
+### flux
+
+```{r, fig.height=15}
+topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(fluxoverlay, alphalayer = 0.6) %>%
+  add_overlay(coastoverlay) %>% 
+  add_overlay(tracksoverlay) %>% 
+#  add_overlay(sampleoverlay_shades) %>%   
+#  add_overlay(sampleoverlay) %>%
+  plot_map()
+```
+
+```{r, fig.height=15}
+topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(fluxoverlay, alphalayer = 0.6) %>%
+  add_overlay(coastoverlay) %>% 
+  add_overlay(tracksoverlay) %>% 
+#  add_overlay(sampleoverlay_shades) %>%   
+#  add_overlay(sampleoverlay) %>%
+    plot_3d(topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, 
+          windowsize=windowsize)
+render_snapshot()
+```
+
+### sedimentation
+
+```{r, fig.height=15}
+topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(sedimentoverlay, alphalayer = 0.6) %>%
+  add_overlay(coastoverlay) %>% 
+  add_overlay(tracksoverlay) %>% 
+#  add_overlay(sampleoverlay_shades) %>%   
+#  add_overlay(sampleoverlay) %>%
+  plot_map()
+```
+
+```{r, fig.height=15}
+topo_mat %>%
+  sphere_shade(texture = "bw") %>%
+  add_overlay(sedimentoverlay, alphalayer = 0.6) %>%
+  add_overlay(coastoverlay) %>% 
+  add_overlay(tracksoverlay) %>% 
+#  add_overlay(sampleoverlay_shades) %>%   
+#  add_overlay(sampleoverlay) %>%
+    plot_3d(topo_mat, zscale=zscale, phi=phi, theta=theta, zoom=zoom, 
+          windowsize=windowsize)
+render_snapshot()
+```
+
+
+
+
+
+## 3D Animation
+
+```{r, eval=FALSE}
+library(particles)
+library(tidygraph)
+library(ggraph)
+#library(ggplot2)
+library(gganimate)
+library(dplyr)
+
+## Assuming your dataframe is named df
+## Sample 1% of the particles
+set.seed(123) # For reproducibility
+sampled_particles <- df %>%
+  distinct(particle) %>%
+  slice(seq(1, n(), by = 100)) #sample_frac(0.005)
+## Filter the dataframe to include only the sampled particles
+sampled_df <- df %>%
+  filter(particle %in% sampled_particles$particle)
+
+##### First effort using ggplot, and a 2D representation, this works:
+
+## Convert raster to a data frame for ggplot
+bathy_df <- as.data.frame(RS.d, xy = TRUE)
+colnames(bathy_df) <- c("x", "y", "elevation")
+
+base_plot <- ggplot() +
+  geom_raster(data = bathy_df, aes(x = x, y = y, fill = elevation)) +
+  scale_fill_viridis_c() +
+  theme_minimal()
+
+## Add particle movement to the plot (for option works, but has no traces)
+# particle_plot <- base_plot +
+#   geom_point(data = sampled_df, aes(x = x, y = y, color = as.factor(particle)), size = 2) +
+#   labs(color = "Particle") +
+#   theme(legend.position = "none")
+## geom_path for the traces (color can be "time" or "particles", or black I guess)
+particle_plot <- base_plot +
+  geom_path(data = sampled_df, aes(x = x, y = y, group = particle, color = as.factor(time)), linewidth = 1, alpha = 0.5) +
+  geom_point(data = sampled_df, aes(x = x, y = y, color = as.factor(time)), size = 1) +
+  labs(color = "Particle") +
+  theme(legend.position = "none")
+
+## check layout
+particle_plot
+
+## Animate the particle movements (first option works without traces)
+# animation <- particle_plot +
+#   transition_time(time) +
+#   labs(title = "Time: {frame_time}")
+animation <- particle_plot +
+  transition_reveal(time) +
+  labs(title = "Time: {frame_time}")
+
+## and animate (~8min for 2000 particles across 113 timesteps)
+animate(animation, nframes = 100, fps = 10, width = 800, height = 600)
+## Save the animation
+anim_save("particle_movement.gif", animation)
+
+
+##### Second effort using a 3D representation, this doesn't work yet for the traces, only for the particle positions:
+### Convert the raster to a matrix for 3D plotting:
+library(plotly)
+library(rgl)
+bathy <- RS.d
+bathy_matrix <- as.matrix(bathy, wide=TRUE)
+x <- seq(from = xmin(bathy), to = xmax(bathy), length.out = ncol(bathy))
+y <- seq(from = ymax(bathy), to = ymin(bathy), length.out = nrow(bathy))
+## add bathymetry to df
+sampled_df$z <- extract(bathy, cbind(sampled_df$x, sampled_df$y))[,1]
+
+### Create a 3D plot of the bathymetry:
+p <- plot_ly(z = ~bathy_matrix, x = ~x, y = ~y, type = "surface") %>%
+  layout(scene = list(zaxis = list(title = "Elevation"),
+                      xaxis = list(title = "Longitude"),
+                      yaxis = list(title = "Latitude")))
+
+## showing the initial positions of the particles
+initial_positions <- sampled_df[sampled_df$time == 1, ]
+initial_positions <- initial_positions[!is.na(initial_positions$z), ]
+# Print the initial positions to verify
+print(initial_positions)
+p <- plot_ly(z = ~bathy_matrix, x = ~x, y = ~y, type = "surface") %>%
+   layout(scene = list(zaxis = list(title = "Depth (z)"),
+                       xaxis = list(title = "Longitude (x)"),
+                       yaxis = list(title = "Latitude (y)"))) %>%
+   add_trace(x = ~initial_positions$x, y = ~initial_positions$y, z = ~initial_positions$z,
+             type = 'scatter3d', mode = 'markers',marker = list(size = 3, color = 'red'))
+p
+
+######################################################
+## works until just here. something below doesn't work with the loop I guess
+######################################################
+
+# Initialize the 3D plot with bathymetry
+p <- plot_ly(z = ~bathy_matrix, x = ~x, y = ~y, type = "surface") %>%
+  layout(scene = list(zaxis = list(title = "Depth (z)"),
+                      xaxis = list(title = "Longitude (x)"),
+                      yaxis = list(title = "Latitude (y)")))
+
+# Add particle traces
+for (particle_id in unique(sampled_df$particle)) {
+  particle_data <- sampled_df[sampled_df$particle == particle_id, ]
+  particle_data <- particle_data[!is.na(particle_data$z), ]
+  p <- p %>%
+    add_trace(x = ~particle_data$x, y = ~particle_data$y, z = ~particle_data$z,
+              type = 'scatter3d', mode = 'lines+markers', line = list(width = 2), marker = list(size = 3))
+}
+
+# Render the plot in RStudio Viewer
+p
+
+# Save the plot to an HTML file
+htmlwidgets::saveWidget(p, "particle_movements.html", selfcontained = TRUE)
+```
+
+
+

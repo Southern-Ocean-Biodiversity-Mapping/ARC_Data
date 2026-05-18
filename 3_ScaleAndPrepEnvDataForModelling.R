@@ -40,10 +40,10 @@ usr <- "JJ"
 source("0_SourceFile.R")
 
 ## set folders
-bio.dir      <- paste0(usr.main.dir, "data_biological/")
-env.derived  <- paste0(usr.main.dir, "data_environmental/derived")
+bio.dir      <- paste0(usr.dropbox.dir, "data_biological/")
+env.derived  <- paste0(usr.dropbox.dir, "data_environmental/derived")
 ## Output folder for merged and scaled datasets (make sure this exists or is created before running)
-output_dir <- paste0(usr.main.dir,"data_products/modelling_files/circum_antarctic")
+output_dir <- paste0(usr.dropbox.dir,"data_products/modelling_files/circum_antarctic")
 ## Folder containing the downloaded ASAID annotation CSVs
 annotation_dir <- paste0(bio.dir,"ASAID_image_annotations")
 ## Folder where annotation outputs are written

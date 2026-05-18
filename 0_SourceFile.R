@@ -10,7 +10,7 @@ if(usr =="SJ"){
 }
 
 if(usr == "JJ"){
-  usr.main.dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/"
+  usr.dropbox.dir <- "C:/Users/jjansen/UTAS Research Dropbox/Jan Jansen/Data/"
 }
 
 ## polar stereographic projection for Antarctica:

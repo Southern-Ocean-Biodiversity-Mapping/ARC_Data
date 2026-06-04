@@ -29,6 +29,15 @@ chla   <- rast(paste0(out.dir,"NPP_climatology_OctMar_2002To2020_chla_mean_stric
 names(chla) <- "mean"
 ra <- rast(paste0(roms.dir,"ocean_his_0001_slices_u_1.tif"), lyrs=1)
 
+#### save projected NPP rasters (4 input models)
+# npp.files <- list.files(out.dir, pattern="NPP_climatology_OctMar_2002To2020_filled12boxes", full.names = TRUE)
+# npp.files <- npp.files[!grepl("mean.tif", npp.files)]
+# npp.ra.unproj <- rast(npp.files)
+# names(npp.ra.unproj) <- sub("NPP_climatology_OctMar_2002To2020_filled12boxes_(.*?).tif", "\\1", basename(npp.files))
+# npp.ra <- project(npp.ra.unproj, stereo)
+# writeRaster(npp.ra, file=paste0(out.dir,"NPP_climatology_OctMar_2002To2020_filled12boxes_allmodelmeans_projected.tif"))
+
+#######
 model <- "cafe_12boxfilled"
 npp2 <- project(npp.ca, ra)
 model <- "eppl_12boxfilled"
@@ -304,8 +313,3 @@ writeRaster(npp2_crop, file=paste0(out.dir,"ocean_his_TrackingSetup_",model,"_NP
 # h.ra <- setValues(ra.region, Rdat$h)
 # plot(npp2_crop)
 # contour(h.ra, add=TRUE, levels=c(0,2000,3000))
-
-
-
-
-

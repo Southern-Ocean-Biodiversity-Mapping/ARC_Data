@@ -37,8 +37,8 @@
 usr <- "JJ"
 source("0_SourceFile.R")
 
-bio.dir      <- paste0(usr.main.dir, "data_biological/")
-output_dir   <- paste0(usr.main.dir, "data_products/modelling_files/circum_antarctic")
+bio.dir      <- paste0(usr.dropbox.dir, "data_biological/")
+output_dir   <- paste0(usr.dropbox.dir, "data_products/modelling_files/circum_antarctic")
 
 res <- "2km"
 

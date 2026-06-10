@@ -29,7 +29,7 @@ npp.model.list <- c("cafe_12boxfilled",
                     "vpmg_12boxfilled",
                     "cbpm_12boxfilled")
 
-for(z in 2:4){
+for(z in 1:4){
   npp.model <- npp.model.list[z]
   # # NPP model label used in filenames
   # npp.model <- "cafe_12boxfilled"
@@ -39,7 +39,7 @@ for(z in 2:4){
   # #npp.model <- "chla"
   
   # Shared parameters
-  speed <- 200
+  speed <- 100
   time_steps_in_s <- 1800
   regions <- 1:10
   
@@ -58,7 +58,7 @@ for(z in 2:4){
   looping_time_2d <- 0.25
   runtime_2d <- 1
   sedimentation_2d <- TRUE
-  particle_radius <- 0.00005
+  particle_radius <- 0.0001
   # only the decimal part for the character string
   r_str <- sub("^0\\.", "", format(particle_radius, scientific = FALSE, trim = TRUE))
   
@@ -104,8 +104,8 @@ for(z in 2:4){
     stop("terra2im() not found. Load the package that provides terra2im() before running (e.g., qrbp).")
   }
   
-  # -------------------- STEP 1: 3D TRACKING PER REGION --------------------
-  
+  # # -------------------- STEP 1: 3D TRACKING PER REGION --------------------
+  # 
   # for (i in regions) {
   #   message("===== 3D tracking: Region ", sprintf("%02d", i), " =====")
   # 
@@ -194,7 +194,7 @@ for(z in 2:4){
   #   rm(bt, track.3D, pts9, xyz_end, npp_crop)
   #   gc(FALSE)
   # }
-  
+  # 
   # # -------------------- STEP 2b: 3D bottom NPP CIRCUMPOLAR COMPILATION --------------------
   # 
   # uv.max <- terra::rast(paste0(env_dir3, "derived/ROMS_2k_files/ocean_his_bottom_uv_max.tif"))
@@ -204,7 +204,7 @@ for(z in 2:4){
   #   i <- regions[k]
   #   sed_file <- paste0(out_dir,
   #                      "/tracking3D_Region", sprintf("%02d", i),
-  #                      "_", npp.model, 
+  #                      "_", npp.model,
   #                      "_NPP9_", speed, "mday_21days_bottomnpp.tif")
   #   sed_list[[k]]  <- if (file.exists(sed_file))  terra::rast(sed_file)  else NULL
   # }
@@ -219,10 +219,10 @@ for(z in 2:4){
   #                    overwrite = TRUE)
   
   # -------------------- STEP 3: 2D TRACKING FROM BOTTOM NPP PPP --------------------
-  
+
   for (i in regions) {
     message("===== 2D tracking: Region ", sprintf("%02d", i), " =====")
-    
+
     ra9 <- terra::rast(paste0(out_dir,
                               "/tracking3D_Region", sprintf("%02d", i),
                               "_", npp.model,
@@ -231,27 +231,27 @@ for(z in 2:4){
     Z <- terra2im(ra9 / ppp_divisor)
     pp <- spatstat.random::rpoispp(Z)
     npp.pts <- cbind(pp$x, pp$y, 0)
-    
+
     load(fname_roms_region(raw_dir3, i))  # Rdat6h
-    
+
     # Assign z values as depth of cells (as in your script)
     roms.coords <- cbind(as.vector(Rdat6h$x), as.vector(Rdat6h$y))
     x.range <- c(min(roms.coords[, 1]) - 1000, max(roms.coords[, 1]) + 1000)
     y.range <- c(min(roms.coords[, 2]) - 1000, max(roms.coords[, 2]) + 1000)
-    
+
     empty.roms.ra <- terra::rast(ext = terra::ext(x.range[1], x.range[2], y.range[1], y.range[2]),
                                  resolution = 2000)
     h.ra <- terra::setValues(empty.roms.ra, as.vector(Rdat6h$h))
     npp.pts.h <- terra::extract(h.ra, npp.pts[, 1:2, drop = FALSE])
     npp.pts[, 3] <- npp.pts.h[, 1]
-    
+
     if (reduce_depth_layers) {
       Rdat6h$hh <- Rdat6h$hh[, , -layers_to_drop, drop = FALSE]
       Rdat6h$i_u <- Rdat6h$i_u[, , -layers_to_drop, , drop = FALSE]
       Rdat6h$i_v <- Rdat6h$i_v[, , -layers_to_drop, , drop = FALSE]
       Rdat6h$i_w <- Rdat6h$i_w[, , -layers_to_drop, , drop = FALSE]
     }
-    
+
     start.time <- Sys.time()
     track.2D <- loopit_2D3D(
       pts_seeded = npp.pts,
@@ -273,33 +273,33 @@ for(z in 2:4){
       time_steps_in_s = time_steps_in_s
     )
     message("2D tracking took: ", format(Sys.time() - start.time))
-    
+
     out_2d_file <- paste0(out_dir,
                           "/tracking2D_Region", sprintf("%02d", i),
                           "_", npp.model,
                           "_NPP9_", speed, "mday_21days_",
                           "r", r_str, "_28days.Rdata")
     save(track.2D, npp.pts, file = out_2d_file)
-    
+
     rm(Rdat6h, h.ra, empty.roms.ra, pp, Z)
     gc(FALSE)
   }
-  
+
   # -------------------- STEP 4: 2D ANALYSIS OUTPUTS (SED + FLUX) --------------------
-  
+
   for (i in regions) {
     message("===== 2D analysis outputs: Region ", sprintf("%02d", i), " =====")
-    
+
     in_2d_file <- paste0(out_dir,
                          "/tracking2D_Region", sprintf("%02d", i),
                          "_", npp.model,
                          "_NPP9_", speed, "mday_21days_",
                          "r", r_str, "_28days.Rdata")
     load(in_2d_file)
-    
+
     npp_crop <- terra::rast(fname_npp_raster_region(npp.dir, i))
     load(fname_roms_region(raw_dir3, i))
-    
+
     map_knn_to_cell <- load_or_build_knn_map(
       cache_dir = cache_dir,
       region = i,
@@ -308,19 +308,19 @@ for(z in 2:4){
       roms_x = Rdat6h$x,
       roms_y = Rdat6h$y
     )
-    
+
     sed_ra <- sedimentation_raster_from_pend(npp_raster = npp_crop, pend = track.2D$pend_sed)
     sed_out <- paste0(out_dir,
                       "/tracking2D_Region", sprintf("%02d", i),
                       "_", npp.model,
                       "_NPP9_", speed, "mday_21days_r", r_str, "_28days_sed.tif")
     terra::writeRaster(sed_ra, sed_out, overwrite = TRUE)
-    
+
     flux_out <- paste0(out_dir,
                        "/tracking2D_Region", sprintf("%02d", i),
                        "_", npp.model,
                        "_NPP9_", speed, "mday_21days_r", r_str, "_28days_flux.tif")
-    
+
     if (!is.null(track.2D$flux_counts)) {
       flux_ra <- flux_raster_from_knn_counts(npp_raster = npp_crop,
                                              flux_counts = track.2D$flux_counts,
@@ -337,17 +337,17 @@ for(z in 2:4){
     } else {
       message("No flux information found for Region ", sprintf("%02d", i))
     }
-    
+
     rm(Rdat6h, track.2D, npp_crop, map_knn_to_cell)
     gc(FALSE)
   }
   # -------------------- STEP 5: CIRCUMPOLAR COMPILATION --------------------
-  
+
   uv.max <- terra::rast(paste0(env_dir3, "derived/ROMS_2k_files/ocean_his_bottom_uv_max.tif"))
-  
+
   flux_list <- vector("list", length(regions))
   sed_list  <- vector("list", length(regions))
-  
+
   for (k in seq_along(regions)) {
     i <- regions[k]
     flux_file <- paste0(out_dir,
@@ -356,29 +356,29 @@ for(z in 2:4){
                         "_NPP9_", speed, "mday_21days_r", r_str, "_28days_flux.tif")
     sed_file <- paste0(out_dir,
                        "/tracking2D_Region", sprintf("%02d", i),
-                       "_", npp.model, 
+                       "_", npp.model,
                        "_NPP9_", speed, "mday_21days_r", r_str, "_28days_sed.tif")
-    
+
     flux_list[[k]] <- if (file.exists(flux_file)) terra::rast(flux_file) else NULL
     sed_list[[k]]  <- if (file.exists(sed_file))  terra::rast(sed_file)  else NULL
   }
-  
+
   flux_aligned <- lapply(flux_list, function(r) {
     resample(r, uv.max, method = "near")  # or "bilinear" if truly continuous
   })
   flux_circ <- do.call(mosaic, c(flux_aligned, list(fun = "max")))
-  
+
   sed_aligned <- lapply(sed_list, function(r) {
     resample(r, uv.max, method = "near")  # or "bilinear" if truly continuous
   })
   sed_circ <- do.call(mosaic, c(sed_aligned, list(fun = "max")))
-  
+
   terra::writeRaster(flux_circ,
                      file.path(final_out_dir, paste0("tracking2D_",npp.model,"_NPP9_", speed, "mday_21days_r", r_str, "_28days_flux_circumpolar.tif")),
                      overwrite = TRUE)
   terra::writeRaster(sed_circ,
                      file.path(final_out_dir, paste0("tracking2D_",npp.model,"_NPP9_", speed, "mday_21days_r", r_str, "_28days_sed_circumpolar.tif")),
                      overwrite = TRUE)
-  
+
   message("Pipeline complete.")
 }

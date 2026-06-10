@@ -41,7 +41,7 @@ source("0_SourceFile.R")
 
 ## set folders
 bio.dir      <- paste0(usr.main.dir, "data_biological/")
-env.derived  <- paste0(usr.main.dir, "data_environmental/derived")
+env.derived  <- paste0(usr.dropbox.dir, "data_environmental/derived")
 ## Output folder for merged and scaled datasets (make sure this exists or is created before running)
 output_dir <- paste0(usr.main.dir,"data_products/modelling_files/circum_antarctic")
 ## Folder containing the downloaded ASAID annotation CSVs
@@ -333,6 +333,10 @@ saveRDS(pred_df, pred_df_out)
 
 message("Saved scaled prediction dataframe:\n  ", pred_df_out)
 
+saveRDS(
+  pred_df[, c("cell_id", "proj_coord_x", "proj_coord_y")],
+  file = file.path(usr.dropbox.dir, "data_products/modelling_files/circum_antarctic/prediction_grid_lookup.rds")
+)
 
 ############################
 # 9) DONE

@@ -109,7 +109,7 @@ label_cols <- setdiff(names(cover_cells_env), non_label_cols)
 # keep only numeric columns
 label_cols <- label_cols[sapply(cover_cells_env[label_cols], is.numeric)]
 
-# SAFETY: remove obvious environmental leftovers
+# remove environmental leftovers
 label_cols <- label_cols[!grepl(
   "mean|sd|tpi|depth|temp|sal|arag|po4|no3",
   label_cols

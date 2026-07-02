@@ -1,22 +1,19 @@
 # ARC_Data
 
-Main Script is:  
-__ReadIn_Circumpolar_Environmental_Data.Rmd__  
+This respository contains scripts that setup the biological and environmental data for analysis. 
 
-All scripts in the main folder are in Rmarkdown, so each file has a _.Rmd_ and a _.html_.
+/ASAID_Classification...: Contains the scripts to create the classification catalogs published under https://doi.org/10.25959/J4EE-9A56
+/FAM:  Contains the scripts for running and analysing food-availability models
+/annotation:  scripts to prepare image annotations from the files available under https://doi.org/10.25959/2R0E-PB18
+/prep_environment:  loading all environmental data from its source, matching extents and projection and resolution, scaling
+/prep_image:  legacy scripts originally used to prepare image metadata before publication on Squidle+
+/legacy_scripts:  scipts developed but not updated to suit new pipeline
+/old:  scratch folder for old scripts to keep just in case
 
-All raw and derived environmental files are in two folders on Owncloud within the folder _EnvironmentalData_: _raw_ and _derived_.  
-https://owncloud.imas-data-service.cloud.edu.au/index.php/s/ORxSWb6xbJRWfNI  
-Currently, the easiest way is to download the folders to your local machine, keep the folder structure the same and simply edit the file-path at the top of each script that points to the "EnvironmentalData"-folder (that is if you want to generate any new files).  
+Raw environmental files are available from their source online.
+Derived environmental files are currently on the teams private dropbox, and the relevant files will be published with the analysis paper.
 
 ## Naming convention for the files:  
-*  "ReadIn_": scripts/files that read in raw or derived  datas and chnage the files into a format ready for analysis  
-*  "EnvData_", "DownwardImages_", "Diatom": also self explanatory  
-*  "500m","5km", etc: resolution of the raster. If none, then it's the original resolution from the raw data.  
-*  "shelf": in this case the data in the raster is restricted to the depth area between 0 - 3000m  
-*  "scaled": data are scaled by their mean  
-
-NPP: net primary productivity  
-waom2k: ROMS ocean model at 2km original resolution  
-
-
+*  "1_...":  Sequence of scripts to follow the pipeline
+*  "EnvPrep_": scripts/files that read in raw or derived environmental data and chnage the files into a format ready for analysis  
+*  "AnnData_": scripts for reading and preparing image annotation files

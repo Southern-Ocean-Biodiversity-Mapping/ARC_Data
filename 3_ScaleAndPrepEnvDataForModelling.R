@@ -40,11 +40,8 @@ usr <- "JJ"
 source("0_SourceFile.R")
 
 ## set folders
-<<<<<<< HEAD
-bio.dir      <- paste0(usr.main.dir, "data_biological/")
-=======
+#bio.dir      <- paste0(usr.main.dir, "data_biological/")
 bio.dir      <- paste0(usr.dropbox.dir, "data_biological/")
->>>>>>> 82a3318a26a050c95a231b0dadf65d2218c7bda5
 env.derived  <- paste0(usr.dropbox.dir, "data_environmental/derived")
 ## Output folder for merged and scaled datasets (make sure this exists or is created before running)
 output_dir <- paste0(usr.dropbox.dir,"data_products/modelling_files/circum_antarctic")
@@ -71,8 +68,10 @@ unscorable_label_name <- "Unscorable"  # the *original* label text
 # Optional: correlation threshold for auto-dropping predictors (set NULL to skip auto-drop)
 cor_threshold <- NULL   # e.g., 0.7; NULL means "do not auto-drop"
 
-# manual list of environmental variables to remove (to mimic your earlier workflow)
-env_remove <- c("tpi5", "tpi11", "arag_mean", "no3_mean", "no3_sd", "po4_mean", "po4_sd")
+# manual list of environmental variables to remove
+env_remove <- c("tpi5", "tpi11", "arag_mean", "arag_sd",
+                "no3_mean", "no3_sd", "po4_mean", "po4_sd",
+                "o2_mean", "o2_sd", "IBCSO_v2_2km_geomorph")
 
 # Predictors that are categorical codes and must NOT be z-scaled
 categorical_vars <- c("geomorphology")
@@ -303,6 +302,37 @@ message("Wrote scaled prediction raster stack:\n  ", scaled_raster_out)
 # Optional cleanup
 # file.remove(tmp_files)
 
+############################
+# 7B) CREATE CACHED ENVIRONMENTAL VALUE TABLE FOR GAP ANALYSES
+############################
+# The Environmental Gaps workflow uses a raster-value table containing
+# one row per raster cell and one column per scaled predictor layer.
+#
+# This table is derived directly from the scaled environmental raster
+# stack created above. It is saved as an .RData file for compatibility
+# with legacy code that expects the objects `env_values` and `na.sel`.
+
+env_values_file <- file.path(
+  env.derived,
+  paste0("Circumpolar_EnvData_", res, "_env_values_scaled.RData")
+)
+
+# Load the scaled raster stack from disk to ensure the cached table
+# exactly reflects the written raster file.
+env_stack_scaled_for_gaps <- terra::rast(scaled_raster_out)
+
+# Extract values for all raster cells.
+env_values <- as.data.frame(terra::values(env_stack_scaled_for_gaps))
+
+# Identify cells where one or more predictor layers are missing.
+na.sel <- which(is.na(rowSums(env_values)))
+
+# Save both objects for use in the Environmental Gaps workflow.
+save(env_values, na.sel, file = env_values_file)
+
+message("Saved cached environmental value table for gap analyses:\n  ", env_values_file)
+message("Rows in env_values: ", nrow(env_values))
+message("Rows with one or more NA values: ", length(na.sel))
 
 ############################
 # 8) CREATE A SCALED PREDICTION DATAFRAME (ONE ROW PER CELL)
